@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroStrat AI — Companion Session</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-1: #f0f4ff;
+            --bg-2: #e8f6f3;
+            --bg-3: #fff5f5;
+            --primary: #8b7cf7;
+            --primary-soft: rgba(139,124,247,0.12);
+            --accent-mint: #7dd3c0;
+            --accent-coral: #f4a261;
+            --accent-lavender: #c4b5fd;
+            --text-main: #2d3748;
+            --text-soft: #64748b;
+            --text-light: #94a3b8;
+            --glass: rgba(255,255,255,0.72);
+            --glass-border: rgba(255,255,255,0.5);
+            --shadow: 0 8px 32px rgba(139,124,247,0.08);
+            --shadow-lg: 0 20px 60px rgba(139,124,247,0.12);
+            --radius: 24px;
+            --radius-sm: 16px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Animated background blobs */
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.45;
+            animation: float 20s ease-in-out infinite;
+        }
+        .blob-1 { width: 500px; height: 500px; background: #c4b5fd; top: -10%; left: -10%; animation-delay: 0s; }
+        .blob-2 { width: 400px; height: 400px; background: #a5f3d3; bottom: -10%; right: -10%; animation-delay: -5s; }
+        .blob-3 { width: 350px; height: 350px; background: #fbcfe8; top: 40%; left: 60%; animation-delay: -10s; }
+        .blob-4 { width: 300px; height: 300px; background: #fde68a; bottom: 20%; left: 20%; animation-delay: -15s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* App Container */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .ai-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent-mint));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 16px rgba(139,124,247,0.25);
+            position: relative;
+        }
+        .ai-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            opacity: 0.3;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        .header-info h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .header-info p {
+            font-size: 0.78rem;
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-mint);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-mint);
+        }
+        .progress-pill {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 0.4rem 0.9rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            font-weight: 500;
+            backdrop-filter: blur(12px);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-thumb { background: rgba(139,124,247,0.2); border-radius: 4px; }
+
+        .message {
+            max-width: 85%;
+            animation: msgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .msg-ai { align-self: flex-start; }
+        .msg-user { align-self: flex-end; }
+
+        .bubble {
+            padding: 0.9rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.92rem;
+            line-height: 1.55;
+            word-wrap: break-word;
+            position: relative;
+        }
+        .bubble-ai {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow);
+        }
+        .bubble-user {
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 20px rgba(139,124,247,0.25);
+        }
+
+        .msg-meta {
+            font-size: 0.68rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+            padding: 0 0.3rem;
+        }
+        .msg-user + .msg-meta { text-align: right; }
+
+        /* Typing Indicator */
+        .typing {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.9rem 1.1rem;
+        }
+        .typing span {
+            width: 7px;
+            height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s ease-in-out infinite;
+            opacity: 0.5;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Quick Reply Chips */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-left: 0.25rem;
+        }
+        .chip {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            user-select: none;
+            font-weight: 500;
+        }
+        .chip:hover {
+            background: var(--primary-soft);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139,124,247,0.12);
+        }
+        .chip:active { transform: scale(0.96); }
+
+        /* Input Area */
+        .input-area {
+            padding: 0.75rem 0.25rem 1rem;
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-end;
+        }
+        .input-box {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            padding: 0.75rem 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            outline: none;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+        .input-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(139,124,247,0.12);
+        }
+        .input-box::placeholder { color: var(--text-light); }
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(139,124,247,0.25);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(139,124,247,0.35); }
+        .send-btn:active { transform: scale(0.95); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Result Screen */
+        .result-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(24px);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+        }
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            background: var(--primary-soft);
+            border: 2px solid var(--primary);
+        }
+        .result-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .result-subtitle {
+            color: var(--text-soft);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .metric {
+            background: rgba(255,255,255,0.5);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem;
+            border: 1px solid var(--glass-border);
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .risk-low { color: #10b981; }
+        .risk-moderate { color: #f59e0b; }
+        .risk-high { color: #ef4444; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: var(--radius-full);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            color: white;
+            box-shadow: 0 4px 16px rgba(139,124,247,0.25);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(139,124,247,0.35); }
+        .btn-outline {
+            background: transparent;
+            color: var(--text-soft);
+            border: 1px solid var(--glass-border);
+            margin-top: 0.75rem;
+        }
+        .btn-outline:hover { background: var(--primary-soft); color: var(--primary); }
+
+        .disclaimer {
+            margin-top: 1.5rem;
+            font-size: 0.72rem;
+            color: var(--text-light);
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        /* Start Overlay */
+        .start-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 2rem;
+            text-align: center;
+        }
+        .start-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(24px);
+            border-radius: var(--radius);
+            padding: 3rem 2.5rem;
+            max-width: 440px;
+            box-shadow: var(--shadow-lg);
+            animation: floatUp 0.6s ease;
+        }
+        @keyframes floatUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .start-orb {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent-mint), var(--accent-coral));
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 8px 32px rgba(139,124,247,0.25);
+            animation: orbPulse 3s ease-in-out infinite;
+        }
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(139,124,247,0.25); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 40px rgba(139,124,247,0.35); }
+        }
+        .start-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .start-desc {
+            color: var(--text-soft);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        .feature-list {
+            text-align: left;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            color: var(--text-soft);
+        }
+        .feature-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            flex-shrink: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .app { padding: 0.5rem; }
+            .bubble { font-size: 0.88rem; padding: 0.75rem 0.9rem; }
+            .result-card { padding: 1.5rem 1.25rem; }
+            .start-card { padding: 2rem 1.5rem; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+    </div>
+
+    <!-- Start Overlay -->
+    <div class="start-overlay" id="startOverlay">
+        <div class="start-card">
+            <div class="start-orb">✨</div>
+            <h2 class="start-title">AI Companion Session</h2>
+            <p class="start-desc">A relaxed, friendly conversation to understand your social and communication style. No right or wrong answers — just be yourself.</p>
+            <div class="feature-list">
+                <div class="feature-item"><div class="feature-dot">🗣</div> Answer naturally — type whatever comes to mind</div>
+                <div class="feature-item"><div class="feature-dot">⏱</div> Take your time, no pressure</div>
+                <div class="feature-item"><div class="feature-dot">🔒</div> Your responses stay private and secure</div>
+                <div class="feature-item"><div class="feature-dot">🤖</div> AI-powered behavioral pattern analysis</div>
+            </div>
+            <button class="btn btn-primary" onclick="startSession()" style="width:100%;">Start Conversation →</button>
+        </div>
+    </div>
+
+    <!-- Chat App -->
+    <div class="app" id="chatApp" style="display:none;">
+        <div class="header">
+            <div class="header-left">
+                <div class="ai-avatar">🤖</div>
+                <div class="header-info">
+                    <h1>Aria</h1>
+                    <p><span class="status-dot"></span> AI Companion Online</p>
+                </div>
+            </div>
+            <div class="progress-pill" id="progressPill">Question 1 of 10</div>
+        </div>
+
+        <div class="chat-container" id="chatContainer"></div>
+
+        <div class="input-area" id="inputArea">
+            <textarea class="input-box" id="userInput" rows="1" placeholder="Type your answer here..." onkeydown="handleKey(event)"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="submitAnswer()">➤</button>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="result-screen" id="resultScreen">
+        <div class="result-card">
+            <div class="result-icon" id="resultIcon">📊</div>
+            <h2 class="result-title" id="resultTitle">Analysis Complete</h2>
+            <p class="result-subtitle" id="resultSubtitle">Your conversation has been analyzed.</p>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">Risk Level</div>
+                    <div class="metric-value" id="riskValue">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Confidence</div>
+                    <div class="metric-value" id="confidenceValue">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Avg Response</div>
+                    <div class="metric-value" id="responseTimeValue">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Social Score</div>
+                    <div class="metric-value" id="socialScoreValue">—</div>
+                </div>
+            </div>
+
+            <p style="font-size:0.85rem;color:var(--text-soft);line-height:1.6;margin-bottom:1.5rem;" id="resultDescription"></p>
+
+            <button class="btn btn-primary" onclick="downloadReport()">📥 Download Report</button>
+            <a href="dashboard.html" class="btn btn-outline">← Back to Dashboard</a>
+            <a href="consult-doctor.html" class="btn btn-outline" style="border-color:var(--accent-coral);color:var(--accent-coral);">🩺 Consult a Doctor</a>
+
+            <p class="disclaimer">⚠ This is an AI-assisted behavioral screening tool, not a clinical diagnosis. Please consult a licensed professional for formal evaluation.</p>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // QUESTION BANK — ASD Teen Screening (12-16)
+        // ========================
+        const QUESTIONS = [
+            {
+                id: 'intro',
+                text: "Hey there! I'm Aria, your AI companion. Let's have a relaxed chat — no pressure at all. How are you feeling right now?",
+                type: 'open',
+                chips: ["Pretty good", "A bit tired", "Okay I guess", "Not sure"],
+                analysis: 'emotional_awareness'
+            },
+            {
+                id: 'party',
+                text: "Imagine you're at a party with loud music, bright lights, and lots of people talking at once. What goes through your mind?",
+                type: 'open',
+                chips: ["I'd love it!", "I'd feel overwhelmed", "I'd find a quiet corner", "I'd leave early"],
+                analysis: 'sensory_social'
+            },
+            {
+                id: 'friend_cancel',
+                text: "Your best friend cancels plans last minute — you were really looking forward to it. What's your first reaction?",
+                type: 'open',
+                chips: ["No problem, stuff happens", "I'd feel really upset", "I'd need to reschedule immediately", "I'd rather stay home anyway"],
+                analysis: 'change_tolerance'
+            },
+            {
+                id: 'special_interest',
+                text: "Everyone has something they geek out over. Is there a topic, game, show, or hobby you could talk about for hours without getting bored?",
+                type: 'open',
+                chips: ["Yes, definitely!", "A few things", "Not really", "I prefer variety"],
+                analysis: 'special_interests'
+            },
+            {
+                id: 'sarcasm',
+                text: "If someone says 'Oh great, another Monday' with a flat voice and eye roll, what do they actually mean?",
+                type: 'open',
+                chips: ["They hate Mondays", "They're being sarcastic", "They're excited", "I'm not sure"],
+                analysis: 'social_communication'
+            },
+            {
+                id: 'eye_contact',
+                text: "When you're having a conversation, how do you feel about making eye contact?",
+                type: 'open',
+                chips: ["Comfortable", "A bit awkward", "I avoid it", "I don't notice"],
+                analysis: 'social_behavior'
+            },
+            {
+                id: 'weekend',
+                text: "You have a completely free Saturday. Would you rather hang out with a group of friends or spend the day doing your favorite solo activity?",
+                type: 'open',
+                chips: ["Group of friends", "Solo activity", "A mix of both", "Depends on my mood"],
+                analysis: 'social_preference'
+            },
+            {
+                id: 'stress',
+                text: "When you're feeling stressed or anxious, what usually helps you feel better?",
+                type: 'open',
+                chips: ["Talking to someone", "Being alone", "A specific routine", "Physical activity"],
+                analysis: 'self_regulation'
+            },
+            {
+                id: 'joke',
+                text: "Your teacher says 'I love grading tests on Friday nights' with a straight face. How do you interpret that?",
+                type: 'open',
+                chips: ["They really enjoy it", "They're joking", "They sound serious", "I'm confused"],
+                analysis: 'literal_thinking'
+            },
+            {
+                id: 'routine',
+                text: "How do you feel when your daily routine gets unexpectedly disrupted — like a class being cancelled or plans changing?",
+                type: 'open',
+                chips: ["I adapt easily", "It bothers me a bit", "I feel very uncomfortable", "I make a new plan immediately"],
+                analysis: 'routine_preference'
+            }
+        ];
+
+        // ========================
+        // STATE
+        // ========================
+        let currentQ = 0;
+        let answers = [];
+        let startTime = 0;
+        let isTyping = false;
+        let sessionStart = Date.now();
+
+        // ========================
+        // START SESSION
+        // ========================
+        function startSession() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('chatApp').style.display = 'flex';
+            sessionStart = Date.now();
+            setTimeout(() => showQuestion(0), 400);
+        }
+
+        // ========================
+        // CHAT UI
+        // ========================
+        function addAIMessage(text, withTyping = true) {
+            const container = document.getElementById('chatContainer');
+
+            if (withTyping) {
+                const typingId = 'typing-' + Date.now();
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message msg-ai';
+                typingDiv.id = typingId;
+                typingDiv.innerHTML = `
+                    <div class="bubble bubble-ai typing">
+                        <span></span><span></span><span></span>
+                    </div>
+                `;
+                container.appendChild(typingDiv);
+                container.scrollTop = container.scrollHeight;
+
+                const delay = Math.min(800 + text.length * 15, 2500);
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        typingDiv.remove();
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'message msg-ai';
+                        msgDiv.innerHTML = `<div class="bubble bubble-ai">${text}</div><div class="msg-meta">Aria • Just now</div>`;
+                        container.appendChild(msgDiv);
+                        container.scrollTop = container.scrollHeight;
+                        resolve();
+                    }, delay);
+                });
+            } else {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message msg-ai';
+                msgDiv.innerHTML = `<div class="bubble bubble-ai">${text}</div><div class="msg-meta">Aria • Just now</div>`;
+                container.appendChild(msgDiv);
+                container.scrollTop = container.scrollHeight;
+                return Promise.resolve();
+            }
+        }
+
+        function addUserMessage(text) {
+            const container = document.getElementById('chatContainer');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message msg-user';
+            msgDiv.innerHTML = `<div class="bubble bubble-user">${escapeHtml(text)}</div><div class="msg-meta">You</div>`;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addChips(options) {
+            const container = document.getElementById('chatContainer');
+            const chipsDiv = document.createElement('div');
+            chipsDiv.className = 'chips';
+            chipsDiv.id = 'activeChips';
+            options.forEach(opt => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.textContent = opt;
+                chip.onclick = () => {
+                    document.getElementById('userInput').value = opt;
+                    submitAnswer();
+                };
+                chipsDiv.appendChild(chip);
+            });
+            container.appendChild(chipsDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeChips() {
+            const chips = document.getElementById('activeChips');
+            if (chips) chips.remove();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========================
+        // QUESTION FLOW
+        // ========================
+        async function showQuestion(index) {
+            if (index >= QUESTIONS.length) {
+                finishSession();
+                return;
+            }
+            currentQ = index;
+            document.getElementById('progressPill').textContent = `Question ${index + 1} of ${QUESTIONS.length}`;
+
+            const q = QUESTIONS[index];
+            await addAIMessage(q.text, true);
+            addChips(q.chips);
+
+            startTime = Date.now();
+            document.getElementById('userInput').focus();
+            isTyping = false;
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitAnswer();
+            }
+        }
+
+        function submitAnswer() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text || isTyping) return;
+
+            isTyping = true;
+            const responseTime = (Date.now() - startTime) / 1000;
+
+            removeChips();
+            addUserMessage(text);
+            input.value = '';
+            input.style.height = 'auto';
+
+            answers.push({
+                questionId: QUESTIONS[currentQ].id,
+                question: QUESTIONS[currentQ].text,
+                answer: text,
+                responseTime: responseTime,
+                analysisType: QUESTIONS[currentQ].analysis,
+                wordCount: text.split(/\s+/).filter(w => w.length > 0).length
+            });
+
+            // Small pause before next question
+            setTimeout(() => {
+                showQuestion(currentQ + 1);
+            }, 600);
+        }
+
+        // Auto-resize textarea
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // ========================
+        // ASD ANALYSIS ENGINE
+        // ========================
+        function analyzeResponses() {
+            let asdIndicators = 0;
+            let totalIndicators = 0;
+            let socialScore = 50; // 0-100, higher = more social
+            let hesitationScore = 0;
+            let emotionalConsistency = 0;
+            let stressIndicators = 0;
+
+            const keywordMap = {
+                sensory_social: {
+                    positive: ['love', 'enjoy', 'fun', 'exciting', 'great', 'awesome'],
+                    negative: ['overwhelmed', 'too much', 'loud', 'bright', 'annoying', 'leave', 'corner', 'escape', 'anxious', 'stress']
+                },
+                change_tolerance: {
+                    rigid: ['upset', 'devastated', 'angry', 'need', 'immediately', 'reschedule', 'not fair', 'ruined'],
+                    flexible: ['okay', 'fine', 'no problem', 'stuff happens', 'next time', 'adapt']
+                },
+                special_interests: {
+                    intense: ['hours', 'forever', 'obsessed', 'expert', 'everything', 'all day', 'nonstop', 'always'],
+                    mild: ['variety', 'few things', 'sometimes', 'not really', 'depends']
+                },
+                social_communication: {
+                    literal: ['excited', 'great', 'love', 'happy', 'enjoy', 'serious'],
+                    inferred: ['sarcastic', 'joking', 'mean', 'upset', 'hate', 'annoyed']
+                },
+                social_behavior: {
+                    avoidant: ['avoid', 'awkward', 'uncomfortable', 'stare', 'look away', 'ground'],
+                    comfortable: ['comfortable', 'easy', 'natural', 'fine', 'normal']
+                },
+                social_preference: {
+                    solo: ['solo', 'alone', 'myself', 'quiet', 'home', 'prefer', 'rather'],
+                    group: ['friends', 'group', 'hang out', 'together', 'people', 'social']
+                },
+                self_regulation: {
+                    routine: ['routine', 'same', 'familiar', 'pattern', 'organized', 'specific'],
+                    adaptive: ['talk', 'exercise', 'music', 'walk', 'flexible', 'calm down']
+                },
+                literal_thinking: {
+                    literal: ['enjoy', 'love', 'serious', 'really', ' grading', 'actually'],
+                    figurative: ['joking', 'sarcastic', 'irony', 'not serious', 'funny']
+                },
+                routine_preference: {
+                    rigid: ['uncomfortable', 'bother', 'hate', 'need', 'plan', 'anxious', 'stress', 'disrupt'],
+                    flexible: ['adapt', 'easy', 'fine', 'okay', 'go with', 'spontaneous']
+                }
+            };
+
+            answers.forEach(a => {
+                const lower = a.answer.toLowerCase();
+                const type = a.analysisType;
+                const map = keywordMap[type];
+                if (!map) return;
+
+                totalIndicators++;
+
+                // Check for ASD-positive indicators
+                let hasPositive = false;
+                let hasNegative = false;
+
+                Object.keys(map).forEach(key => {
+                    const keywords = map[key];
+                    const match = keywords.some(k => lower.includes(k));
+                    if (match) {
+                        if (key === 'negative' || key === 'rigid' || key === 'intense' || key === 'literal' || 
+                            key === 'avoidant' || key === 'solo' || key === 'routine') {
+                            hasNegative = true;
+                        }
+                        if (key === 'positive' || key === 'flexible' || key === 'mild' || key === 'inferred' || 
+                            key === 'comfortable' || key === 'group' || key === 'adaptive' || key === 'figurative') {
+                            hasPositive = true;
+                        }
+                    }
+                });
+
+                if (hasNegative) asdIndicators++;
+
+                // Social score adjustment
+                if (type === 'social_preference' && hasPositive) socialScore += 8;
+                if (type === 'social_preference' && hasNegative) socialScore -= 10;
+                if (type === 'social_behavior' && hasPositive) socialScore += 6;
+                if (type === 'social_behavior' && hasNegative) socialScore -= 8;
+                if (type === 'sensory_social' && hasPositive) socialScore += 5;
+                if (type === 'sensory_social' && hasNegative) socialScore -= 7;
+
+                // Hesitation
+                if (a.responseTime > 8) hesitationScore += 1;
+                if (a.wordCount < 3) hesitationScore += 0.5;
+
+                // Stress
+                if (lower.includes('stress') || lower.includes('anxious') || lower.includes('overwhelmed') || 
+                    lower.includes('uncomfortable') || lower.includes('hate')) {
+                    stressIndicators++;
+                }
+            });
+
+            // Normalize scores
+            socialScore = Math.max(10, Math.min(95, socialScore));
+            const riskRatio = totalIndicators > 0 ? asdIndicators / totalIndicators : 0;
+            const hesitationRatio = answers.length > 0 ? hesitationScore / answers.length : 0;
+
+            let riskTier, riskLabel, description, icon;
+
+            if (riskRatio < 0.25 && socialScore > 60) {
+                riskTier = 'low';
+                riskLabel = 'Low Risk';
+                icon = '🌿';
+                description = "Your responses show strong social flexibility, comfortable communication patterns, and adaptive emotional regulation. These are positive indicators of typical neurodevelopmental social processing.";
+            } else if (riskRatio < 0.45 && socialScore > 45) {
+                riskTier = 'moderate';
+                riskLabel = 'Moderate Risk';
+                icon = '⚡';
+                description = "Some patterns suggest mild social or sensory preferences that differ from typical norms. This could indicate nuanced neurodivergent traits worth exploring further with a professional.";
+            } else {
+                riskTier = 'high';
+                riskLabel = 'High Risk';
+                icon = '🔍';
+                description = "Multiple indicators suggest significant differences in social communication, sensory processing, or routine preference patterns commonly associated with ASD. A professional evaluation is strongly recommended.";
+            }
+
+            const confidence = Math.min(95, Math.round(65 + (answers.length * 2) + (riskRatio * 20)));
+            const avgResponse = answers.length > 0 ? Math.round(answers.reduce((a,b) => a + b.responseTime, 0) / answers.length) : 0;
+
+            return {
+                riskTier,
+                riskLabel,
+                description,
+                icon,
+                confidence: confidence + '%',
+                avgResponse: avgResponse + 's',
+                socialScore: Math.round(socialScore) + '/100',
+                rawSocial: Math.round(socialScore),
+                stressIndicators,
+                hesitationRatio: Math.round(hesitationRatio * 100)
+            };
+        }
+
+        // ========================
+        // FINISH & RESULTS
+        // ========================
+        async function finishSession() {
+            document.getElementById('chatApp').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'flex';
+
+            const result = analyzeResponses();
+
+            document.getElementById('resultIcon').textContent = result.icon;
+            document.getElementById('resultTitle').textContent = result.riskLabel;
+            document.getElementById('resultTitle').className = 'result-title risk-' + result.riskTier;
+            document.getElementById('resultSubtitle').textContent = `Based on ${answers.length} conversation responses`;
+            document.getElementById('resultDescription').textContent = result.description;
+
+            document.getElementById('riskValue').textContent = result.riskLabel;
+            document.getElementById('riskValue').className = 'metric-value risk-' + result.riskTier;
+            document.getElementById('confidenceValue').textContent = result.confidence;
+            document.getElementById('responseTimeValue').textContent = result.avgResponse;
+            document.getElementById('socialScoreValue').textContent = result.socialScore;
+
+            // Save to localStorage for dashboard
+            saveResult(result);
+        }
+
+        function saveResult(result) {
+            const patientId = 'NS-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            const record = {
+                patient_id: patientId,
+                name: 'Teen Session',
+                age: 14,
+                module: 'Voice Interaction (Ages 12–16)',
+                status: 'complete',
+                risk_tier: result.riskLabel,
+                date: new Date().toLocaleDateString(),
+                created_at: new Date().toISOString(),
+                assigned_module: 'VoiceInteractionModule',
+                game_file: 'game3.html',
+                responses: answers.length,
+                social_score: result.rawSocial,
+                confidence: result.confidence,
+                avg_response_time: result.avgResponse
+            };
+
+            const history = JSON.parse(localStorage.getItem('ns_history') || '[]');
+            history.push(record);
+            localStorage.setItem('ns_history', JSON.stringify(history));
+
+            // Mark ownership
+            const user = JSON.parse(localStorage.getItem('ns_user') || '{}');
+            const email = (user.email || 'anonymous').toLowerCase();
+            const owned = JSON.parse(localStorage.getItem('ns_owned_patients') || '{}');
+            owned[patientId] = email;
+            localStorage.setItem('ns_owned_patients', JSON.stringify(owned));
+        }
+
+        function saveAndExit() {
+            window.location.href = 'dashboard.html';
+        }
+
+        async function downloadReport() {
+            const card = document.querySelector('.result-card');
+            const btn = document.querySelector('button[onclick="downloadReport()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Generating…';
+            btn.disabled = true;
+
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 2,
+                    backgroundColor: '#f0f4ff',
+                    useCORS: true,
+                    logging: false
+                });
+
+                const link = document.createElement('a');
+                link.download = 'NeuroStrat_Report_' + new Date().toISOString().slice(0,10) + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                alert('Could not generate image. Please try again.');
+                console.error(err);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

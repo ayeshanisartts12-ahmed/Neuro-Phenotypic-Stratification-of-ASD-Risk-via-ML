@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Results — NeuroStrat AI</title>
+    <meta name="description" content="View your AI-powered ASD behavioral risk stratification report on NeuroStrat AI.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Result page specific styles ── */
+        .result-hero {
+            padding: 2rem; border-radius: var(--radius);
+            margin-bottom: 1.5rem; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .result-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, rgba(124,58,237,.15), transparent 70%);
+        }
+        .risk-score-ring { margin: 0 auto 1.5rem; }
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem; margin-bottom: 1.5rem;
+        }
+        .analysis-card {
+            padding: 1.25rem; border-radius: var(--radius);
+            border: 1px solid var(--glass-border); background: var(--card);
+        }
+        .analysis-card h4 {
+            font-size: .85rem; color: var(--text-sec);
+            margin-bottom: 1rem; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .metric-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: .5rem 0; border-bottom: 1px solid rgba(255,255,255,.04);
+        }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-label { font-size: .85rem; color: var(--text-sec); }
+        .metric-value { font-size: .9rem; font-weight: 600; }
+        .referral-card {
+            padding: 1.5rem; border-radius: var(--radius);
+            border: 1px solid rgba(59,130,246,.25);
+            background: rgba(59,130,246,.05);
+        }
+        .disclaimer-box {
+            padding: 1rem 1.25rem; border-radius: var(--radius-sm);
+            border: 1px solid rgba(245,158,11,.2);
+            background: rgba(245,158,11,.05);
+            color: var(--warning); font-size: .8rem; margin-top: 1.5rem;
+        }
+        @keyframes resultPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+        .result-hero .risk-badge { font-size: 1.2rem; padding: .6rem 2rem; animation: resultPulse 3s infinite; }
+
+        /* ── Component score bars inside result ── */
+        .comp-score-bar { margin-bottom: .75rem; }
+        .comp-score-label { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: .3rem; }
+        .comp-score-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.06); overflow: hidden; }
+        .comp-score-fill  { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+        /* ── Loading state ── */
+        #loading-state { text-align: center; padding: 4rem 2rem; }
+        .loading-ring { width: 60px; height: 60px; border: 3px solid rgba(124,58,237,.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span></div>
+    <nav><ul class="nav-menu">
+        <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+        <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+        <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+        <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+        <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+        <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul></nav>
+    <div class="sidebar-footer"><button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button></div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>AI Stratification Report</h2>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-sm btn-outline" onclick="downloadReport()">⬇ Download PDF</button>
+            <div class="user-avatar" data-user-avatar>U</div>
+        </div>
+    </header>
+
+    <div class="page-content" id="report-content">
+
+        <!-- Loading state shown while fetching from API -->
+        <div id="loading-state">
+            <div class="loading-ring"></div>
+            <p style="color:var(--text-sec);">Loading AI report…</p>
+            <p style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem;" id="loading-detail">Fetching results from backend…</p>
+        </div>
+
+        <!-- Report (hidden until data loaded) -->
+        <div id="report-body" style="display:none;">
+
+            <!-- Risk Hero -->
+            <div class="result-hero glass reveal" id="result-hero">
+                <p style="color:var(--text-sec);font-size:.85rem;margin-bottom:.5rem;">ASD RISK STRATIFICATION RESULT</p>
+                <div class="risk-badge" id="result-risk-badge">Analyzing…</div>
+                <p style="color:var(--text-sec);margin:1rem 0 .5rem;" id="result-name-line">Loading patient data…</p>
+            </div>
+
+            <!-- Top Metrics Row -->
+            <div style="display:grid;grid-template-columns:200px 1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;" class="reveal">
+                <!-- Confidence Circle -->
+                <div class="card text-center" style="padding:1.5rem;">
+                    <p style="font-size:.8rem;color:var(--text-sec);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.5px;">AI Confidence</p>
+                    <div class="circular-progress risk-score-ring">
+                        <svg viewBox="0 0 100 100">
+                            <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs>
+                            <circle class="bg-ring" cx="50" cy="50" r="45"/>
+                            <circle class="progress-ring" cx="50" cy="50" r="45" id="conf-circle"/>
+                        </svg>
+                        <div class="value" id="conf-value">0%</div>
+                    </div>
+                </div>
+
+                <!-- Behavioral Summary -->
+                <div class="analysis-card">
+                    <h4>Behavioral Analysis</h4>
+                    <div id="behavioral-metrics"></div>
+                </div>
+
+                <!-- Communication Analysis -->
+                <div class="analysis-card">
+                    <h4>Communication Analysis</h4>
+                    <div id="communication-metrics"></div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;" class="reveal">
+                <!-- Component Scores -->
+                <div class="chart-container">
+                    <h3 style="font-size:1rem;margin-bottom:1rem;">Neuro-Phenotypic Component Scores</h3>
+                    <div id="component-scores-chart"></div>
+                </div>
+                <!-- Radar Chart -->
+                <div class="analysis-card">
+                    <h4>Multi-Domain Radar Profile</h4>
+                    <canvas id="radar-canvas" width="220" height="220" style="display:block;margin:0 auto;"></canvas>
+                </div>
+            </div>
+
+            <!-- Analysis Cards Grid -->
+            <div class="analysis-grid reveal">
+                <div class="analysis-card">
+                    <h4>Emotional Analysis</h4>
+                    <div id="emotional-metrics"></div>
+                </div>
+                <div class="analysis-card">
+                    <h4>Cognitive Flexibility</h4>
+                    <div id="cognitive-metrics"></div>
+                </div>
+                <div class="analysis-card">
+                    <h4>Attention Indicators</h4>
+                    <div id="attention-metrics"></div>
+                </div>
+            </div>
+
+            <!-- Flagged Areas & Strengths -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;" class="reveal">
+                <div class="analysis-card">
+                    <h4>⚑ Clinical Flag Areas</h4>
+                    <div id="flag-list"></div>
+                </div>
+                <div class="analysis-card">
+                    <h4>★ Identified Strengths</h4>
+                    <div id="strength-list"></div>
+                </div>
+            </div>
+
+            <!-- Clinical Recommendation -->
+            <div class="referral-card reveal">
+                <h3 style="margin-bottom:1rem;">Clinical Recommendation</h3>
+                <p id="recommendation-text" style="color:var(--text-sec);line-height:1.7;margin-bottom:1.25rem;"></p>
+                <div id="referral-section"></div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer-box reveal">
+                ⚠ <strong>Disclaimer:</strong> This platform provides AI-assisted behavioral risk stratification and is not a substitute for professional clinical diagnosis. All results must be reviewed by a qualified healthcare professional before any clinical decisions are made.
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;" class="reveal" id="report-actions">
+                <!-- Download button injected by renderReport based on ownership -->
+                <a href="consult-doctor.html" class="btn btn-primary" style="background:var(--primary);color:#fff;border-color:var(--primary);">🩺 Consult a Doctor</a>
+                <a href="register.html" class="btn btn-glass">+ New Screening</a>
+                <a href="dashboard.html" class="btn btn-outline">← Dashboard</a>
+            </div>
+
+        </div><!-- /#report-body -->
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+/**
+ * NeuroStrat AI — Results Page Logic
+ * ====================================
+ * Fetches the AI report from the backend using the patient_id from the URL
+ * query string (e.g. results.html?id=NS-A3F7C2), or falls back to localStorage.
+ * Renders all charts, metrics, and recommendation text dynamically.
+ */
+
+const API_BASE = 'http://localhost:8000';  // FastAPI backend URL
+
+// Holds the loaded report data for use by downloadReport()
+let reportData = null;
+
+// ── Entry point ───────────────────────────────────────────────────────────────
+
+// == Ownership Helpers ==
+
+/**
+ * Returns the email of the currently logged-in user (lowercase).
+ */
+function getCurrentUserEmail() {
+    const user = JSON.parse(localStorage.getItem('ns_user') || '{}');
+    return (user.email || '').trim().toLowerCase();
+}
+
+/**
+ * Returns true if the current user owns the given patient record.
+ * Ownership is stored in localStorage 'ns_owned_patients' as { patient_id: owner_email }.
+ */
+function isOwnerOfPatient(patientId) {
+    const currentEmail = getCurrentUserEmail();
+    if (!currentEmail) return false;
+    const owned = JSON.parse(localStorage.getItem('ns_owned_patients') || '{}');
+    return (owned[patientId] || '').toLowerCase() === currentEmail;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Try to get patient ID from URL query string first, then localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientId = urlParams.get('id') ||
+        JSON.parse(localStorage.getItem('ns_current_screening') || '{}').patient_id;
+
+    const loadingDetail = document.getElementById('loading-detail');
+
+    if (!patientId) {
+        // No patient ID: fall back to localStorage demo data
+        loadingDetail.textContent = 'No patient ID found. Loading demo data…';
+        setTimeout(() => renderFromLocalStorage(), 800);
+        return;
+    }
+
+    // Attempt to fetch from the real backend API
+    loadingDetail.textContent = `Loading report for patient ${patientId}…`;
+
+    try {
+        const resp = await fetch(`${API_BASE}/api/result/${patientId}`);
+
+        if (resp.status === 202) {
+            // Session still in progress
+            loadingDetail.textContent = 'Session still in progress. Complete the game first.';
+            document.getElementById('loading-state').innerHTML = `
+                <div style="font-size:3rem;margin-bottom:1rem;">⏳</div>
+                <p style="color:var(--text-sec);">Screening session is still running.</p>
+                <p style="font-size:.85rem;color:var(--text-muted);margin-top:.5rem;">
+                    Please complete all tasks in the game window. This page will auto-reload in 10s.
+                </p>
+                <a href="register.html" class="btn btn-glass" style="margin-top:1.5rem;">← Back to Register</a>`;
+            setTimeout(() => window.location.reload(), 10000);
+            return;
+        }
+
+        if (!resp.ok) {
+            // Backend returned an error — fall back to localStorage
+            console.warn('Backend error, falling back to localStorage.');
+            renderFromLocalStorage();
+            return;
+        }
+
+        const raw = await resp.json();
+        // Backend returns {patient, result, tasks} — normalize into flat format
+        reportData = normalizeBackendData(raw, patientId);
+        renderReport(reportData);
+
+    } catch (err) {
+        // Backend not reachable — fall back to localStorage demo data
+        console.warn('Backend not reachable:', err.message, '— using localStorage demo data.');
+        loadingDetail.textContent = 'Showing demo data from localStorage.';
+        setTimeout(() => renderFromLocalStorage(), 600);
+    }
+});
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Data Normalization
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Normalizes the nested backend response {patient, result, tasks} into the
+ * flat structure expected by renderReport().
+ */
+function normalizeBackendData(raw, patientId) {
+    const p = raw.patient || {};
+    const r = raw.result  || {};
+    const rawScores = r.raw_scores || {};
+
+    // Build component_scores from domain raw_scores (0-100 → 0-1)
+    const component_scores = {};
+    const domainMap = {
+        social_communication: 'social_communication_score',
+        repetitive_behaviors: 'repetitive_behaviors_score',
+        sensory_processing:   'sensory_processing_score',
+        cognitive_flexibility:'cognitive_flexibility_score',
+    };
+    Object.entries(rawScores).forEach(([k, v]) => {
+        component_scores[domainMap[k] || k] = v / 100;
+    });
+
+    return {
+        patient_id:      p.patient_id  || patientId,
+        patient_name:    p.name        || 'Patient',
+        patient_age:     p.age         || '—',
+        module:          p.module_label || `Module ${p.module_id}`,
+        risk:            r.risk_tier   || 'Moderate Risk',
+        confidence:      r.confidence_pct || 87,
+        composite_score: (r.weighted_score || 50) / 100,
+        flag_areas:      r.flags        || [],
+        strength_areas:  identifyStrengths(rawScores),
+        component_scores,
+        raw_scores:      rawScores,
+        screening_date:  p.completed_at
+            ? new Date(p.completed_at).toLocaleDateString()
+            : new Date().toLocaleDateString(),
+    };
+}
+
+/**
+ * Derives strength areas from raw domain scores (low scores = lower ASD risk in that domain).
+ */
+function identifyStrengths(rawScores) {
+    const strengths = [];
+    const labelMap = {
+        social_communication: 'Social Communication',
+        repetitive_behaviors: 'Behavioral Consistency',
+        sensory_processing:   'Sensory Processing',
+        cognitive_flexibility:'Cognitive Flexibility',
+    };
+    Object.entries(rawScores).forEach(([k, v]) => {
+        if (v < 35) strengths.push(labelMap[k] || k);
+    });
+    return strengths;
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Rendering Functions
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Falls back to localStorage data (from the register page simulation).
+ * Used when the backend is not running or patient ID is unavailable.
+ */
+function renderFromLocalStorage() {
+    const screening = JSON.parse(localStorage.getItem('ns_current_screening') || '{}');
+    const rawScores = screening.domains || {};
+
+    const component_scores = {};
+    const domainMap = {
+        social_communication: 'social_communication_score',
+        repetitive_behaviors: 'repetitive_behaviors_score',
+        sensory_processing:   'sensory_processing_score',
+        cognitive_flexibility:'cognitive_flexibility_score',
+    };
+    Object.entries(rawScores).forEach(([k, v]) => {
+        component_scores[domainMap[k] || k] = v / 100;
+    });
+    if (!Object.keys(component_scores).length) {
+        component_scores.social_communication_score = 0.42;
+        component_scores.repetitive_behaviors_score = 0.58;
+        component_scores.sensory_processing_score   = 0.51;
+        component_scores.cognitive_flexibility_score= 0.38;
+    }
+
+    const fakeReport = {
+        patient_id:      screening.patient_id || 'NS-DEMO',
+        patient_name:    screening.name || 'Demo Patient',
+        patient_age:     screening.age || 25,
+        module:          screening.module || 'Cognitive Interaction',
+        risk:            screening.risk || 'Moderate Risk',
+        confidence:      screening.confidence || 87,
+        composite_score: screening.composite_score || 0.48,
+        flag_areas:      screening.flags || ['Social Awareness', 'Response Latency'],
+        strength_areas:  identifyStrengths(rawScores),
+        component_scores,
+        raw_scores:      rawScores,
+        screening_date:  new Date().toLocaleDateString(),
+    };
+    function saveToHistory(data) {
+    // Don't save demo records
+    if (!data.patient_id || data.patient_id === 'NS-DEMO') return;
+
+    const record = {
+        patient_id: data.patient_id,
+        id:         data.patient_id,
+        name:       data.patient_name || data.name || 'Patient',
+        age:        data.patient_age  || '—',
+        risk:       data.risk         || 'Pending',
+        module:     data.module       || '—',
+        group:      data.module       || '—',
+        date:       data.screening_date || new Date().toLocaleDateString(),
+        status:     'complete',
+        confidence: data.confidence   || null,
+    };
+
+    // Use script.js helpers if available, otherwise write directly
+    if (typeof pushUserHistory === 'function') {
+        // Avoid duplicate entries for the same patient_id
+        const existing = (typeof getUserHistory === 'function') ? getUserHistory() : [];
+        if (!existing.some(r => r.patient_id === record.patient_id)) {
+            pushUserHistory(record);
+        }
+    } else {
+        const user  = JSON.parse(localStorage.getItem('ns_user') || '{}');
+        const email = (user.email || 'guest').trim().toLowerCase();
+        const key   = `ns_history_${email}`;
+        const hist  = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!hist.some(r => r.patient_id === record.patient_id)) {
+            hist.unshift(record);
+            localStorage.setItem(key, JSON.stringify(hist));
+        }
+    }
+}
+    renderReport(fakeReport);
+}
+
+/**
+ * Main render function — populates all page sections with API data.
+ * @param {Object} data - Report data from /api/result/{patient_id} or localStorage fallback.
+ */
+function renderReport(data) {
+    // Hide loading, show report body
+    saveToHistory(data);
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('report-body').style.display = 'block';
+
+    const risk       = data.risk || data.risk_tier || 'Moderate Risk';
+    const confidence = data.confidence || data.confidence_pct || 87;
+    const patId      = data.patient_id || '';
+    const owner      = isOwnerOfPatient(patId);
+    // Only the owner sees real name; others see restricted placeholder
+    const name       = owner ? (data.patient_name || data.name || 'Patient') : 'Patient (Restricted)';
+    const riskKey    = risk.toLowerCase().replace(' ', '-');
+
+    // Show access restriction notice for non-owners (real patient records only)
+    if (!owner && patId && patId !== 'NS-DEMO') {
+        const existing = document.getElementById('access-restriction-notice');
+        if (!existing) {
+            const notice = document.createElement('div');
+            notice.id = 'access-restriction-notice';
+            notice.style.cssText = 'background:rgba(193,123,92,.07);border:1.5px solid rgba(193,123,92,.25);border-radius:10px;padding:.85rem 1.2rem;margin-bottom:1.25rem;font-size:.85rem;color:var(--warning);display:flex;align-items:center;gap:.6rem;';
+            notice.innerHTML = '⚠️ <strong>Restricted view:</strong> You are viewing a public summary. Name, email, and report download are only visible to the account that registered this patient.';
+            document.getElementById('report-body').prepend(notice);
+        }
+    }
+
+    // ── Risk Hero Badge ────────────────────────────────────────────
+    const badge = document.getElementById('result-risk-badge');
+    badge.textContent = risk;
+    badge.className = `risk-badge risk-${riskKey}`;
+
+    // Name/patient line: full details for owner, redacted for others
+    if (owner) {
+        document.getElementById('result-name-line').innerHTML =
+            `Patient: <strong>${name}</strong> &nbsp;|&nbsp; Age: ${data.patient_age || '—'} ` +
+            `&nbsp;|&nbsp; Module: ${data.module || '—'} &nbsp;|&nbsp; Date: ${data.screening_date || new Date().toLocaleDateString()}`;
+    } else {
+        document.getElementById('result-name-line').innerHTML =
+            `Patient ID: <strong style="font-family:monospace;color:var(--primary)">${patId || '—'}</strong>` +
+            ` &nbsp;|&nbsp; Age: ${data.patient_age || '—'}` +
+            ` &nbsp;|&nbsp; Date: ${data.screening_date || new Date().toLocaleDateString()}` +
+            ` &nbsp;<span style="font-size:.76rem;background:rgba(193,123,92,.1);border:1px solid rgba(193,123,92,.25);border-radius:6px;padding:.1rem .5rem;color:var(--warning);">🔒 Name hidden</span>`;
+    }
+
+    // ── Confidence Circle ────────────────────────────────────────────────────
+    const colorMap = {
+        'risk-high':     ['#ef4444', '#b91c1c'],
+        'risk-moderate': ['#f59e0b', '#d97706'],
+        'risk-low':      ['#10b981', '#059669'],
+    };
+    const [c1, c2] = colorMap[riskKey] || colorMap['risk-moderate'];
+    animateCircle('conf-circle', 'conf-value', confidence, c1, c2);
+
+    // ── Behavioral Metrics (derived from risk tier) ──────────────────────────
+    document.getElementById('behavioral-metrics').innerHTML = metricRows([
+        { label: 'Interaction Consistency', value: risk === 'High Risk' ? 'Low' : 'High',       color: risk === 'High Risk' ? 'var(--danger)' : 'var(--success)' },
+        { label: 'Repetitive Patterns',     value: risk === 'High Risk' ? 'Elevated' : 'Minimal', color: risk === 'High Risk' ? 'var(--warning)' : 'var(--success)' },
+        { label: 'Reaction Speed',           value: risk === 'Low Risk' ? 'Normal' : 'Delayed',   color: risk === 'Low Risk' ? 'var(--success)' : 'var(--warning)' },
+        { label: 'Composite Score',          value: (data.composite_score || 0).toFixed(2),       color: 'var(--accent)' },
+    ]);
+
+    // ── Communication Metrics ────────────────────────────────────────────────
+    document.getElementById('communication-metrics').innerHTML = metricRows([
+        { label: 'Speaking Confidence', value: risk === 'High Risk' ? '32%' : '78%',         color: risk === 'High Risk' ? 'var(--danger)' : 'var(--success)' },
+        { label: 'Hesitation Rate',     value: risk === 'High Risk' ? 'High' : 'Low',         color: risk === 'High Risk' ? 'var(--warning)' : 'var(--success)' },
+        { label: 'Communication Flow',  value: risk === 'Low Risk' ? 'Fluent' : 'Disrupted' },
+        { label: 'Stress Indicators',   value: risk === 'High Risk' ? 'Present' : 'Absent',   color: risk === 'High Risk' ? 'var(--danger)' : 'var(--success)' },
+    ]);
+
+    // ── Emotional Metrics ────────────────────────────────────────────────────
+    document.getElementById('emotional-metrics').innerHTML = metricRows([
+        { label: 'Emotion Recognition', value: risk === 'High Risk' ? 'Impaired' : 'Normal' },
+        { label: 'Empathy Score',       value: risk === 'High Risk' ? '22/100' : '74/100' },
+        { label: 'Social Reasoning',    value: risk === 'Moderate Risk' ? 'Developing' : 'Proficient' },
+        { label: 'Adaptability',        value: risk === 'High Risk' ? 'Limited' : 'Good' },
+    ]);
+
+    // ── Cognitive Metrics ────────────────────────────────────────────────────
+    document.getElementById('cognitive-metrics').innerHTML = metricRows([
+        { label: 'Context Switching', value: risk === 'High Risk' ? 'Impaired' : 'Normal' },
+        { label: 'Attention Span',    value: risk === 'Low Risk' ? 'Sustained' : 'Variable' },
+        { label: 'Working Memory',    value: risk === 'High Risk' ? 'Below Avg' : 'Average' },
+        { label: 'Cognitive Flex.',   value: risk === 'High Risk' ? 'Rigid' : 'Flexible' },
+    ]);
+
+    // ── Attention Metrics ────────────────────────────────────────────────────
+    document.getElementById('attention-metrics').innerHTML = metricRows([
+        { label: 'Focus Duration',   value: risk === 'High Risk' ? '< 3 min' : '> 10 min' },
+        { label: 'Task Switching',   value: risk === 'High Risk' ? 'Difficult' : 'Smooth' },
+        { label: 'Distraction Index',value: risk === 'High Risk' ? 'High' : 'Low', color: risk === 'High Risk' ? 'var(--danger)' : 'var(--success)' },
+    ]);
+
+    // ── Component Scores from API (real data) ────────────────────────────────
+    const compScores = data.component_scores || {};
+    const compContainer = document.getElementById('component-scores-chart');
+    compContainer.innerHTML = '';
+
+    const scoreColors = {
+        reaction_time_score: '#7c3aed',
+        accuracy_score:      '#3b82f6',
+        flexibility_score:   '#06b6d4',
+        memory_score:        '#10b981',
+        inhibition_score:    '#f59e0b',
+    };
+
+    Object.entries(compScores).forEach(([key, val]) => {
+        const pct    = Math.round(val * 100);
+        const label  = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const color  = scoreColors[key] || '#7c3aed';
+        const isFlag = val >= 0.55;
+
+        const div = document.createElement('div');
+        div.className = 'comp-score-bar';
+        div.innerHTML = `
+            <div class="comp-score-label">
+                <span style="color:${isFlag ? 'var(--danger)' : 'var(--text-sec)'};">${label}${isFlag ? ' ⚑' : ''}</span>
+                <span style="color:${color};font-weight:600;">${pct}%</span>
+            </div>
+            <div class="comp-score-track">
+                <div class="comp-score-fill" id="csf-${key}" style="width:0%;background:${color};"></div>
+            </div>`;
+        compContainer.appendChild(div);
+        setTimeout(() => {
+            document.getElementById(`csf-${key}`).style.width = pct + '%';
+        }, 300);
+    });
+
+    // ── Flag Areas (from real backend flags) ─────────────────────────────────
+    const flags = data.flag_areas || [];
+    document.getElementById('flag-list').innerHTML = flags.length
+        ? flags.map(f => `<div class="metric-row"><span class="metric-label" style="color:var(--danger);">⚑ ${f}</span></div>`).join('')
+        : '<div class="metric-row"><span class="metric-label" style="color:var(--success);">✓ No clinical flag areas identified</span></div>';
+
+    // ── Strength Areas (domains with low scores = lower ASD concern) ──────────
+    const strengths = data.strength_areas || [];
+    document.getElementById('strength-list').innerHTML = strengths.length
+        ? strengths.map(s => `<div class="metric-row"><span class="metric-label" style="color:var(--success);">★ ${s}</span></div>`).join('')
+        : '<div class="metric-row"><span class="metric-label" style="color:var(--text-muted);">Continue monitoring developmental milestones.</span></div>';
+
+    // ── Radar Chart (use real domain scores when available) ──────────────────
+    const rs = data.raw_scores || {};
+    const radarScores = [
+        rs.social_communication ?? (risk === 'High Risk' ? 75 : risk === 'Moderate Risk' ? 50 : 20),
+        rs.repetitive_behaviors  ?? (risk === 'High Risk' ? 70 : risk === 'Moderate Risk' ? 45 : 15),
+        rs.sensory_processing    ?? (risk === 'High Risk' ? 65 : risk === 'Moderate Risk' ? 55 : 22),
+        rs.cognitive_flexibility ?? (risk === 'High Risk' ? 80 : risk === 'Moderate Risk' ? 52 : 18),
+        // Derive attention and verbal from composite
+        risk === 'High Risk' ? 72 : risk === 'Moderate Risk' ? 48 : 20,
+        risk === 'High Risk' ? 68 : risk === 'Moderate Risk' ? 40 : 25,
+    ];
+    setTimeout(() => drawRadar(document.getElementById('radar-canvas'), radarScores), 500);
+
+    // ── Clinical Recommendation ──────────────────────────────────────────────
+    const recs = {
+        'High Risk':     'Immediate referral to a developmental pediatrician or clinical psychologist is strongly recommended. High probability indicators of ASD detected. Early structured intervention programs should be initiated without delay. Family support services and specialist consultation are advised.',
+        'Moderate Risk': 'Schedule a follow-up clinical assessment within 3 months. Provide caregivers with developmental stimulation resources. Monitor behavioral changes and consider speech/language evaluation. A referral to a developmental specialist for further assessment is recommended.',
+        'Low Risk':      'Routine developmental monitoring is recommended. No immediate clinical intervention required. Continue standard pediatric check-ups and developmental milestones tracking. Re-screening in 12 months or if behavioral concerns arise.',
+    };
+    document.getElementById('recommendation-text').textContent = recs[risk] || recs['Moderate Risk'];
+
+    // ── Referral Cards (High Risk only) ─────────────────────────────────────
+    if (risk === 'High Risk') {
+        document.getElementById('referral-section').innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                <div style="padding:1rem;border-radius:8px;border:1px solid rgba(239,68,68,.2);background:rgba(239,68,68,.05);">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">👨‍⚕️</div>
+                    <strong style="font-size:.9rem;">Developmental Pediatrician</strong>
+                    <p style="font-size:.8rem;color:var(--text-sec);margin-top:.3rem;">Immediate referral recommended</p>
+                </div>
+                <div style="padding:1rem;border-radius:8px;border:1px solid rgba(59,130,246,.2);background:rgba(59,130,246,.05);">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">🧠</div>
+                    <strong style="font-size:.9rem;">Clinical Psychologist</strong>
+                    <p style="font-size:.8rem;color:var(--text-sec);margin-top:.3rem;">Comprehensive behavioral assessment</p>
+                </div>
+                <div style="padding:1rem;border-radius:8px;border:1px solid rgba(124,58,237,.2);background:rgba(124,58,237,.05);">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">🗣️</div>
+                    <strong style="font-size:.9rem;">Speech-Language Therapist</strong>
+                    <p style="font-size:.8rem;color:var(--text-sec);margin-top:.3rem;">Communication evaluation</p>
+                </div>
+            </div>`;
+    }
+
+    // Inject download button: visible only to the report owner
+    const actionsDiv = document.getElementById('report-actions');
+    const existingDl = document.getElementById('download-report-btn');
+    if (existingDl) existingDl.remove();
+    if (actionsDiv) {
+        if (owner) {
+            const dlBtn = document.createElement('button');
+            dlBtn.id = 'download-report-btn';
+            dlBtn.className = 'btn btn-primary';
+            dlBtn.innerHTML = '⬇ Download Full PDF Report';
+            dlBtn.onclick = downloadReport;
+            actionsDiv.prepend(dlBtn);
+        } else {
+            const lockBtn = document.createElement('button');
+            lockBtn.id = 'download-report-btn';
+            lockBtn.className = 'btn btn-outline';
+            lockBtn.disabled = true;
+            lockBtn.style.cssText = 'opacity:.45;cursor:not-allowed;';
+            lockBtn.title = 'Only the registering account can download this report';
+            lockBtn.innerHTML = '🔒 Download (Owner Only)';
+            actionsDiv.prepend(lockBtn);
+        }
+    }
+    // Control topbar download button
+    const topbarDl = document.querySelector('.topbar-right button.btn');
+    if (topbarDl) {
+        if (owner) {
+            topbarDl.style.opacity = ''; topbarDl.style.cursor = '';
+            topbarDl.disabled = false; topbarDl.onclick = downloadReport; topbarDl.title = '';
+        } else {
+            topbarDl.style.opacity = '0.35'; topbarDl.style.cursor = 'not-allowed';
+            topbarDl.disabled = true; topbarDl.title = 'Download available only to the registering account';
+        }
+    }
+}
+
+
+
+/**
+ * Generates HTML metric rows for analysis cards.
+ * @param {Array<{label:string, value:string, color?:string}>} items
+ * @returns {string} HTML string of metric rows.
+ */
+function metricRows(items) {
+    return items.map(m => `
+        <div class="metric-row">
+            <span class="metric-label">${m.label}</span>
+            <span class="metric-value" style="color:${m.color || 'var(--text)'}">${m.value}</span>
+        </div>`).join('');
+}
+
+/**
+ * Draws a hexagonal radar chart on a canvas element.
+ * @param {HTMLCanvasElement} canvas - Target canvas element.
+ * @param {number[]}          scores - Array of 6 percentage values (0–100).
+ */
+function drawRadar(canvas, scores) {
+    const ctx = canvas.getContext('2d');
+    const cx = canvas.width / 2, cy = canvas.height / 2, r = 80;
+    const labels = ['Social', 'Verbal', 'Attention', 'Emotion', 'Cognitive', 'Repetitive'];
+    const n = labels.length;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Grid rings
+    for (let ring = 1; ring <= 4; ring++) {
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+            const x = cx + (r * ring / 4) * Math.cos(angle);
+            const y = cy + (r * ring / 4) * Math.sin(angle);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+        ctx.stroke();
+    }
+
+    // Axes and labels
+    for (let i = 0; i < n; i++) {
+        const angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.stroke();
+        const lx = cx + (r + 20) * Math.cos(angle);
+        const ly = cy + (r + 20) * Math.sin(angle);
+        ctx.fillStyle = 'rgba(148,163,184,0.9)';
+        ctx.font = '10px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(labels[i], lx, ly);
+    }
+
+    // Data polygon fill
+    ctx.beginPath();
+    scores.forEach((s, i) => {
+        const angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+        const x = cx + (r * s / 100) * Math.cos(angle);
+        const y = cy + (r * s / 100) * Math.sin(angle);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(124,58,237,0.25)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(124,58,237,0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Data point dots
+    scores.forEach((s, i) => {
+        const angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+        const x = cx + (r * s / 100) * Math.cos(angle);
+        const y = cy + (r * s / 100) * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#7c3aed';
+        ctx.fill();
+    });
+}
+
+/**
+ * Triggers PDF download via /api/download/{patientId}.
+ * Only the account that registered the patient may download.
+ */
+async function downloadReport() {
+    const patientId = reportData?.patient_id;
+    if (!patientId || patientId === 'NS-DEMO') {
+        showToast('PDF download requires a completed screening session.', 'info');
+        return;
+    }
+    // Ownership gate
+    if (!isOwnerOfPatient(patientId)) {
+        showToast('Access denied. Only the account that registered this patient can download the report.', 'error');
+        return;
+    }
+    try {
+        // Check if PDF is available
+        const check = await fetch(`${API_BASE}/api/result/${patientId}`);
+        if (check.ok) {
+            const d = await check.json();
+            if (d.result?.pdf_available) {
+                showToast('Downloading PDF report…', 'success');
+                window.open(`${API_BASE}/api/download/${patientId}`, '_blank');
+            } else {
+                showToast('PDF report is being generated. Please try again in a moment.', 'warning');
+            }
+        } else {
+            showToast('Could not connect to backend to download PDF.', 'error');
+        }
+    } catch (err) {
+        showToast('Backend not reachable. PDF download unavailable.', 'error');
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Modules & Autism — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: var(--bg); }
+
+        .page-wrapper {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 5rem;
+        }
+
+        /* ── Top bar ── */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;
+        }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .5rem 1.1rem; border-radius: var(--radius-full);
+            border: 1.5px solid var(--border-med); background: var(--card);
+            color: var(--text-sec); font-size: .84rem; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: all .2s;
+        }
+        .back-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-pale); }
+
+        /* ── Hero ── */
+        .hero {
+            background: var(--forest);
+            border-radius: var(--radius);
+            padding: 3rem 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: -80px; right: -80px;
+            width: 340px; height: 340px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(122,158,126,.28) 0%, transparent 65%);
+        }
+        .hero::after {
+            content: '';
+            position: absolute; bottom: -50px; left: 20%;
+            width: 260px; height: 260px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(193,123,92,.18) 0%, transparent 65%);
+        }
+        .hero-inner { position: relative; z-index: 1; }
+        .eyebrow {
+            font-size: .75rem; letter-spacing: .14em; text-transform: uppercase;
+            color: var(--sage); font-weight: 700; font-family: var(--font-ui);
+            margin-bottom: .75rem;
+        }
+        .hero h1 { font-size: clamp(1.8rem, 3.5vw, 2.5rem); color: #EEF4EE; margin-bottom: .9rem; font-weight: 400; line-height: 1.2; }
+        .hero p  { color: rgba(245,242,236,.78); font-size: .97rem; max-width: 660px; line-height: 1.85; }
+        .module-count-badge {
+            display: inline-flex; align-items: center; gap: .5rem;
+            margin-top: 1.5rem; padding: .6rem 1.4rem;
+            border-radius: var(--radius-full);
+            background: rgba(122,158,126,.20);
+            border: 1.5px solid rgba(122,158,126,.40);
+            color: #c6e8c9; font-size: .92rem; font-weight: 700; font-family: var(--font-ui);
+        }
+
+        /* ── TOC ── */
+        .toc {
+            display: flex; flex-wrap: wrap; gap: .5rem;
+            margin-bottom: 2.5rem;
+        }
+        .toc-chip {
+            padding: .38rem 1rem; border-radius: var(--radius-full);
+            border: 1.5px solid var(--border-med); background: var(--card);
+            font-size: .8rem; font-weight: 600; color: var(--text-sec);
+            text-decoration: none; font-family: var(--font-ui);
+            transition: all .2s; cursor: pointer;
+        }
+        .toc-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-pale); }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 1.15rem; font-weight: 700; font-family: var(--font-ui);
+            color: var(--text); margin-bottom: 1.1rem; margin-top: 2.5rem;
+            display: flex; align-items: center; gap: .6rem;
+        }
+        .section-title::after { content:''; flex:1; height:1px; background:var(--border-med); border-radius:1px; }
+
+        /* ── Cards ── */
+        .doc-card {
+            background: var(--card); border: 1.5px solid var(--border);
+            border-radius: var(--radius); padding: 1.6rem;
+            margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);
+        }
+        .doc-card h4 { font-size: 1rem; font-weight: 700; font-family: var(--font-ui); margin-bottom: .6rem; color: var(--text); }
+        .doc-card p  { color: var(--text-sec); font-size: .92rem; line-height: 1.85; margin-bottom: .7rem; }
+        .doc-card p:last-child { margin-bottom: 0; }
+        .doc-card ul { padding-left: 1.3rem; color: var(--text-sec); font-size: .92rem; line-height: 2; }
+
+        /* ── Age module block ── */
+        .age-block {
+            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            scroll-margin-top: 1.5rem;
+        }
+        .age-block-header {
+            display: flex; align-items: center; gap: 1.1rem;
+            padding: 1.3rem 1.6rem;
+            border-bottom: 1.5px solid var(--border);
+        }
+        .age-emoji { font-size: 2rem; flex-shrink: 0; }
+        .age-header-text h3 { font-size: 1.05rem; font-weight: 700; font-family: var(--font-ui); margin-bottom: .2rem; }
+        .age-chip {
+            display: inline-block; padding: .2rem .75rem; border-radius: var(--radius-full);
+            font-size: .75rem; font-weight: 700; font-family: var(--font-ui);
+            background: var(--primary-pale); border: 1px solid rgba(61,107,69,.22);
+            color: var(--primary);
+        }
+        .age-block-body { padding: 1.4rem 1.6rem; }
+        .age-block-body p { color: var(--text-sec); font-size: .92rem; line-height: 1.85; margin-bottom: .75rem; }
+        .age-block-body p:last-child { margin-bottom: 0; }
+
+        /* ── What the module checks ── */
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .7rem; margin: 1rem 0; }
+        .task-chip {
+            padding: .7rem 1rem; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border);
+            font-size: .84rem; color: var(--text-sec); line-height: 1.5;
+        }
+        .task-chip strong { color: var(--text); display: block; font-family: var(--font-ui); font-size: .82rem; margin-bottom: .15rem; }
+
+        /* ── Signs list ── */
+        .signs-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: .65rem; margin: .75rem 0 1rem; }
+        .sign-item {
+            display: flex; gap: .7rem; align-items: flex-start;
+            padding: .75rem .9rem; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border);
+            font-size: .87rem; color: var(--text-sec); line-height: 1.6;
+        }
+        .sign-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: .45rem; }
+
+        /* ── Why this age ── */
+        .why-box {
+            padding: 1rem 1.2rem; border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
+            background: rgba(61,107,69,.06);
+            font-size: .88rem; color: var(--text-sec); line-height: 1.8;
+            margin: .75rem 0;
+        }
+
+        /* ── Info boxes ── */
+        .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        @media (max-width: 640px) { .info-row { grid-template-columns: 1fr; } }
+
+        /* ── Key stat chips ── */
+        .stat-strip { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1rem 0; }
+        .stat-strip-chip {
+            padding: .55rem 1.1rem; border-radius: var(--radius-full);
+            font-size: .82rem; font-weight: 700; font-family: var(--font-ui);
+            background: var(--primary-pale); color: var(--forest);
+            border: 1px solid rgba(61,107,69,.22);
+        }
+
+        /* ── Disclaimer ── */
+        .disclaimer {
+            padding: 1rem 1.25rem; border-radius: var(--radius-sm);
+            border: 1px solid rgba(193,123,92,.25);
+            background: rgba(193,123,92,.06);
+            color: var(--warning); font-size: .82rem; line-height: 1.7;
+            margin-top: 2.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <a href="dashboard.html" class="back-btn">← Dashboard</a>
+        <span style="font-size:.78rem;color:var(--text-muted);">NeuroStrat AI · Age Module Documentation</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-inner">
+            <div class="eyebrow">Understanding Autism Across the Lifespan</div>
+            <h1>How Autism Affects Children &amp; Young Adults — and How NeuroStrat Screens Each Age Group</h1>
+            <p>
+                Autism Spectrum Disorder does not look the same at every age. A 4-year-old shows very different
+                signs from a 17-year-old or a 25-year-old. This page explains, in plain language, how autism
+                develops and presents across each age group — and how each of NeuroStrat AI's five interactive
+                modules is specifically designed to detect those signs.
+            </p>
+            <div class="module-count-badge">✦ &nbsp;5 Age-Adaptive Modules &nbsp;·&nbsp; Ages 4 to 22+</div>
+        </div>
+    </div>
+
+    <!-- Quick navigation -->
+    <div class="toc">
+        <a class="toc-chip" href="#understand">Understanding Autism</a>
+        <a class="toc-chip" href="#age-4-8">Ages 4–8</a>
+        <a class="toc-chip" href="#age-9-12">Ages 9–12</a>
+        <a class="toc-chip" href="#age-12-16">Ages 12–16</a>
+        <a class="toc-chip" href="#age-17-22">Ages 17–22</a>
+        <a class="toc-chip" href="#age-22plus">Ages 22+</a>
+        <a class="toc-chip" href="#why-early">Why Early Detection Matters</a>
+        <a class="toc-chip" href="#how-platform">How the Platform Works</a>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION: WHAT IS AUTISM
+    ══════════════════════════════════════════════════════════ -->
+    <div id="understand" class="section-title">🧠 What Is Autism Spectrum Disorder?</div>
+
+    <div class="doc-card">
+        <p>
+            Autism Spectrum Disorder (ASD) is a <strong>neurodevelopmental condition</strong> — meaning it affects
+            the way the brain grows and develops. It is not an illness, a disease, or something caused by bad
+            parenting. A person with autism simply processes the world differently: how they communicate,
+            how they relate to others, how they experience sensory input, and how they organise their
+            thoughts and behaviors.
+        </p>
+        <p>
+            The word <strong>"spectrum"</strong> is important. Autism looks completely different from one person
+            to the next. Some people with autism are highly verbal and academically gifted; others may have
+            significant challenges with daily communication. The spectrum is wide and varied.
+        </p>
+        <p>
+            What autism-related traits have in common — across the spectrum — are difficulties in three core areas
+            that NeuroStrat AI is specifically designed to measure:
+        </p>
+        <div class="signs-grid" style="margin-top:.75rem;">
+            <div class="sign-item"><div class="sign-dot" style="background:var(--primary);"></div><span><strong>Social communication</strong> — understanding emotions, taking turns in conversation, reading facial expressions, understanding what others are thinking or feeling.</span></div>
+            <div class="sign-item"><div class="sign-dot" style="background:var(--secondary);"></div><span><strong>Repetitive or rigid behaviors</strong> — strong preference for routines, repeating actions or phrases, difficulty with unexpected change, intense focus on specific topics.</span></div>
+            <div class="sign-item"><div class="sign-dot" style="background:var(--sage);"></div><span><strong>Sensory and cognitive processing</strong> — over- or under-sensitivity to sounds, textures, lights; differences in attention, memory, and the ability to shift between tasks.</span></div>
+        </div>
+    </div>
+
+    <div class="stat-strip">
+        <span class="stat-strip-chip">1 in 36 children has ASD (CDC 2023)</span>
+        <span class="stat-strip-chip">Boys diagnosed 4× more than girls</span>
+        <span class="stat-strip-chip">Signs often appear before age 3</span>
+        <span class="stat-strip-chip">Early intervention significantly improves outcomes</span>
+        <span class="stat-strip-chip">Many adults are diagnosed later in life</span>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AGE GROUP: 4–8
+    ══════════════════════════════════════════════════════════ -->
+    <div id="age-4-8" class="section-title">🎮 Ages 4–8 — Early Childhood</div>
+
+    <div class="age-block">
+        <div class="age-block-header">
+            <div class="age-emoji">🎮</div>
+            <div class="age-header-text">
+                <h3>Behavioral Adventure Platform</h3>
+                <span class="age-chip">Module 1 · Ages 4–8</span>
+            </div>
+        </div>
+        <div class="age-block-body">
+
+            <h4>How autism shows up at this age</h4>
+            <p>
+                Between the ages of 4 and 8, children are learning the foundations of social life — making
+                friends, understanding feelings, following rules in games, and beginning to understand that
+                other people have their own thoughts and emotions. For children with autism, this period is
+                often when differences become clearly noticeable, because the social world is becoming more
+                complex just as their peers are naturally adapting to it.
+            </p>
+
+            <div class="why-box">
+                💡 <strong>Why age 4 is a key starting point:</strong> Before age 4, some autism signs can
+                be mistaken for normal developmental variation. By age 4, language, play, and social
+                interaction have developed enough that differences in how a child engages with the world
+                become consistently visible. This is why most formal ASD screening guidelines recommend
+                comprehensive evaluation by age 4 if earlier concerns exist.
+            </div>
+
+            <h4 style="margin-top:1rem;">Common signs in this age group</h4>
+            <div class="signs-grid">
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Difficulty recognising happy, sad, angry or surprised faces in others</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Prefers to play alone rather than with other children</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Lines up toys or objects in a specific order and becomes upset if they are moved</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Repeats the same phrases, sounds, or movements (echolalia, hand-flapping, rocking)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Difficulty following two-step instructions (e.g. "pick up the ball and put it in the box")</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Short working memory — struggles to remember a sequence of 3+ things</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Struggles to categorise objects by type (e.g. separating animals from food)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C4737A;"></div>Very slow or very fast responses to social situations</div>
+            </div>
+
+            <h4 style="margin-top:1.1rem;">How NeuroStrat screens this age group</h4>
+            <p>
+                Children this age cannot fill in questionnaires or sit through formal assessments. NeuroStrat
+                uses a <strong>colourful interactive game experience</strong> — the child simply plays, while
+                the AI silently records behavioral signals in the background. Four tasks are used:
+            </p>
+            <div class="task-grid">
+                <div class="task-chip"><strong>😊 Emotion Matching</strong>6 rounds. The child taps the face that matches the emotion shown. Measures facial affect recognition accuracy and reaction speed — both core ASD indicators.</div>
+                <div class="task-chip"><strong>🔷 Pattern Completion</strong>5 rounds. The child picks the shape that completes an alternating pattern. Measures rule-based sequential reasoning and flexibility.</div>
+                <div class="task-chip"><strong>📦 Object Sorting</strong>6 drag-and-drop items. Animals go left, food goes right. Measures categorical thinking and cognitive flexibility — rigidity here is an ASD signal.</div>
+                <div class="task-chip"><strong>🧠 Memory Sequence</strong>Simon-style colour sequence. Up to 6 rounds. Measures working memory span — a key early indicator of cognitive development differences.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AGE GROUP: 9–12
+    ══════════════════════════════════════════════════════════ -->
+    <div id="age-9-12" class="section-title">📖 Ages 9–12 — Middle Childhood</div>
+
+    <div class="age-block">
+        <div class="age-block-header">
+            <div class="age-emoji">📖</div>
+            <div class="age-header-text">
+                <h3>Social Simulation Platform</h3>
+                <span class="age-chip">Module 2 · Ages 9–12</span>
+            </div>
+        </div>
+        <div class="age-block-body">
+
+            <h4>How autism shows up at this age</h4>
+            <p>
+                By ages 9 to 12, the social world of children becomes significantly more complex. Friendships
+                involve understanding unspoken rules, taking turns, managing conflict, and reading subtle
+                emotions. Children this age are expected to understand that other people have their own
+                thoughts, feelings, beliefs and perspectives — a concept called <strong>Theory of Mind</strong>.
+            </p>
+            <p>
+                Children with autism in this age group often understand the basic rules of social situations
+                intellectually but find it hard to apply them naturally in real time. They may struggle with
+                knowing what to say when a friend is upset, or understanding why a classmate feels embarrassed.
+                Many develop "masking" behaviours — copying what they observe others doing — which can make
+                identification harder.
+            </p>
+
+            <div class="why-box">
+                💡 <strong>Why this age matters:</strong> Children who are missed at earlier ages are often
+                identified during primary school years when peer relationships become more demanding. ASD
+                in girls is frequently only noticed at this stage because girls tend to mask more effectively
+                than boys in younger childhood.
+            </div>
+
+            <h4 style="margin-top:1rem;">Common signs in this age group</h4>
+            <div class="signs-grid">
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Difficulty understanding what a classmate is thinking or feeling in a social situation</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Tends to respond literally — misses sarcasm, jokes, or implied meaning</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Chooses non-social responses when a friend is in distress (walks away instead of helping)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Struggles with false-belief tasks ("where will she look for the toy she doesn't know was moved?")</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Identifies surface emotions correctly (happy face = happy) but misses mixed or hidden emotions</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#C17B5C;"></div>Strong preference for facts and rules over emotional or ambiguous conversations</div>
+            </div>
+
+            <h4 style="margin-top:1.1rem;">How NeuroStrat screens this age group</h4>
+            <p>
+                NeuroStrat presents short, age-appropriate social stories. The child reads the situation and
+                chooses a response — the AI analyses which choices are made, not just whether they are "correct."
+            </p>
+            <div class="task-grid">
+                <div class="task-chip"><strong>🤝 Empathy Scenarios</strong>5 social situations (e.g. "your friend drops their lunch and everyone laughs"). Measures prosocial response rate — how often the child chooses the caring, helping action.</div>
+                <div class="task-chip"><strong>🧩 Theory of Mind</strong>5 false-belief questions adapted from the Sally-Anne paradigm. Measures the ability to understand that others can hold beliefs different from reality.</div>
+                <div class="task-chip"><strong>😮 Emotion Labeling</strong>5 situational descriptions (not just faces). Measures the ability to identify emotions from social context — more demanding than simple face-matching.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AGE GROUP: 12–16
+    ══════════════════════════════════════════════════════════ -->
+    <div id="age-12-16" class="section-title">🎤 Ages 12–16 — Early Adolescence</div>
+
+    <div class="age-block">
+        <div class="age-block-header">
+            <div class="age-emoji">🎤</div>
+            <div class="age-header-text">
+                <h3>Voice Interaction Platform</h3>
+                <span class="age-chip">Module 3 · Ages 12–16</span>
+            </div>
+        </div>
+        <div class="age-block-body">
+
+            <h4>How autism shows up at this age</h4>
+            <p>
+                Adolescence brings a new set of social challenges — romantic relationships begin, peer pressure
+                increases, conversations become more nuanced and fast-paced, and the need to express emotions
+                verbally grows significantly. For young people with autism, this transition is often the hardest
+                period of their lives.
+            </p>
+            <p>
+                Communication differences become particularly visible. A teenager with ASD may take a long time
+                to respond in conversation, speak in a flat or monotone voice, give very brief answers to open
+                questions, or become anxious when asked to explain their feelings. They may understand what
+                they feel but find it genuinely difficult to put it into words — a trait called
+                <strong>alexithymia</strong>, which affects around 50% of autistic people.
+            </p>
+
+            <div class="why-box">
+                💡 <strong>Why this age is important:</strong> Many teenagers with ASD — especially girls —
+                are not identified until secondary school. By this point, years of social difficulty have often
+                led to anxiety, depression, or school refusal. Earlier identification at this stage can
+                prevent serious mental health consequences.
+            </div>
+
+            <h4 style="margin-top:1rem;">Common signs in this age group</h4>
+            <div class="signs-grid">
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>Very slow to respond to open-ended personal questions</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>Responses are brief, factual, and avoid emotional language</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>Long pauses in the middle of speaking (not knowing what to say next)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>Difficulty describing how they would feel in another person's situation</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>Avoids conversations about emotions or interpersonal conflict</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#3D6B45;"></div>High anxiety when asked unexpected or personal questions</div>
+            </div>
+
+            <h4 style="margin-top:1.1rem;">How NeuroStrat screens this age group</h4>
+            <p>
+                This module uses <strong>typed text responses</strong> as a proxy for spoken communication.
+                The platform asks open-ended social questions and perspective-taking prompts. It does not score
+                what is said — it measures <em>how</em> the person responds: speed, length, and hesitation.
+            </p>
+            <div class="task-grid">
+                <div class="task-chip"><strong>🗣 Social Questions</strong>5 open questions about personal social experiences. Measures response latency (ms), response length (characters), and hesitation ratio — all proxies for communication fluency.</div>
+                <div class="task-chip"><strong>🔄 Perspective Taking</strong>3 situations from another person's point of view. Measures the depth and speed of empathic reasoning through written response analysis.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AGE GROUP: 17–22
+    ══════════════════════════════════════════════════════════ -->
+    <div id="age-17-22" class="section-title">💬 Ages 17–22 — Late Adolescence & Early Adulthood</div>
+
+    <div class="age-block">
+        <div class="age-block-header">
+            <div class="age-emoji">💬</div>
+            <div class="age-header-text">
+                <h3>Social Reasoning Platform</h3>
+                <span class="age-chip">Module 4 · Ages 17–22</span>
+            </div>
+        </div>
+        <div class="age-block-body">
+
+            <h4>How autism shows up at this age</h4>
+            <p>
+                By 17 to 22, many autistic individuals have developed strong intellectual coping strategies.
+                They may have learned to follow social scripts, to recognise patterns in social situations,
+                and to mask their difficulties — sometimes very effectively. However, the effort required to
+                maintain this masking is enormous, and the contexts they are navigating (university, employment,
+                romantic relationships) are far more complex than anything they have faced before.
+            </p>
+            <p>
+                Social reasoning — the ability to understand <em>why</em> people behave the way they do,
+                to manage conflict constructively, to read professional dynamics — becomes the key challenge
+                at this stage. Autistic young adults often know the "right answer" theoretically but find
+                it hard to act on it in real time under social pressure.
+            </p>
+
+            <div class="why-box">
+                💡 <strong>Why this age matters:</strong> University dropout rates among undiagnosed autistic
+                students are significantly higher than among neurotypical students. Many people receive
+                their first ASD diagnosis in their late teens or early 20s after years of struggling without
+                understanding why. Diagnosis at this stage allows access to academic accommodations,
+                mental health support, and self-understanding.
+            </div>
+
+            <h4 style="margin-top:1rem;">Common signs in this age group</h4>
+            <div class="signs-grid">
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Struggles with the unspoken rules of professional or academic environments</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Difficulty managing conflict or giving/receiving feedback diplomatically</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Tends to assume others share their knowledge or perspective (egocentrism in thinking)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Extreme responses to situations (all-or-nothing thinking: "if I can't do it perfectly, why try")</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Burnout from years of masking — sudden withdrawal, shutdown, or meltdowns</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#7A9E7E;"></div>Logical, rule-based approach to emotional situations that misses the relational context</div>
+            </div>
+
+            <h4 style="margin-top:1.1rem;">How NeuroStrat screens this age group</h4>
+            <div class="task-grid">
+                <div class="task-chip"><strong>💼 Social Scenarios</strong>5 professional and interpersonal situations rated on a 1–5 scale. Measures how closely the person's instinctive response aligns with empathically optimal choices.</div>
+                <div class="task-chip"><strong>🧠 Reasoning Tasks</strong>5 multiple-choice social and logical reasoning questions. Measures the ability to reason about social dynamics, conflict resolution, and perspective-taking at an adult level.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AGE GROUP: 22+
+    ══════════════════════════════════════════════════════════ -->
+    <div id="age-22plus" class="section-title">🧠 Ages 22+ — Adulthood</div>
+
+    <div class="age-block">
+        <div class="age-block-header">
+            <div class="age-emoji">🧠</div>
+            <div class="age-header-text">
+                <h3>Cognitive Interaction Platform</h3>
+                <span class="age-chip">Module 5 · Ages 22+</span>
+            </div>
+        </div>
+        <div class="age-block-body">
+
+            <h4>How autism shows up in adulthood</h4>
+            <p>
+                Many adults with autism were never diagnosed as children — particularly women, who often
+                mask more effectively, and people with high intellectual ability, whose cognitive strengths
+                compensated for social difficulties throughout schooling. In adulthood, the demands of
+                independent living, employment, and maintaining relationships eventually exceed the capacity
+                to mask, leading to a recognition that something has always been different.
+            </p>
+            <p>
+                In adults, ASD-related differences often show up most clearly in <strong>cognitive flexibility</strong>
+                — the ability to shift between tasks, adapt to changing rules, suppress automatic responses,
+                and hold information in working memory while doing something else. These are measurable through
+                standardised cognitive tasks, which form the basis of this module.
+            </p>
+
+            <div class="why-box">
+                💡 <strong>Why cognitive tasks are used for adults:</strong> Social scenarios become less
+                reliable for adults who have years of practiced social scripts. Cognitive tasks — particularly
+                timed tasks with objective right/wrong responses — are harder to fake and reveal genuine
+                differences in executive functioning that are well-documented in ASD research.
+            </div>
+
+            <h4 style="margin-top:1rem;">Common signs in adulthood</h4>
+            <div class="signs-grid">
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>Difficulty switching between tasks or adapting when the rules change unexpectedly</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>Strong interference effect — automatic responses are hard to suppress (classic Stroop difficulty)</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>Working memory differences — holding and manipulating information simultaneously is tiring</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>Burnout from sustained masking over years — often mistaken for anxiety or depression</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>Very high performance in structured, rule-based environments; difficulty in ambiguous ones</div>
+                <div class="sign-item"><div class="sign-dot" style="background:#8B7D6B;"></div>High anxiety around making errors or deviating from established routines</div>
+            </div>
+
+            <h4 style="margin-top:1.1rem;">How NeuroStrat screens this age group</h4>
+            <div class="task-grid">
+                <div class="task-chip"><strong>🎨 Stroop Task</strong>20 trials. A colour word appears written in a different ink colour — the person must identify the ink colour, not the word. Measures inhibitory control (a core executive function deficit in ASD).</div>
+                <div class="task-chip"><strong>🔢 1-Back Memory</strong>25 trials. Press a key if the current letter matches the one shown one step ago. Measures working memory updating speed and accuracy.</div>
+                <div class="task-chip"><strong>🔄 Context Switching</strong>24 trials alternating between two rules (even/odd, high/low). Measures switch cost in milliseconds — the extra time needed when the rule changes, a robust ASD marker.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         WHY EARLY DETECTION
+    ══════════════════════════════════════════════════════════ -->
+    <div id="why-early" class="section-title">⏱ Why Early Detection Changes Everything</div>
+
+    <div class="info-row">
+        <div class="doc-card" style="margin-bottom:0;">
+            <h4>🌱 The brain is most adaptable early</h4>
+            <p>
+                The human brain has the highest degree of neuroplasticity — the ability to change and
+                adapt — in the first 8 years of life. Early intervention during this window (speech
+                therapy, behavioral support, social skills groups) produces significantly better outcomes
+                than the same interventions started at 12 or 16.
+            </p>
+            <p>
+                This is the primary reason NeuroStrat's youngest module begins at age 4 — to provide
+                a low-barrier, accessible screening tool that can prompt clinical evaluation before
+                the critical early window closes.
+            </p>
+        </div>
+        <div class="doc-card" style="margin-bottom:0;">
+            <h4>💙 What changes with early identification</h4>
+            <ul>
+                <li>Children receive language and communication support at the right developmental stage</li>
+                <li>Families understand their child's needs and can adapt their parenting approach</li>
+                <li>Schools put appropriate academic and social support in place</li>
+                <li>Children build self-understanding before social difficulties cause lasting anxiety</li>
+                <li>Siblings and peers learn to understand and include the child</li>
+                <li>Mental health outcomes in adolescence are significantly better</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         HOW THE PLATFORM WORKS
+    ══════════════════════════════════════════════════════════ -->
+    <div id="how-platform" class="section-title">⚙️ How the Platform Is Designed to Detect These Signs</div>
+
+    <div class="doc-card">
+        <h4>The core design principle: measure behavior, not self-report</h4>
+        <p>
+            Traditional screening tools (like questionnaires filled in by parents or teachers) rely on
+            subjective observation and memory. They are valuable but limited — people misremember,
+            interpret questions differently, and may not notice subtle patterns.
+        </p>
+        <p>
+            NeuroStrat AI takes a different approach: <strong>the patient interacts with a digital task,
+            and the platform measures what they do</strong> — not what they or their family say about them.
+            This behavioral measurement approach captures objective signals: how fast they respond, how
+            accurately they identify emotions, how many errors they make when rules change, how long they
+            pause before answering a social question.
+        </p>
+        <h4 style="margin-top:1rem;">How the risk score is calculated</h4>
+        <p>
+            Every task generates raw metrics. These are mapped to four behavioral domains
+            (Social Communication 35%, Repetitive Behaviors 25%, Sensory Processing 20%,
+            Cognitive Flexibility 20%). The domains are combined into a single composite score
+            (0–100). Scores below 35 indicate Low Risk, 35–59 Moderate Risk, and 60+ High Risk.
+            A confidence score shows how complete the session was.
+        </p>
+        <h4 style="margin-top:1rem;">What happens after a screening</h4>
+        <p>
+            NeuroStrat does not diagnose autism. It produces a <strong>risk stratification report</strong>
+            that tells a clinician: <em>"Based on this patient's behavioral interactions, here is how
+            strongly the data suggests the presence of ASD-related traits."</em> A qualified professional
+            then reviews the report and decides whether a formal diagnostic assessment is warranted.
+            The platform is a <strong>triage tool</strong> — it helps direct clinical attention to the
+            right people at the right time.
+        </p>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+        ⚠ <strong>Clinical Disclaimer:</strong> NeuroStrat AI is an AI-assisted behavioral risk stratification
+        platform and is not a substitute for professional clinical diagnosis. All risk reports must be reviewed
+        by a qualified healthcare professional before any clinical decisions are made. This platform is a
+        Final Year Project (FYP) developed at UAF Sub Campus and has not undergone formal clinical trial validation.
+    </div>
+
+</div><!-- /.page-wrapper -->
+</body>
+</html>

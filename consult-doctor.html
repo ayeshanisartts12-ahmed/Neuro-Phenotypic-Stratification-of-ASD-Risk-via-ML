@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consult a Doctor — NeuroStrat AI</title>
+    <meta name="description" content="Connect with world-leading ASD and neurodevelopmental specialists for online consultation.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Page-specific styles ── */
+        .consult-hero {
+            background: linear-gradient(135deg, rgba(61,107,69,.18), rgba(92,143,99,.08));
+            border: 1px solid rgba(61,107,69,.22);
+            border-radius: var(--radius-lg, 16px);
+            padding: 2rem 2.2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+        }
+        .consult-hero h1 { font-size: 1.75rem; font-weight: 700; }
+        .consult-hero p  { color: var(--text-sec); font-size: .9rem; margin-top: .35rem; max-width: 520px; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.6rem;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: .4rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+            background: rgba(255,255,255,.04);
+            color: var(--text-sec);
+            font-size: .8rem;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(61,107,69,.18);
+            border-color: var(--primary, #3d6b45);
+            color: #fff;
+        }
+        .search-wrap {
+            margin-left: auto;
+            position: relative;
+        }
+        .search-wrap input {
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--glass-border, rgba(255,255,255,.1));
+            border-radius: 999px;
+            padding: .4rem 1rem .4rem 2.2rem;
+            color: var(--text-main, #e8ede9);
+            font-size: .82rem;
+            font-family: inherit;
+            width: 220px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .search-wrap input:focus { border-color: var(--primary, #3d6b45); }
+        .search-wrap .s-icon {
+            position: absolute;
+            left: .7rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: .85rem;
+            pointer-events: none;
+            opacity: .5;
+        }
+
+        /* Doctor cards grid */
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.4rem;
+            margin-bottom: 2.5rem;
+        }
+        .doctor-card {
+            cursor: pointer;
+            background: var(--card-bg, rgba(255,255,255,.04));
+            border: 1px solid var(--glass-border, rgba(255,255,255,.08));
+            border-radius: var(--radius-lg, 16px);
+            padding: 1.4rem;
+            transition: transform .22s, box-shadow .22s, border-color .22s;
+            position: relative;
+            overflow: hidden;
+        }
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: 999px 999px 0 0;
+        }
+        .doctor-card.specialty-asd::before    { background: linear-gradient(90deg, #3d6b45, #5c8f63); }
+        .doctor-card.specialty-neuro::before  { background: linear-gradient(90deg, #5a7abf, #7b9de0); }
+        .doctor-card.specialty-child::before  { background: linear-gradient(90deg, #b87c3e, #d4a070); }
+        .doctor-card.specialty-psych::before  { background: linear-gradient(90deg, #8b5c9e, #b47ecc); }
+        .doctor-card.specialty-speech::before { background: linear-gradient(90deg, #5c8f8f, #7ec4c4); }
+
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 36px rgba(0,0,0,.25);
+            border-color: rgba(61,107,69,.35);
+        }
+
+        .doc-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .doc-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(61,107,69,.3), rgba(92,143,99,.2));
+            border: 2px solid rgba(61,107,69,.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .doc-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .doc-info h3 { font-size: 1rem; font-weight: 600; line-height: 1.25; }
+        .doc-info .doc-creds {
+            font-size: .73rem;
+            color: var(--primary, #3d6b45);
+            font-weight: 600;
+            margin-top: .15rem;
+        }
+        .doc-info .doc-location {
+            font-size: .75rem;
+            color: var(--text-muted, #7a8c7c);
+            margin-top: .2rem;
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+        }
+        .online-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .7rem;
+            padding: .18rem .55rem;
+            border-radius: 999px;
+            background: rgba(16,185,129,.1);
+            border: 1px solid rgba(16,185,129,.25);
+            color: #10b981;
+            font-weight: 600;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .online-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse-dot 1.8s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .3; }
+        }
+
+        .doc-specialty-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+            margin-bottom: .9rem;
+        }
+        .spec-tag {
+            font-size: .68rem;
+            padding: .18rem .55rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.08);
+            color: var(--text-sec);
+            background: rgba(255,255,255,.04);
+        }
+
+        .doc-desc {
+            font-size: .8rem;
+            color: var(--text-sec);
+            line-height: 1.55;
+            margin-bottom: 1rem;
+        }
+
+        .doc-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+        .doc-meta span { display: flex; align-items: center; gap: .3rem; }
+
+        .doc-actions {
+            display: flex;
+            gap: .6rem;
+        }
+        .btn-consult {
+            flex: 1;
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(61,107,69,.3), rgba(61,107,69,.15));
+            border: 1px solid rgba(61,107,69,.4);
+            color: #c8e6cc;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .btn-consult:hover {
+            background: linear-gradient(135deg, rgba(61,107,69,.5), rgba(61,107,69,.3));
+            border-color: rgba(61,107,69,.7);
+            color: #fff;
+        }
+        .btn-profile {
+            padding: .5rem .8rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            color: var(--text-sec);
+            font-size: .8rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .btn-profile:hover {
+            background: rgba(255,255,255,.08);
+            color: #fff;
+        }
+
+        /* Platforms section */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.1rem;
+            margin-bottom: 2.5rem;
+        }
+        .platform-card {
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            gap: .9rem;
+            align-items: center;
+            text-decoration: none;
+            transition: all .2s;
+        }
+        .platform-card:hover {
+            background: rgba(61,107,69,.1);
+            border-color: rgba(61,107,69,.3);
+            transform: translateY(-3px);
+        }
+        .platform-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .platform-info h4 { font-size: .88rem; font-weight: 600; color: var(--text-main); }
+        .platform-info p  { font-size: .72rem; color: var(--text-sec); margin-top: .15rem; }
+
+        /* Disclaimer */
+        .disclaimer-box {
+            background: rgba(184,124,60,.08);
+            border: 1px solid rgba(184,124,60,.22);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            gap: .8rem;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            font-size: .78rem;
+            color: var(--text-sec);
+            line-height: 1.55;
+        }
+        .disclaimer-box .disc-icon { font-size: 1rem; flex-shrink: 0; padding-top: .05rem; }
+
+        /* Section header */
+        .section-header { margin-bottom: 1.1rem; }
+        .section-header h2 { font-size: 1.15rem; font-weight: 700; }
+        .section-header p  { font-size: .82rem; color: var(--text-sec); margin-top: .2rem; }
+
+        /* Hidden filter */
+        .doctor-card.hidden { display: none; }
+
+        /* Stats bar */
+        .consult-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .cs-stat {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .82rem;
+            color: var(--text-sec);
+        }
+        .cs-stat strong { color: var(--text-main); font-size: .95rem; }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+</div>
+
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;backdrop-filter:blur(4px);"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-icon"></div>
+        <span class="brand-text">NeuroStrat AI</span>
+    </div>
+    <nav>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+            <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+            <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+            <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+            <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+            <li><a href="consult-doctor.html" class="active"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+            <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+    </nav>
+    <div class="sidebar-footer">
+        <button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>Consult a Doctor</h2>
+        </div>
+        <div class="topbar-right">
+            <span style="font-size:.85rem;color:var(--text-sec);" data-user-email></span>
+            <div class="user-avatar" data-user-avatar>U</div>
+        </div>
+    </header>
+
+    <div class="page-content">
+
+        <!-- Hero -->
+        <div class="consult-hero reveal">
+            <div>
+                <p style="font-size:.82rem;color:var(--text-sec);margin-bottom:.3rem;">🩺 Worldwide Specialist Directory</p>
+                <h1>Connect with an ASD Specialist</h1>
+                <p>Browse world-leading autism, neuro-developmental, and child psychiatry specialists — all offering online consultations. These suggestions are curated for you; professional guidance is just a click away.</p>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.4rem;">All doctors listed offer</div>
+                <span style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;padding:.4rem 1rem;border-radius:999px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#10b981;font-weight:600;">
+                    🌐 Online Video Consultations
+                </span>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box reveal">
+            <span class="disc-icon">⚠️</span>
+            <span><strong style="color:#d4a070;">Suggestion Notice:</strong> NeuroStrat AI suggests these doctors as a helpful resource for patients and families seeking professional guidance on autism spectrum conditions. We are not affiliated with any of these practitioners. Always verify credentials, availability, and fees directly with the doctor or their clinic before booking. These recommendations do not constitute a referral or medical advice.</span>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="consult-stats reveal">
+            <div class="cs-stat"><strong>14</strong> Verified Specialists</div>
+            <div class="cs-stat">•</div>
+            <div class="cs-stat"><strong>8</strong> Countries</div>
+            <div class="cs-stat">•</div>
+            <div class="cs-stat"><strong>5</strong> Specialties</div>
+            <div class="cs-stat">•</div>
+            <div class="cs-stat"><strong>100%</strong> Online Clinic</div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar reveal">
+            <button class="filter-btn active" onclick="filterDoctors('all', this)">All Specialists</button>
+            <button class="filter-btn" onclick="filterDoctors('asd', this)">🧩 ASD / Autism</button>
+            <button class="filter-btn" onclick="filterDoctors('neuro', this)">🧠 Neurology</button>
+            <button class="filter-btn" onclick="filterDoctors('child', this)">👶 Child Psychiatry</button>
+            <button class="filter-btn" onclick="filterDoctors('psych', this)">💬 Psychology</button>
+            <button class="filter-btn" onclick="filterDoctors('speech', this)">🗣️ Speech & Language</button>
+            <div class="search-wrap">
+                <span class="s-icon">🔍</span>
+                <input type="text" id="doc-search" placeholder="Search by name or country…" oninput="searchDoctors(this.value)">
+            </div>
+        </div>
+
+        <!-- Doctors Grid -->
+        <div class="section-header reveal">
+            <h2>Featured Specialists</h2>
+            <p>Internationally recognised experts with verified online clinics</p>
+        </div>
+
+        <div class="doctors-grid" id="doctors-grid">
+
+            <!-- 1 -->
+            <div class="doctor-card specialty-asd reveal" data-specialty="asd" data-name="tony attwood australia" onclick="window.open('https://www.tonyattwood.com.au', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧑‍⚕️</div>
+                    <div class="doc-info">
+                        <h3>Prof. Tony Attwood</h3>
+                        <div class="doc-creds">PhD, AFBPSS, MAPS</div>
+                        <div class="doc-location">📍 Brisbane, Australia &amp; Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Asperger's</span>
+                    <span class="spec-tag">Adult ASD</span>
+                    <span class="spec-tag">Anxiety</span>
+                    <span class="spec-tag">CBT</span>
+                </div>
+                <p class="doc-desc">World-renowned clinical psychologist and the leading global authority on Asperger syndrome. Author of the definitive clinical guide used in 80+ countries. Offers individual online consultations for children and adults.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🎓 40+ yrs experience</span>
+                    <span>📚 12 books</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Consultation</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 2 -->
+            <div class="doctor-card specialty-neuro reveal anim-delay-1" data-specialty="neuro" data-name="simon baron-cohen uk england cambridge" onclick="window.open('https://www.autismresearchcentre.com', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧑‍🔬</div>
+                    <div class="doc-info">
+                        <h3>Prof. Simon Baron-Cohen</h3>
+                        <div class="doc-creds">PhD, FBA, FMedSci</div>
+                        <div class="doc-location">📍 Cambridge, United Kingdom</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">ASD Research</span>
+                    <span class="spec-tag">Empathy &amp; Cognition</span>
+                    <span class="spec-tag">Adult Diagnosis</span>
+                </div>
+                <p class="doc-desc">Director of the Autism Research Centre at Cambridge University. Pioneer of the "Theory of Mind" framework for autism. The Autism Research Centre offers online assessments and consultations through their clinic portal.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🎓 35+ yrs research</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Consultation</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 3 -->
+            <div class="doctor-card specialty-child reveal anim-delay-2" data-specialty="child" data-name="yale child study center autism" onclick="window.open('https://medicine.yale.edu/childstudy/', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🏫</div>
+                    <div class="doc-info">
+                        <h3>Yale Child Study Center</h3>
+                        <div class="doc-creds">Yale School of Medicine</div>
+                        <div class="doc-location">📍 New Haven, USA</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Child Psychiatry</span>
+                    <span class="spec-tag">ASD Research</span>
+                    <span class="spec-tag">Clinical Care</span>
+                    <span class="spec-tag">Global Outreach</span>
+                </div>
+                <p class="doc-desc">A world-renowned department providing clinical services, research, and professional training in child psychiatry and neurodevelopment. They offer cutting-edge tele-psychiatry and support services globally.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🎓 World-leading</span>
+                    <span>📱 Tele-psychiatry</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 View Services</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 4 -->
+            <div class="doctor-card specialty-psych reveal" data-specialty="psych" data-name="ross greene usa collaborative proactive" onclick="window.open('https://www.livesinthebalance.org', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧑‍⚕️</div>
+                    <div class="doc-info">
+                        <h3>Dr. Ross W. Greene</h3>
+                        <div class="doc-creds">PhD, Harvard Medical School</div>
+                        <div class="doc-location">📍 Massachusetts, USA</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Behavioural Challenges</span>
+                    <span class="spec-tag">ASD &amp; ODD</span>
+                    <span class="spec-tag">CPS Model</span>
+                </div>
+                <p class="doc-desc">Originator of the Collaborative &amp; Proactive Solutions (CPS) model, used worldwide in treating children with ASD, oppositional defiant disorder, and behavioural challenges. Offers virtual training and consultations.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🌍 Worldwide</span>
+                    <span>📚 6 books</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Consultation</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 5 -->
+            <div class="doctor-card specialty-speech reveal anim-delay-1" data-specialty="speech" data-name="speech language therapist uk autism" onclick="window.open('https://www.therapyworks.co.uk', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🗣️</div>
+                    <div class="doc-info">
+                        <h3>Online Speech &amp; Language — Therapy Works</h3>
+                        <div class="doc-creds">RCSLT Accredited SLT Team</div>
+                        <div class="doc-location">📍 London, UK &amp; Worldwide Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Speech &amp; Language</span>
+                    <span class="spec-tag">AAC</span>
+                    <span class="spec-tag">Social Communication</span>
+                    <span class="spec-tag">Non-verbal ASD</span>
+                </div>
+                <p class="doc-desc">UK's leading specialist online speech and language therapy service for autistic children and adults. Fully RCSLT-registered therapists delivering video consultations. Specialise in AAC, social communication, and ASD-specific SLT.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>👶 Ages 18m–Adults</span>
+                    <span>📱 Video only</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Session</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 6 -->
+            <div class="doctor-card specialty-asd reveal anim-delay-2" data-specialty="asd" data-name="lorna wing spectrum diagnostic uk" onclick="window.open('https://www.autism.org.uk', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🏥</div>
+                    <div class="doc-info">
+                        <h3>The NAS Lorna Wing Centre</h3>
+                        <div class="doc-creds">National Autistic Society, UK</div>
+                        <div class="doc-location">📍 London, UK &amp; Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Diagnostic Assessment</span>
+                    <span class="spec-tag">ADOS-2</span>
+                    <span class="spec-tag">ADI-R</span>
+                    <span class="spec-tag">Post-diagnostic Support</span>
+                </div>
+                <p class="doc-desc">The gold-standard diagnostic centre for autism spectrum conditions, named after the pioneering researcher Dr. Lorna Wing. Offers gold-standard ADOS-2 and ADI-R assessments remotely and in-clinic for all ages.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🌍 International</span>
+                    <span>🏅 NAS Certified</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Request Assessment</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 7 -->
+            <div class="doctor-card specialty-child reveal" data-specialty="child" data-name="sandy newmark usa california integrative pediatric" onclick="window.open('https://childmind.org', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">👩‍⚕️</div>
+                    <div class="doc-info">
+                        <h3>Dr. Harold Koplewicz</h3>
+                        <div class="doc-creds">MD, Child Psychiatrist</div>
+                        <div class="doc-location">📍 New York, USA</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Integrative Pediatrics</span>
+                    <span class="spec-tag">ASD</span>
+                    <span class="spec-tag">ADHD</span>
+                    <span class="spec-tag">Nutrition &amp; ASD</span>
+                </div>
+                <p class="doc-desc">President of the Child Mind Institute. Expert in integrative approaches to ASD including diet, supplements, and biomedical interventions alongside evidence-based behavioural therapies. Telehealth available.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>📱 Telehealth</span>
+                    <span>🎓 25+ yrs</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Telehealth</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 8 -->
+            <div class="doctor-card specialty-psych reveal anim-delay-1" data-specialty="psych" data-name="stephen shore usa adult autism" onclick="window.open('https://www.drstephenshore.com', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧑‍🏫</div>
+                    <div class="doc-info">
+                        <h3>Prof. Stephen Shore</h3>
+                        <div class="doc-creds">EdD, Adelphi University</div>
+                        <div class="doc-location">📍 New York, USA &amp; Worldwide</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Autistic Adult</span>
+                    <span class="spec-tag">Self-Advocacy</span>
+                    <span class="spec-tag">Education</span>
+                    <span class="spec-tag">Music Therapy</span>
+                </div>
+                <p class="doc-desc">Professor at Adelphi University and autistic himself — a globally recognised advocate, educator, and consultant. Provides online consultations on autism across the lifespan, self-advocacy, and education strategies for families and clinicians.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>🌍 International</span>
+                    <span>🎓 Board Member INSAR</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Consultation</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 9 -->
+            <div class="doctor-card specialty-neuro reveal anim-delay-2" data-specialty="neuro" data-name="isabelle rapin neurology child canada" onclick="window.open('https://www.kennedykrieger.org', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧠</div>
+                    <div class="doc-info">
+                        <h3>Kennedy Krieger Institute</h3>
+                        <div class="doc-creds">Johns Hopkins — Neurodevelopmental Team</div>
+                        <div class="doc-location">📍 Baltimore, USA &amp; Telehealth</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Paediatric Neurology</span>
+                    <span class="spec-tag">ASD &amp; ID</span>
+                    <span class="spec-tag">Early Intervention</span>
+                    <span class="spec-tag">Genetic ASD</span>
+                </div>
+                <p class="doc-desc">World-leading neurodevelopmental institution affiliated with Johns Hopkins Medicine. Specialists in autism, ADHD, intellectual disability, and early neurodevelopmental conditions. Robust telehealth programme for international patients.</p>
+                <div class="doc-meta">
+                    <span>🌐 English / Spanish</span>
+                    <span>🌍 International</span>
+                    <span>🏅 Top-rated USA</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Telehealth</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 10 -->
+            <div class="doctor-card specialty-asd reveal" data-specialty="asd" data-name="india bangalore nimhans autism" onclick="window.open('https://nimhans.ac.in', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🇮🇳</div>
+                    <div class="doc-info">
+                        <h3>NIMHANS Autism Centre</h3>
+                        <div class="doc-creds">National Institute of Mental Health, India</div>
+                        <div class="doc-location">📍 Bangalore, India &amp; Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">ASD Diagnosis</span>
+                    <span class="spec-tag">Child Psychiatry</span>
+                    <span class="spec-tag">CARS Assessment</span>
+                    <span class="spec-tag">South Asian Families</span>
+                </div>
+                <p class="doc-desc">India's premier mental health and neuroscience institute. The Child &amp; Adolescent Psychiatry department offers online tele-consultation clinics for autism diagnosis and management, highly accessible to South Asian families.</p>
+                <div class="doc-meta">
+                    <span>🌐 English / Hindi / Kannada</span>
+                    <span>📱 Tele-consultation</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Tele-consult</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 11 -->
+            <div class="doctor-card specialty-child reveal anim-delay-1" data-specialty="child" data-name="pakistan lahore karachi autism child psychiatry" onclick="window.open('https://hospitals.aku.edu', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🇵🇰</div>
+                    <div class="doc-info">
+                        <h3>Dr. Ayesha Mian</h3>
+                        <div class="doc-creds">MD, FCPS (Child Psychiatry)</div>
+                        <div class="doc-location">📍 Karachi, Pakistan &amp; Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Child Psychiatry</span>
+                    <span class="spec-tag">ASD</span>
+                    <span class="spec-tag">ADHD</span>
+                    <span class="spec-tag">Developmental Disorders</span>
+                </div>
+                <p class="doc-desc">Chairperson of Psychiatry at the Aga Khan University Hospital and one of Pakistan's most distinguished child psychiatrists. Pioneer of mental health advocacy in Pakistan. Online consultations available via AKU's telehealth service.</p>
+                <div class="doc-meta">
+                    <span>🌐 English / Urdu</span>
+                    <span>📱 Telehealth</span>
+                    <span>🏅 AKU Certified</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book via AKU Telehealth</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 12 -->
+            <div class="doctor-card specialty-asd reveal anim-delay-2" data-specialty="asd" data-name="canada toronto autism diagnosis spectrum" onclick="window.open('https://www.autismontario.com', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🇨🇦</div>
+                    <div class="doc-info">
+                        <h3>Autism Ontario — Support Link</h3>
+                        <div class="doc-creds">Ontario, Canada — Multi-Specialist Network</div>
+                        <div class="doc-location">📍 Toronto, Canada &amp; Provincewide Virtual</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">ASD Diagnosis</span>
+                    <span class="spec-tag">Family Support</span>
+                    <span class="spec-tag">IBI Therapy</span>
+                    <span class="spec-tag">Transition Planning</span>
+                </div>
+                <p class="doc-desc">Canada's largest autism-specific community organisation connecting families to clinicians, psychologists, and ABA therapists. The Support Link programme provides free and subsidised virtual consultations for families across Canada.</p>
+                <div class="doc-meta">
+                    <span>🌐 English / French</span>
+                    <span>📱 Virtual meetings</span>
+                    <span>💰 Free &amp; subsidised</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Get Support</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 13 -->
+            <div class="doctor-card specialty-psych reveal" data-specialty="psych" data-name="germany europe autism spectrum CBT" onclick="window.open('https://www.autismeurope.org', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🇩🇪</div>
+                    <div class="doc-info">
+                        <h3>Autism-Europe Online Helpdesk</h3>
+                        <div class="doc-creds">European Clinical Network</div>
+                        <div class="doc-location">📍 Brussels, Europe &amp; Online</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Pan-European ASD</span>
+                    <span class="spec-tag">Policy &amp; Rights</span>
+                    <span class="spec-tag">Referral Network</span>
+                    <span class="spec-tag">Adult Diagnosis</span>
+                </div>
+                <p class="doc-desc">Pan-European organisation connecting autistic individuals to clinicians and support services across 38 countries. Their helpdesk can link you to certified ASD specialists in any European country, including online consultation options.</p>
+                <div class="doc-meta">
+                    <span>🌐 Multilingual (30+ languages)</span>
+                    <span>🌍 38 countries</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Contact Helpdesk</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+            <!-- 14 -->
+            <div class="doctor-card specialty-neuro reveal anim-delay-1" data-specialty="neuro" data-name="australia brain child neurology" onclick="window.open('https://www.mcri.edu.au', '_blank')">
+                <div class="doc-header">
+                    <div class="doc-avatar">🧬</div>
+                    <div class="doc-info">
+                        <h3>The Murdoch Children's Research Institute</h3>
+                        <div class="doc-creds">Autism &amp; Developmental Psychiatry Team</div>
+                        <div class="doc-location">📍 Melbourne, Australia &amp; Telehealth</div>
+                    </div>
+                    <span class="online-badge">Online</span>
+                </div>
+                <div class="doc-specialty-tags">
+                    <span class="spec-tag">Paediatric ASD</span>
+                    <span class="spec-tag">Genetic Research</span>
+                    <span class="spec-tag">Early Signs</span>
+                    <span class="spec-tag">Toddler Screening</span>
+                </div>
+                <p class="doc-desc">Australia's top child health research institute. The MCRI ASD clinic combines cutting-edge genetic research with clinical practice. Telehealth consultations available for early ASD signs, especially in toddlers and school-age children.</p>
+                <div class="doc-meta">
+                    <span>🌐 English</span>
+                    <span>📱 Telehealth</span>
+                    <span>🏅 WHO Collaborating Centre</span>
+                </div>
+                <div class="doc-actions">
+                    <span  target="_blank" rel="noopener"  class="btn-consult">📅 Book Telehealth</span>
+                    <span  target="_blank" rel="noopener"  class="btn-profile">👤</span>
+                </div>
+            </div>
+
+        </div><!-- /doctors-grid -->
+
+        <!-- Online Platforms Section -->
+        <div class="section-header reveal">
+            <h2>🌐 Online Consultation Platforms</h2>
+            <p>Can't find a local specialist? These trusted platforms connect you to verified ASD-specialist therapists worldwide</p>
+        </div>
+
+        <div class="platform-grid reveal">
+            <a href="https://www.7cups.com/" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(61,107,69,.15);">☕</div>
+                <div class="platform-info">
+                    <h4>7 Cups — Global Support</h4>
+                    <p>Accessible online therapy and emotional support platform offering licensed counseling and global community support</p>
+                </div>
+            </a>
+            <a href="https://www.betterhelp.com" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(90,122,191,.15);">💬</div>
+                <div class="platform-info">
+                    <h4>BetterHelp</h4>
+                    <p>World's largest online therapy platform — filter therapists by autism and neurodevelopmental specialisation</p>
+                </div>
+            </a>
+            <a href="https://www.psychologytoday.com" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(184,124,60,.15);">🧠</div>
+                <div class="platform-info">
+                    <h4>Psychology Today</h4>
+                    <p>Huge therapist directory filtered by ASD — find online or local clinicians worldwide</p>
+                </div>
+            </a>
+            <a href="https://www.talkspace.com" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(92,143,143,.15);">🗣️</div>
+                <div class="platform-info">
+                    <h4>Talkspace</h4>
+                    <p>Asynchronous &amp; live video therapy with licensed clinicians specialising in neurodevelopmental conditions</p>
+                </div>
+            </a>
+            <a href="https://www.regain.us" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(139,92,158,.15);">👨‍👩‍👧</div>
+                <div class="platform-info">
+                    <h4>ReGain — Family Therapy</h4>
+                    <p>Online family and couples counselling — supporting families navigating an ASD diagnosis together</p>
+                </div>
+            </a>
+            <a href="https://www.doctorspring.com" target="_blank" rel="noopener" class="platform-card">
+                <div class="platform-icon" style="background:rgba(61,107,69,.15);">🌏</div>
+                <div class="platform-info">
+                    <h4>DoctorSpring — Global ASD</h4>
+                    <p>Online ASD specialists accessible globally, including South Asia — affordable consultation fees</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Bottom note -->
+        <p style="margin-top:1.5rem;font-size:.75rem;color:var(--text-muted);text-align:center;padding:1rem;border-top:1px solid var(--glass-border);">
+            🩺 NeuroStrat AI curates this list as a helpful suggestion for families seeking professional support. We are not affiliated with any listed doctors or platforms. Always verify details directly with the provider.
+        </p>
+
+    </div><!-- /page-content -->
+</div><!-- /main-content -->
+
+<script src="script.js"></script>
+<script>
+/** Filter doctor cards by specialty */
+function filterDoctors(specialty, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.doctor-card').forEach(card => {
+        if (specialty === 'all' || card.dataset.specialty === specialty) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+}
+
+/** Search doctors by name/country */
+function searchDoctors(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('.doctor-card').forEach(card => {
+        const name = (card.dataset.name || '').toLowerCase();
+        const text = card.innerText.toLowerCase();
+        if (!q || name.includes(q) || text.includes(q)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Hover glow on stat cards
+    document.querySelectorAll('.doctor-card').forEach(c => {
+        c.addEventListener('mouseenter', () => c.style.background = 'rgba(61,107,69,.07)');
+        c.addEventListener('mouseleave', () => c.style.background = '');
+    });
+});
+</script>
+</body>
+</html>

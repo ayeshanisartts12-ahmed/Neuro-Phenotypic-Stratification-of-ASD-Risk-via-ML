@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — NeuroStrat AI</title>
+    <meta name="description" content="Learn about NeuroStrat AI — an intelligent ASD risk stratification platform built as a Final Year Project by Ayesha Nisar, combining Machine Learning, Deep Learning, and clinical triage for early autism detection in Pakistan.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── About-page specific styles ── */
+        .about-hero {
+            padding: 3.5rem 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, rgba(124,58,237,.14), rgba(6,182,212,.07));
+            border: 1px solid rgba(124,58,237,.22);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 60% 0%, rgba(124,58,237,.12) 0%, transparent 60%),
+                        radial-gradient(ellipse at 10% 100%, rgba(6,182,212,.08) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        .about-hero .eyebrow {
+            font-size: .75rem;
+            color: var(--accent);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: .9rem;
+            font-weight: 600;
+        }
+        .about-hero h1 {
+            font-size: 2.1rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.25;
+        }
+        .about-hero .hero-sub {
+            color: var(--text-sec);
+            max-width: 640px;
+            margin: 0 auto;
+            line-height: 1.75;
+            font-size: .97rem;
+        }
+
+        /* Sections */
+        .about-section { margin-bottom: 2rem; }
+        .about-section h3 {
+            font-size: 1.15rem;
+            margin-bottom: .85rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+        }
+        .about-section p {
+            color: var(--text-sec);
+            line-height: 1.85;
+            margin-bottom: .8rem;
+            font-size: .95rem;
+        }
+
+        /* Highlight / quote box */
+        .highlight-box {
+            padding: 1.3rem 1.5rem;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
+            background: rgba(124,58,237,.07);
+            margin: 1.1rem 0;
+        }
+        .highlight-box p {
+            color: var(--text-sec);
+            font-size: .92rem;
+            line-height: 1.75;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* Mission / accent highlight box */
+        .mission-box {
+            padding: 1.3rem 1.5rem;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--accent);
+            background: rgba(6,182,212,.07);
+            margin: 1.1rem 0;
+        }
+        .mission-box p {
+            color: var(--text-sec);
+            font-size: .92rem;
+            line-height: 1.75;
+            margin: 0;
+        }
+
+        /* Creator card */
+        .creator-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, rgba(124,58,237,.09), rgba(6,182,212,.04));
+            border: 1px solid rgba(124,58,237,.18);
+            margin-top: 1rem;
+        }
+        .creator-avatar {
+            width: 70px;
+            height: 70px;
+            min-width: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(124,58,237,.4);
+        }
+        .creator-info h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: .25rem;
+        }
+        .creator-info .creator-meta {
+            font-size: .82rem;
+            color: var(--accent);
+            margin-bottom: .6rem;
+            font-weight: 500;
+        }
+        .creator-info p {
+            color: var(--text-sec);
+            font-size: .88rem;
+            line-height: 1.75;
+            margin: 0;
+        }
+
+        /* Goal list */
+        .goal-list {
+            display: flex;
+            flex-direction: column;
+            gap: .6rem;
+            margin-top: .9rem;
+        }
+        .goal-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .75rem 1rem;
+            border-radius: var(--radius-sm);
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            font-size: .9rem;
+            color: var(--text-sec);
+            line-height: 1.6;
+        }
+        .goal-item .goal-dot {
+            width: 8px;
+            height: 8px;
+            min-width: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            margin-top: .45rem;
+        }
+
+        /* Tech badges */
+        .tech-badge {
+            display: inline-block;
+            padding: .3rem .8rem;
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(124,58,237,.3);
+            color: var(--primary);
+            font-size: .78rem;
+            margin: .25rem;
+            font-weight: 500;
+            transition: background .2s, color .2s;
+        }
+        .tech-badge:hover {
+            background: rgba(124,58,237,.12);
+        }
+
+        /* Two-col grid for impact stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-card {
+            padding: 1.2rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--glass-border);
+            background: var(--card);
+            text-align: center;
+        }
+        .stat-card .stat-icon { font-size: 1.6rem; margin-bottom: .5rem; }
+        .stat-card .stat-label { font-size: .82rem; color: var(--text-sec); line-height: 1.5; }
+
+        /* Disclaimer */
+        .disclaimer {
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(245,158,11,.2);
+            background: rgba(245,158,11,.05);
+            color: var(--warning);
+            font-size: .8rem;
+            text-align: center;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 600px) {
+            .about-hero h1 { font-size: 1.55rem; }
+            .creator-card { flex-direction: column; align-items: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span></div>
+    <nav><ul class="nav-menu">
+        <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+        <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+        <li><a href="about.html" class="active"><span class="nav-icon">◈</span> About</a></li>
+        <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+        <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+        <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul></nav>
+    <div class="sidebar-footer"><button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button></div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>About the Platform</h2>
+        </div>
+        <div class="topbar-right"><div class="user-avatar" data-user-avatar>U</div></div>
+    </header>
+
+    <div class="page-content">
+        <div style="max-width:920px;margin:0 auto;">
+
+            <!-- ══ HERO ══ -->
+            <div class="about-hero reveal">
+                <div class="eyebrow">Final Year Project — 2026</div>
+                <h1 class="text-gradient">Neuro-Phenotypic Stratification of ASD Risk via Machine Learning</h1>
+                <p class="hero-sub">A next-generation AI-powered neuro-behavioral healthcare platform designed for early Autism Spectrum Disorder risk stratification and intelligent clinical triage — built with a mission to serve Pakistan.</p>
+            </div>
+
+            <!-- ══ 1. ABOUT THE CREATOR ══ -->
+            <div class="card about-section reveal">
+                <h3>👩‍💻 About the Creator</h3>
+                <div class="creator-card">
+                    <div class="creator-avatar">AN</div>
+                    <div class="creator-info">
+                        <h4>Ayesha Nisar</h4>
+                        <div class="creator-meta">BSCS Student · UAF Sub Campus · Final Year Project 2026</div>
+                        <p>
+                            I am studying at UAF Sub Campus as a Bachelor's in Computer Science (BSCS) student. I am passionate about creating innovative technology solutions that can bring positive change to society and improve the lives of people through smart and meaningful digital systems.
+                        </p>
+                    </div>
+                </div>
+                <div class="highlight-box" style="margin-top:1.2rem;">
+                    <p>"I believe technology should not only make systems smarter, but also make human lives better. That belief inspired me to choose this project."</p>
+                </div>
+            </div>
+
+            <!-- ══ 2. PROJECT VISION ══ -->
+            <div class="card about-section reveal">
+                <h3>🔭 Project Vision</h3>
+                <p>
+                    NeuroStrat AI is not just an academic requirement — it is a mission that reflects a vision for a healthier, more aware, and more supportive Pakistan. The project aims to develop an intelligent AI-assisted triage system that can stratify individuals into clinically relevant ASD risk categories.
+                </p>
+                <div class="mission-box">
+                    <p>
+                        ✦ &nbsp;By using advanced Machine Learning and Deep Learning techniques, the system assists healthcare professionals in accelerating the referral process for formal clinical assessment and early intervention — making that identification faster, more consistent, and more accessible.
+                    </p>
+                </div>
+                <p>
+                    As a student, researcher, and future AI engineer, the goal is to create real-world impact rather than remain limited to theory. Even a small technological contribution can help transform lives and spread awareness across the nation.
+                </p>
+            </div>
+
+            <!-- ══ 3. PROBLEM STATEMENT ══ -->
+            <div class="card about-section reveal">
+                <h3>⚠️ Problem Statement</h3>
+                <p>
+                    In Pakistan, awareness about Autism Spectrum Disorder (ASD) is still very limited. Many children and teenagers remain undiagnosed because families often do not recognize the early signs of autism, and access to professional clinical assessment is difficult, expensive, or unavailable in many areas.
+                </p>
+                <p>
+                    As a result, countless individuals do not receive timely support and intervention. Current diagnostic processes rely heavily on specialist availability, creating significant bottlenecks in the healthcare system.
+                </p>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔍</div>
+                        <div class="stat-label">Limited awareness of early ASD signs among families in Pakistan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏥</div>
+                        <div class="stat-label">Professional clinical assessment is costly &amp; hard to access in many regions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-label">Delayed diagnosis leads to missed critical windows for early intervention</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👨‍👩‍👧</div>
+                        <div class="stat-label">Families lack structured support and guidance at the right time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ 4. AI & HEALTHCARE MISSION ══ -->
+            <div class="card about-section reveal">
+                <h3>🧠 AI &amp; Healthcare Mission</h3>
+                <p>
+                    While observing these challenges in society, the realization emerged that Artificial Intelligence can play an important role in helping healthcare systems identify autism-related risks earlier and more efficiently.
+                </p>
+                <p>
+                    The platform leverages cutting-edge machine learning techniques to analyze behavioral, vocal, and cognitive data across multiple modalities — producing clinically relevant ASD risk stratification results classified as <strong>High Risk</strong>, <strong>Moderate Risk</strong>, or <strong>Low Risk</strong>.
+                </p>
+                <div class="highlight-box">
+                    <p>"The system is designed to bridge the gap between AI research and clinical practice by providing explainable, interpretable outputs that support — not replace — the professional clinical judgment of healthcare providers."</p>
+                </div>
+                <p>
+                    This platform serves as a <em>clinical triage tool</em>, enabling faster identification of high-risk individuals who require immediate specialist attention, while providing peace of mind for lower-risk cases.
+                </p>
+            </div>
+
+            <!-- ══ 5. GOALS & FUTURE VISION ══ -->
+            <div class="card about-section reveal">
+                <h3>🎯 Goals &amp; Future Vision</h3>
+                <p>The ultimate goal is to contribute toward a future where:</p>
+                <div class="goal-list">
+                    <div class="goal-item">
+                        <div class="goal-dot"></div>
+                        <span>Autism awareness is increased across Pakistan, reaching families in urban and rural communities alike.</span>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-dot"></div>
+                        <span>Early detection becomes accessible to everyone, regardless of geographic location or financial situation.</span>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-dot"></div>
+                        <span>Families receive support at the right time, with structured guidance and actionable next steps.</span>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-dot"></div>
+                        <span>Children and teenagers can achieve better developmental outcomes through timely clinical referral and intervention.</span>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-dot"></div>
+                        <span>Healthcare services become more equitable and technology-driven, reducing dependency on scarce specialist resources.</span>
+                    </div>
+                </div>
+                <div class="mission-box" style="margin-top:1.2rem;">
+                    <p>
+                        💭 &nbsp;"I dream of a Pakistan where autism is understood with compassion, identified at an early stage, and supported through intelligent healthcare solutions. This Final Year Project is my step toward that vision."
+                        <br><br>
+                        <strong style="color:var(--accent);">— Ayesha Nisar</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- ══ 6. TECHNOLOGIES USED ══ -->
+            <div class="card about-section reveal">
+                <h3>⚙️ Technologies Used</h3>
+                <p>
+                    This project combines a modern, production-grade technology stack to deliver a smart, scalable, and impactful healthcare solution:
+                </p>
+                <div style="margin: 1rem 0;">
+                    <p style="font-size:.83rem;color:var(--text-sec);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Languages &amp; Frameworks</p>
+                    <span class="tech-badge">Python</span>
+                    <span class="tech-badge">FastAPI</span>
+                    <span class="tech-badge">HTML5 / CSS3</span>
+                    <span class="tech-badge">JavaScript</span>
+                    <span class="tech-badge">Docker</span>
+                </div>
+                <div style="margin: 1rem 0;">
+                    <p style="font-size:.83rem;color:var(--text-sec);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Machine Learning &amp; Deep Learning</p>
+                    <span class="tech-badge">Machine Learning</span>
+                    <span class="tech-badge">Deep Learning</span>
+                    <span class="tech-badge">CNN</span>
+                    <span class="tech-badge">GNN</span>
+                    <span class="tech-badge">RNN / LSTM</span>
+                    <span class="tech-badge">Multi-Modal Data Fusion</span>
+                </div>
+                <div style="margin: 1rem 0;">
+                    <p style="font-size:.83rem;color:var(--text-sec);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Libraries &amp; Explainability</p>
+                    <span class="tech-badge">TensorFlow 2.x</span>
+                    <span class="tech-badge">PyTorch</span>
+                    <span class="tech-badge">scikit-learn</span>
+                    <span class="tech-badge">SHAP (XAI)</span>
+                    <span class="tech-badge">SQLAlchemy</span>
+                </div>
+                <div style="margin: 1rem 0;">
+                    <p style="font-size:.83rem;color:var(--text-sec);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Key Feature</p>
+                    <span class="tech-badge">AI-Powered Explainable Risk Stratification</span>
+                    <span class="tech-badge">Neuro-Phenotypic Analysis</span>
+                    <span class="tech-badge">Clinical Triage Engine</span>
+                </div>
+
+                <!-- AI Modules sub-section -->
+                <div style="margin-top:1.5rem;">
+                    <p style="font-size:.9rem;color:var(--text-sec);margin-bottom:.9rem;font-weight:600;">Age-Based AI Interaction Modules</p>
+                    <div style="display:flex;flex-direction:column;gap:.65rem;">
+                        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--glass-border);">
+                            <span style="font-size:1.4rem;">🎮</span>
+                            <div><strong style="font-size:.88rem;">Ages 4–8:</strong><span style="color:var(--text-sec);font-size:.83rem;margin-left:.5rem;">Behavioral Adventure Platform — colorful games analyzing play patterns and emotional responses</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--glass-border);">
+                            <span style="font-size:1.4rem;">📖</span>
+                            <div><strong style="font-size:.88rem;">Ages 9–12:</strong><span style="color:var(--text-sec);font-size:.83rem;margin-left:.5rem;">Social Simulation Platform — story-based scenarios assessing empathy and social reasoning</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--glass-border);">
+                            <span style="font-size:1.4rem;">🎤</span>
+                            <div><strong style="font-size:.88rem;">Ages 12–16:</strong><span style="color:var(--text-sec);font-size:.83rem;margin-left:.5rem;">Voice Interaction Platform — AI-guided conversations analyzing communication confidence</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--glass-border);">
+                            <span style="font-size:1.4rem;">💬</span>
+                            <div><strong style="font-size:.88rem;">Ages 17–22:</strong><span style="color:var(--text-sec);font-size:.83rem;margin-left:.5rem;">Social Reasoning Platform — professional scenario simulations for verbal fluency assessment</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--glass-border);">
+                            <span style="font-size:1.4rem;">🧠</span>
+                            <div><strong style="font-size:.88rem;">Ages 22+:</strong><span style="color:var(--text-sec);font-size:.83rem;margin-left:.5rem;">Cognitive Interaction Platform — adaptive AI conversations with context-switching analysis</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ 7. ETHICS & PRIVACY ══ -->
+            <div class="card about-section reveal">
+                <h3>⚖️ Ethics &amp; Privacy</h3>
+                <p>This platform is designed with a strong ethical framework to ensure responsible AI in healthcare:</p>
+                <ul style="color:var(--text-sec);font-size:.9rem;padding-left:1.25rem;line-height:2.1;">
+                    <li>All interactions are anonymous at the AI processing layer</li>
+                    <li>No raw interaction data leaves the user's session without explicit consent</li>
+                    <li>Results are clearly labelled as AI-assisted, not diagnostic</li>
+                    <li>HIPAA-inspired data handling protocols are applied throughout</li>
+                    <li>The platform includes mandatory consent gates before any screening begins</li>
+                    <li>Explainable AI (SHAP) ensures clinical transparency in all risk outputs</li>
+                </ul>
+            </div>
+
+            <!-- ══ DISCLAIMER ══ -->
+            <div class="disclaimer reveal">
+                ⚠ This platform provides AI-assisted behavioral risk stratification and is not a substitute for professional clinical diagnosis. Always consult a qualified healthcare professional for formal ASD assessment.
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

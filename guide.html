@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .guide-card { padding:1.5rem; border-radius:var(--radius); border:1px solid var(--glass-border); background:var(--card); margin-bottom:1rem; display:flex; gap:1.25rem; align-items:flex-start; transition:all .3s; }
+        .guide-card:hover { border-color:rgba(124,58,237,.3); transform:translateX(4px); }
+        .guide-icon { font-size:2rem; flex-shrink:0; width:52px; height:52px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.2); }
+        .guide-card h4 { font-size:1rem; margin-bottom:.4rem; }
+        .guide-card p { color:var(--text-sec); font-size:.88rem; line-height:1.7; }
+        .privacy-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin-top:1rem; }
+        .privacy-item { padding:1.25rem; border-radius:var(--radius-sm); border:1px solid var(--glass-border); background:var(--card); text-align:center; }
+        .privacy-item .icon { font-size:1.8rem; margin-bottom:.5rem; }
+        .privacy-item h4 { font-size:.9rem; margin-bottom:.3rem; }
+        .privacy-item p { font-size:.8rem; color:var(--text-sec); }
+        .result-legend { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1rem; }
+        .legend-item { padding:1rem; border-radius:var(--radius-sm); text-align:center; }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span></div>
+    <nav><ul class="nav-menu">
+        <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+        <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+        <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+        <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+        <li><a href="guide.html" class="active"><span class="nav-icon">📖</span> Guide</a></li>
+        <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul></nav>
+    <div class="sidebar-footer"><button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button></div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>User Guide</h2>
+        </div>
+        <div class="topbar-right"><div class="user-avatar" data-user-avatar>U</div></div>
+    </header>
+
+    <div class="page-content">
+        <div style="max-width:860px;margin:0 auto;">
+
+            <div class="section-header reveal text-center">
+                <h2>How NeuroStrat AI Works</h2>
+                <p>A step-by-step guide to the ASD screening experience</p>
+            </div>
+
+            <!-- How It Works Timeline -->
+            <h3 style="font-size:1.1rem;margin-bottom:1.25rem;color:var(--accent);" class="reveal">📋 Screening Process</h3>
+            <div class="timeline reveal">
+                <div class="timeline-item">
+                    <h4>Step 1 — Create Account & Login</h4>
+                    <p>Register with your email address on the login page. Your credentials are securely stored using industry-standard encryption. Existing users simply sign in to access their dashboard and screening history.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Step 2 — Complete Registration Form</h4>
+                    <p>Fill in the participant's details: full name, age, gender, country, and optional medical notes. The platform automatically identifies the most appropriate AI interaction module based on the submitted age.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Step 3 — Review AI Module Selection</h4>
+                    <p>Review the automatically selected age-appropriate module. You can see a preview of what the interaction will involve. Confirm your selection and proceed to the consent section.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Step 4 — Consent & Privacy Agreement</h4>
+                    <p>Read the data collection notice and ethical AI disclaimer carefully. Provide informed consent for data processing. All three consent checkboxes must be accepted before proceeding.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Step 5 — Launch AI Interaction Module</h4>
+                    <p>Begin the interactive AI session. Depending on your age group, this may involve gameplay, social storytelling, voice conversation, or cognitive tasks. The AI silently records behavioral metrics in the background.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Step 6 — AI Analysis & Results</h4>
+                    <p>Upon completion, the multi-modal AI engine processes all collected data. Within seconds, you receive a full stratification report including risk level, confidence score, and detailed behavioral analysis with clinical recommendations.</p>
+                </div>
+            </div>
+
+            <!-- AI Modules Explained -->
+            <h3 style="font-size:1.1rem;margin:2rem 0 1.25rem;color:var(--accent);" class="reveal">🤖 AI Interaction Modules Explained</h3>
+
+            <div class="guide-card reveal">
+                <div class="guide-icon">🎮</div>
+                <div>
+                    <h4>Ages 4–8 | Behavioral Adventure Platform</h4>
+                    <p>Children engage with a colorful interactive world featuring room decoration tasks, object sorting games, emotion recognition activities, and memory mini-games. The AI analyzes repetitive actions, creativity, emotional understanding, attention span, and reaction speed — all without the child ever knowing they're being assessed.</p>
+                </div>
+            </div>
+
+            <div class="guide-card reveal">
+                <div class="guide-icon">📖</div>
+                <div>
+                    <h4>Ages 9–12 | Social Simulation Platform</h4>
+                    <p>Story-based exploration through school, classroom, and park environments. Children make emotional decisions within narrative scenarios (e.g., "How do you respond when a friend is upset?"). The AI evaluates empathy, social reasoning, adaptability, and behavioral consistency.</p>
+                </div>
+            </div>
+
+            <div class="guide-card reveal">
+                <div class="guide-icon">🎤</div>
+                <div>
+                    <h4>Ages 12–16 | Voice Interaction Platform</h4>
+                    <p>A futuristic AI assistant poses real-life social questions for users to answer verbally. The voice analysis engine processes speaking confidence, hesitation patterns, communication flow, emotional consistency, and stress indicators in real-time.</p>
+                </div>
+            </div>
+
+            <div class="guide-card reveal">
+                <div class="guide-icon">💬</div>
+                <div>
+                    <h4>Ages 17–22 | Social Reasoning & Voice Confidence</h4>
+                    <p>Realistic emotional and professional social scenarios presented for verbal response and reasoning. The AI tracks confidence level, communication fluency, emotional reasoning, hesitation patterns, and conversational consistency in a mature, research-lab style interface.</p>
+                </div>
+            </div>
+
+            <div class="guide-card reveal">
+                <div class="guide-icon">🧠</div>
+                <div>
+                    <h4>Ages 22+ | Cognitive Interaction Platform</h4>
+                    <p>Adaptive AI conversations combined with cognitive challenge simulations, context-switching tasks, and multitasking interaction tests. The AI tracks behavioral consistency, attention switching, communication organization, cognitive flexibility, stress response, and adaptability under pressure.</p>
+                </div>
+            </div>
+
+            <!-- Result Interpretation -->
+            <h3 style="font-size:1.1rem;margin:2rem 0 1.25rem;color:var(--accent);" class="reveal">📊 Understanding Your Results</h3>
+            <div class="result-legend reveal">
+                <div class="legend-item risk-low">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">✅</div>
+                    <strong>Low Risk</strong>
+                    <p style="font-size:.8rem;margin-top:.3rem;color:var(--text-sec);">Behavioral patterns are within typical developmental range. Routine monitoring recommended.</p>
+                </div>
+                <div class="legend-item risk-moderate">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">⚠</div>
+                    <strong>Moderate Risk</strong>
+                    <p style="font-size:.8rem;margin-top:.3rem;color:var(--text-sec);">Some behavioral indicators detected. Follow-up clinical assessment within 3 months advised.</p>
+                </div>
+                <div class="legend-item risk-high">
+                    <div style="font-size:1.5rem;margin-bottom:.4rem;">🔴</div>
+                    <strong>High Risk</strong>
+                    <p style="font-size:.8rem;margin-top:.3rem;color:var(--text-sec);">Significant ASD risk indicators present. Immediate specialist referral strongly recommended.</p>
+                </div>
+            </div>
+
+            <!-- Privacy -->
+            <h3 style="font-size:1.1rem;margin:2rem 0 1.25rem;color:var(--accent);" class="reveal">🔒 Privacy & Data Consent</h3>
+            <div class="privacy-grid reveal">
+                <div class="privacy-item"><div class="icon">🔐</div><h4>End-to-End Encryption</h4><p>All data encrypted with TLS 1.3 and AES-256</p></div>
+                <div class="privacy-item"><div class="icon">👤</div><h4>Anonymized Processing</h4><p>PII removed before AI model analysis</p></div>
+                <div class="privacy-item"><div class="icon">🗑️</div><h4>Right to Deletion</h4><p>Request data removal at any time</p></div>
+                <div class="privacy-item"><div class="icon">🚫</div><h4>No Third Party Sharing</h4><p>Data never sold or shared without consent</p></div>
+            </div>
+
+            <div style="padding:1rem;border-radius:var(--radius-sm);border:1px solid rgba(245,158,11,.2);background:rgba(245,158,11,.05);color:var(--warning);font-size:.8rem;margin-top:2rem;text-align:center;" class="reveal">
+                ⚠ This platform provides AI-assisted behavioral risk stratification and is not a substitute for professional clinical diagnosis.
+            </div>
+
+            <div class="text-center mt-4 reveal">
+                <a href="register.html" class="btn btn-primary">Start Your Screening →</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>StarWorld Adventure 🌟</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky:#fff9f0; --cloud:#ffffff; --grass:#8de87a;
+  --p1:#ff7eb3; --p2:#ffca3a; --p3:#6bcff6; --p4:#b288ff; --p5:#ff9966;
+  --good:#4cd964; --bad:#ff4757; --neutral:#ffca3a;
+  --text:#2d2d4e; --muted:#8888aa; --white:#ffffff;
+  --r:16px; --r2:28px; --r3:50px;
+  --shadow: 0 8px 32px rgba(0,0,0,.12);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.18);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--sky);
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+}
+body { display: flex; flex-direction: column; }
+
+/* ── STARFIELD BG ── */
+#bg-layer {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.bg-cloud {
+  position: absolute; border-radius: 50px;
+  background: rgba(255,255,255,.65);
+  animation: cloudDrift linear infinite;
+}
+@keyframes cloudDrift {
+  from { transform: translateX(-200px); }
+  to   { transform: translateX(110vw);  }
+}
+
+/* ── HUD ── */
+#hud {
+  height: 64px; flex-shrink: 0; position: relative; z-index: 50;
+  background: linear-gradient(135deg, #ffca3a 0%, #ff7eb3 100%);
+  display: flex; align-items: center; padding: 0 1.2rem; gap: .8rem;
+  box-shadow: 0 4px 20px rgba(255,126,179,.35);
+}
+.hud-logo {
+  font-family: 'Baloo 2', sans-serif; font-size: 1.05rem; font-weight: 800;
+  color: white; text-shadow: 0 2px 8px rgba(0,0,0,.18); letter-spacing: .02em;
+  display: flex; align-items: center; gap: .4rem;
+}
+.hud-logo .star { font-size: 1.3rem; animation: spin 4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hud-spacer { flex: 1; }
+.hud-stars { display: flex; gap: 5px; align-items: center; }
+.star-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,.3); border: 2px solid rgba(255,255,255,.5);
+  transition: all .35s cubic-bezier(.34,1.56,.64,1); font-size: .8rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.star-dot.done { background: white; border-color: white; box-shadow: 0 0 12px rgba(255,255,255,.8); }
+.star-dot.done::after { content: '⭐'; font-size: .65rem; }
+.star-dot.cur { background: rgba(255,255,255,.6); border-color: white; animation: pulse-dot .9s ease infinite; }
+.star-dot.cur::after { content: '✨'; font-size: .65rem; }
+@keyframes pulse-dot { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+.hud-friend { font-size: 1.8rem; animation: wobble 2s ease infinite; }
+@keyframes wobble { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+
+/* ── STAGE ── */
+#stage {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; z-index: 1;
+}
+canvas { display: block; border-radius: 24px; cursor: pointer;
+  box-shadow: 0 20px 60px rgba(0,0,0,.15), 0 4px 16px rgba(0,0,0,.08); }
+
+/* ── FLASH ── */
+#flash {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  padding: .6rem 2rem; border-radius: 50px; font-size: 1.1rem; font-weight: 800;
+  pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 60;
+  white-space: nowrap; font-family: 'Baloo 2', sans-serif;
+}
+#flash.show { opacity: 1; }
+#flash.ok  { background: #4cd964; color: white; box-shadow: 0 6px 24px rgba(76,217,100,.5); }
+#flash.bad { background: #ff4757; color: white; box-shadow: 0 6px 24px rgba(255,71,87,.5); }
+
+/* ── FLAGS (behavioral) ── */
+#flags {
+  position: absolute; bottom: 8px; right: 8px; display: flex;
+  flex-direction: column; gap: 4px; z-index: 55; pointer-events: none;
+}
+.flag {
+  background: rgba(255,201,38,.12); border: 1.5px solid rgba(255,201,38,.45);
+  color: #b8860b; padding: .2rem .65rem; border-radius: 6px;
+  font-size: .58rem; font-weight: 700;
+}
+
+/* ── COMPLETE ── */
+#complete {
+  position: absolute; inset: 0; z-index: 70; display: none;
+  flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: .9rem;
+  background: linear-gradient(160deg, #fff9f0 0%, #ffe8f5 50%, #e8f5ff 100%);
+  overflow-y: auto;
+  padding: 2.5rem 1rem 2rem 1rem;
+}
+#complete.show { display: flex; }
+.complete-hero { font-size: 4rem; animation: bounce-hero 1s ease infinite; }
+@keyframes bounce-hero { 0%,100%{transform:translateY(0) scale(1)} 40%{transform:translateY(-14px) scale(1.1)} }
+.complete-title { font-family:'Baloo 2',sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text); }
+.risk-pill {
+  padding: .5rem 2rem; border-radius: 50px; font-weight: 800;
+  font-size: .9rem; font-family: 'Baloo 2', sans-serif;
+}
+.risk-Low     { background: rgba(76,217,100,.15); color: #2a8a3a; border: 2px solid rgba(76,217,100,.4); }
+.risk-Moderate{ background: rgba(255,201,38,.15); color: #8a6a00; border: 2px solid rgba(255,201,38,.4); }
+.risk-High    { background: rgba(255,71,87,.12); color: #aa2030; border: 2px solid rgba(255,71,87,.35); }
+.score-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
+  width: min(380px, 90vw);
+}
+.score-item {
+  background: white; border-radius: 16px; padding: .75rem 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.score-lbl { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .3rem; font-weight: 700; }
+.score-bar-wrap { height: 5px; background: #f0f0f5; border-radius: 3px; overflow: hidden; margin-bottom: .3rem; }
+.score-bar { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.22,1,.36,1); }
+.score-val { font-size: .85rem; font-weight: 800; }
+.flag-list { max-width: 380px; display: flex; flex-direction: column; gap: .3rem; }
+.complete-flag { font-size: .68rem; color: #8a6a00; background: rgba(255,201,38,.08); border: 1.5px solid rgba(255,201,38,.3); border-radius: 8px; padding: .25rem .75rem; }
+.note { font-size: .58rem; color: var(--muted); text-align: center; max-width: 340px; line-height: 1.6; }
+
+/* ── MUSIC TOGGLE BUTTON ── */
+#music-btn {
+  position: relative; z-index: 60;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.3);
+  border: 2.5px solid rgba(255,255,255,.6);
+  cursor: pointer; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+}
+#music-btn:hover { transform: scale(1.15); background: rgba(255,255,255,.5); }
+#music-btn.muted { opacity: .55; }
+
+/* ── MUSIC POPUP TOAST ── */
+#music-toast {
+  position: absolute;
+  top: 12px; left: 50%; transform: translateX(-50%) translateY(-8px);
+  background: linear-gradient(135deg, #fff9f0, #ffe8f8);
+  border: 2.5px solid var(--toast-col, #ff7eb3);
+  border-radius: 28px;
+  padding: .55rem 1.4rem .55rem 1rem;
+  display: flex; align-items: center; gap: .6rem;
+  font-family: 'Baloo 2', sans-serif; font-weight: 800;
+  font-size: .95rem; color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+  z-index: 65;
+  white-space: nowrap;
+  transition: opacity .28s, transform .28s cubic-bezier(.34,1.56,.64,1);
+}
+#music-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#music-toast .toast-icon {
+  font-size: 1.5rem;
+  animation: toast-bounce .5s ease infinite alternate;
+}
+#music-toast .toast-notes {
+  font-size: .75rem; color: #aaa;
+  display: flex; gap: 3px; align-items: center;
+}
+.note-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  animation: note-pulse 1s ease infinite;
+}
+.note-dot:nth-child(2) { animation-delay: .15s; }
+.note-dot:nth-child(3) { animation-delay: .30s; }
+@keyframes note-pulse { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(2.2)} }
+@keyframes toast-bounce { from{transform:translateY(0)} to{transform:translateY(-3px)} }
+
+/* ── MUSIC BARS (visualizer in HUD) ── */
+#music-bars {
+  display: flex; gap: 3px; align-items: flex-end; height: 20px;
+  opacity: 0; transition: opacity .3s;
+}
+#music-bars.active { opacity: 1; }
+#music-bars span {
+  width: 4px; background: rgba(255,255,255,.8); border-radius: 2px;
+  animation: bar-dance 0.6s ease infinite alternate;
+}
+#music-bars span:nth-child(1){ height:8px;  animation-delay:0s; }
+#music-bars span:nth-child(2){ height:16px; animation-delay:.1s; }
+#music-bars span:nth-child(3){ height:12px; animation-delay:.2s; }
+#music-bars span:nth-child(4){ height:18px; animation-delay:.05s; }
+#music-bars span:nth-child(5){ height:10px; animation-delay:.15s; }
+@keyframes bar-dance {
+  from { transform: scaleY(1); opacity:.7; }
+  to   { transform: scaleY(1.8); opacity:1; }
+}
+
+  /* ── FINAL BUTTONS ── */
+  .final-actions {
+    display: flex; gap: .7rem; flex-wrap: wrap;
+    justify-content: center; margin-top: .6rem; margin-bottom: 2rem;
+    max-width: 560px; width: 90vw;
+  }
+  .final-actions .btn {
+    flex: 1 1 140px; min-width: 140px;
+    padding: .7rem 1.2rem; border-radius: 50px;
+    font-family: 'Baloo 2', sans-serif; font-weight: 800;
+    font-size: .92rem; letter-spacing: .02em;
+    cursor: pointer; border: none; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: .35rem; transition: all .25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 4px 14px rgba(0,0,0,.12);
+    color: white; text-align: center;
+  }
+  .final-actions .btn:hover { transform: translateY(-3px) scale(1.04); }
+  .btn-download { background: linear-gradient(135deg, #4cd964, #34c759); }
+  .btn-download:hover { box-shadow: 0 8px 24px rgba(76,217,100,.45); }
+  .btn-dashboard { background: linear-gradient(135deg, #6bcff6, #4aa8e8); }
+  .btn-dashboard:hover { box-shadow: 0 8px 24px rgba(107,207,246,.45); }
+  .btn-doctor { background: linear-gradient(135deg, #ff7eb3, #ff5e9e); }
+  .btn-doctor:hover { box-shadow: 0 8px 24px rgba(255,126,179,.45); }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div id="bg-layer"></div>
+
+<div id="hud">
+  <div class="hud-logo">
+    <span class="star">🌟</span>
+    StarWorld Adventure
+  </div>
+  <span class="hud-spacer"></span>
+  <div id="music-bars">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="hud-stars" id="hud-stars"></div>
+  <div class="hud-friend" id="hud-friend">🦊</div>
+  <button id="music-btn" title="Toggle music">🎵</button>
+</div>
+
+<div id="stage">
+  <canvas id="canvas" width="860" height="540"></canvas>
+  <div id="flash"></div>
+  <div id="flags"></div>
+  <div id="music-toast">
+    <span class="toast-icon" id="toast-icon">🎵</span>
+    <div>
+      <div id="toast-title">Let's Play!</div>
+      <div class="toast-notes">
+        <span class="note-dot" style="background:#ff7eb3"></span>
+        <span class="note-dot" style="background:#ffca3a"></span>
+        <span class="note-dot" style="background:#6bcff6"></span>
+      </div>
+    </div>
+  </div>
+  <div id="complete">
+    <div class="complete-hero">🌟</div>
+    <div class="complete-title">Amazing Adventure!</div>
+    <p style="color:var(--muted);font-size:.85rem">All games complete!</p>
+    <div class="risk-pill" id="risk-pill">—</div>
+    <div class="score-grid" id="score-grid"></div>
+    <div class="flag-list" id="flag-list"></div>
+    <p class="note">This is a behavioral pattern observation, not a clinical diagnosis.<br>Please consult a qualified professional for evaluation.</p>
+    <div class="final-actions">
+      <button class="btn btn-download" onclick="downloadReport()">📥 Download Report</button>
+      <a href="dashboard.html" class="btn btn-dashboard">🏠 Dashboard</a>
+      <a href="consult-doctor.html" class="btn btn-doctor">🩺 Consult Doctor</a>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════
+// 🎵 MUSIC ENGINE v3 — True step sequencer
+//
+// How it works:
+//   • ONE AudioContext, ONE masterGain
+//   • THREE buses: melodyBus (vol 0.17), bassBus (vol 0.08), sfxBus (vol 0.24)
+//   • TWO independent voice cursors: melody cursor + bass cursor
+//     Each cursor holds: noteIndex, nextScheduleTime
+//   • setInterval fires every TICK_MS (50ms)
+//     On each tick, for each voice:
+//       → if nextScheduleTime < now + AHEAD_SEC  →  fire THAT ONE note, advance cursor
+//     This fires at most one note per voice per tick — never a burst.
+//   • Loop: when a cursor reaches end of its array, it wraps to 0
+//     and nextScheduleTime advances by the note duration (not reset to "now").
+//     This ensures perfectly gapless, perfectly non-overlapping loops.
+//   • SFX always go to sfxBus — completely isolated from music voices.
+//   • stopCurrent() cancels the interval and ramps out all active oscs
+//     with a 40ms fade to prevent clicks.
+// ══════════════════════════════════════════════════
+const MusicEngine = (() => {
+
+  // ── Audio graph ──────────────────────────────────
+  let AC         = null;
+  let masterGain = null;
+  let melodyBus  = null;   // vol 0.17 — melody voice
+  let bassBus    = null;   // vol 0.08 — bass voice
+  let sfxBus     = null;   // vol 0.24 — sfx only
+
+  function _initAC() {
+    if (AC) return;
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+
+    masterGain = AC.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(AC.destination);
+
+    melodyBus = AC.createGain(); melodyBus.gain.value = 0.17;
+    bassBus   = AC.createGain(); bassBus.gain.value   = 0.08;
+    sfxBus    = AC.createGain(); sfxBus.gain.value    = 0.24;
+    melodyBus.connect(masterGain);
+    bassBus.connect(masterGain);
+    sfxBus.connect(masterGain);
+  }
+
+  // ── Freq table ───────────────────────────────────
+  const F = {
+    C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196.00,A3:220.00,B3:246.94,
+    C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,
+    C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880.00,B5:987.77,
+    R:0,
+  };
+
+  // ── Themes ───────────────────────────────────────
+  // mel[] and bas[] are note arrays: [noteName, beatDuration]
+  // beatDuration is in quarter-note beats (1 = 1 quarter note).
+  // Melody and bass loop independently — each wraps at its own end.
+  // They share the same BPM so they stay in sync naturally.
+  //
+  // RULE: no note shorter than 0.25 beats (prevents rapid-fire bursts).
+  const THEMES = [
+
+    // Game 0 · Emotion Bubbles · Gentle waltz in C major
+    { name:'Feeling Fiesta', icon:'🎭', color:'#ffca3a', bpm:104,
+      melWave:'sine', basWave:'sine',
+      mel:[
+        ['E5',.5],['G5',.5],['A5',1],
+        ['G5',.5],['E5',.5],['C5',1],
+        ['D5',.5],['F5',.5],['G5',1],
+        ['E5',.5],['D5',.5],['C5',1],
+        ['A4',.5],['C5',.5],['E5',1],
+        ['G4',.5],['B4',.5],['D5',1],
+        ['E5',.5],['G5',.5],['E5',.5],['G5',.5],
+        ['C5',2],
+      ],
+      bas:[
+        ['C3',2],['G3',2],['A3',2],['E3',2],
+        ['F3',2],['C3',2],['G3',2],['G3',2],
+      ],
+    },
+
+    // Game 1 · Decorate Room · Happy skipping
+    { name:'Room Remix', icon:'🏠', color:'#b288ff', bpm:96,
+      melWave:'triangle', basWave:'sine',
+      mel:[
+        ['C5',.5],['E5',.5],['G5',.5],['E5',.5],
+        ['D5',.5],['F5',.5],['A5',1],
+        ['G5',.5],['E5',.5],['C5',.5],['E5',.5],
+        ['D5',.5],['B4',.5],['C5',1],
+        ['E5',.5],['G5',.5],['E5',.5],['D5',.5],
+        ['C5',.5],['A4',.5],['G4',1],
+        ['A4',.5],['C5',.5],['E5',.5],['G5',.5],
+        ['C5',2],
+      ],
+      bas:[
+        ['C3',2],['G3',2],['F3',2],['G3',2],
+        ['A3',2],['E3',2],['F3',2],['C3',2],
+      ],
+    },
+
+    // Game 2 · Sort Objects · Bouncy march
+    { name:'Sorting Shuffle', icon:'🌈', color:'#ff7eb3', bpm:116,
+      melWave:'triangle', basWave:'sine',
+      mel:[
+        ['G4',.5],['A4',.5],['G4',.5],['R',.5],
+        ['C5',.5],['B4',1],  ['R',.5],
+        ['G4',.5],['A4',.5],['G4',.5],['R',.5],
+        ['D5',.5],['C5',1],  ['R',.5],
+        ['G4',.5],['G5',.5],['E5',.5],['C5',.5],
+        ['B4',.5],['A4',1],  ['R',.5],
+        ['F5',.5],['E5',.5], ['D5',.5],['C5',.5],
+        ['C5',2],
+      ],
+      bas:[
+        ['C3',2],['C3',2],['G3',2],['G3',2],
+        ['F3',2],['F3',2],['G3',2],['G3',2],
+      ],
+    },
+
+    // Game 3 · Joint Attention · Curious explorer (Ode to Joy base)
+    { name:'Explorer Beat', icon:'👁️', color:'#6bcff6', bpm:108,
+      melWave:'sine', basWave:'sine',
+      mel:[
+        ['E5',.5],['E5',.5],['F5',.5],['G5',.5],
+        ['G5',.5],['F5',.5],['E5',.5],['D5',.5],
+        ['C5',.5],['C5',.5],['D5',.5],['E5',.5],
+        ['E5',1], ['D5',1],
+        ['E5',.5],['E5',.5],['F5',.5],['G5',.5],
+        ['G5',.5],['F5',.5],['E5',.5],['D5',.5],
+        ['C5',.5],['D5',.5],['E5',.5],['C5',.5],
+        ['C5',2],
+      ],
+      bas:[
+        ['A3',2],['E3',2],['F3',2],['E3',2],
+        ['A3',2],['E3',2],['D3',2],['A3',2],
+      ],
+    },
+
+    // Game 4 · Color Patterns · Bright arpeggio dance
+    { name:'Rainbow Rave', icon:'🎨', color:'#4cd964', bpm:112,
+      melWave:'triangle', basWave:'sine',
+      mel:[
+        ['C5',.25],['E5',.25],['G5',.25],['E5',.25],
+        ['C5',.25],['G5',.25],['E5',.25],['C5',.25],
+        ['D5',.25],['F5',.25],['A5',.25],['F5',.25],
+        ['D5',.25],['A5',.25],['F5',.25],['D5',.25],
+        ['E5',.5], ['G5',.5], ['C5',.5], ['E5',.5],
+        ['G5',.5], ['A5',.5], ['G5',1],
+        ['F5',.25],['E5',.25],['D5',.25],['C5',.25],
+        ['E5',.5], ['G5',.5], ['C5',1],
+      ],
+      bas:[
+        ['C3',2],['G3',2],['A3',2],['F3',2],
+        ['G3',2],['D3',2],['F3',2],['C3',2],
+      ],
+    },
+
+    // Game 5 · Focus Quest · Hero march
+    { name:'Hero Quest', icon:'🎯', color:'#ff9966', bpm:120,
+      melWave:'triangle', basWave:'sine',
+      mel:[
+        ['C5',.5],['C5',.5],['E5',.5],['G5',.5],
+        ['G5',.5],['F5',.5],['E5',.5],['D5',.5],
+        ['D5',.5],['D5',.5],['F5',.5],['A5',.5],
+        ['A5',.5],['G5',.5],['F5',.5],['E5',.5],
+        ['E5',.5],['C5',.5],['E5',.5],['G5',.5],
+        ['G5',.5],['E5',.5],['C5',.5],['E5',.5],
+        ['D5',.5],['F5',.5],['D5',.5],['B4',.5],
+        ['C5',2],
+      ],
+      bas:[
+        ['C3',2],['G3',2],['C3',2],['G3',2],
+        ['F3',2],['C3',2],['G3',2],['C3',2],
+      ],
+    },
+  ];
+
+  // ── State ────────────────────────────────────────
+  let muted     = false;
+  let curGame   = -1;
+  let tickTimer = null;
+
+  // Voice cursors — each tracks its own position independently
+  const mel = { i:0, nextT:0, arr:[], wave:'sine',  bus:null, octave:1   };
+  const bas = { i:0, nextT:0, arr:[], wave:'sine',  bus:null, octave:0.5 };
+
+  const TICK_MS  = 50;    // scheduler fires every 50ms
+  const AHEAD_S  = 0.18;  // schedule this many seconds ahead of "now"
+
+  // ── Fire one note on a bus ────────────────────────
+  // Clean ADSR: 10ms attack → sustain → 20ms release
+  // noteLen = full grid slot in seconds
+  // Sound occupies 82% of slot, leaving an 18% gap (articulation)
+  function _note(freq, startT, noteLen, wave, bus) {
+    if (!AC || freq <= 0 || !bus) return;
+    const soundLen = noteLen * 0.82;
+    const atk = Math.min(0.010, soundLen * 0.15);
+    const rel = Math.min(0.020, soundLen * 0.20);
+    const susEnd = startT + soundLen - rel;
+
+    const osc  = AC.createOscillator();
+    const gain = AC.createGain();
+    osc.type            = wave;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0, startT);
+    gain.gain.linearRampToValueAtTime(1, startT + atk);
+    gain.gain.setValueAtTime(1, susEnd);
+    gain.gain.linearRampToValueAtTime(0, susEnd + rel);
+
+    osc.connect(gain);
+    gain.connect(bus);
+    osc.start(startT);
+    osc.stop(susEnd + rel + 0.005);
+  }
+
+  // ── Sequencer tick ───────────────────────────────
+  // Called every TICK_MS.
+  // For EACH voice: while its nextT is within the lookahead window,
+  // fire that note and advance the cursor by exactly the note duration.
+  // Wrapping is additive (nextT += dur) so loops are seamless.
+  function _tick() {
+    if (!AC || muted) return;
+    const now     = AC.currentTime;
+    const horizon = now + AHEAD_S;
+    const beat    = 60 / (THEMES[curGame] || THEMES[0]).bpm;
+
+    for (const voice of [mel, bas]) {
+      while (voice.nextT < horizon) {
+        const [noteName, beats] = voice.arr[voice.i];
+        const durSec = beats * beat;
+        const freq   = (F[noteName] || 0) * voice.octave;
+        _note(freq, voice.nextT, durSec, voice.wave, voice.bus);
+        voice.nextT += durSec;                   // advance by exact duration
+        voice.i = (voice.i + 1) % voice.arr.length;  // wrap at end of array
+      }
+    }
+  }
+
+  // ── Start / stop ─────────────────────────────────
+  function _stopEngine() {
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    // Fade out both music buses fast to avoid clicks
+    if (AC) {
+      const now = AC.currentTime;
+      [melodyBus, bassBus].forEach(bus => {
+        if (!bus) return;
+        bus.gain.cancelScheduledValues(now);
+        bus.gain.setValueAtTime(bus.gain.value, now);
+        bus.gain.linearRampToValueAtTime(0, now + 0.05);
+        // Restore after fade so next playGame works
+        setTimeout(() => {
+          if (bus === melodyBus) bus.gain.value = 0.17;
+          if (bus === bassBus)   bus.gain.value = 0.08;
+        }, 100);
+      });
+    }
+    _updateBars(false);
+  }
+
+  function playGame(idx) {
+    if (!AC) _initAC();
+    if (AC.state === 'suspended') AC.resume();
+    _stopEngine();
+    if (muted) { _showToast(idx); return; }
+
+    curGame = idx;
+    const th = THEMES[idx] || THEMES[0];
+
+    // Point each voice at its data
+    mel.arr   = th.mel;  mel.wave = th.melWave; mel.bus = melodyBus; mel.octave = 1;
+    bas.arr   = th.bas;  bas.wave = th.basWave;  bas.bus = bassBus;   bas.octave = 0.5;
+    mel.i = 0; bas.i = 0;
+
+    // Both voices start at a small offset from now so first tick has time
+    const startT  = AC.currentTime + 0.06;
+    mel.nextT = startT;
+    bas.nextT = startT;
+
+    // Restore bus volumes (may have been faded by _stopEngine)
+    melodyBus.gain.cancelScheduledValues(startT);
+    bassBus.gain.cancelScheduledValues(startT);
+    melodyBus.gain.setValueAtTime(0.17, startT);
+    bassBus.gain.setValueAtTime(0.08, startT);
+
+    _tick();  // fire immediately so notes are ready before interval
+    tickTimer = setInterval(_tick, TICK_MS);
+
+    _showToast(idx);
+    _updateBars(true);
+  }
+
+  function stopCurrent() { _stopEngine(); }
+
+  // ── SFX ──────────────────────────────────────────
+  // All SFX use sfxBus exclusively.
+  // Timing is relative to AC.currentTime + tiny offset.
+  // Max 4 simultaneous SFX oscillators — never more.
+  function sfx(type) {
+    if (!AC || muted) return;
+    if (AC.state === 'suspended') AC.resume();
+    const t = AC.currentTime + 0.01;
+
+    if (type === 'correct') {
+      // 3-note ascending chime — one note every 100ms
+      _note(F.C5, t,        0.12, 'sine', sfxBus);
+      _note(F.E5, t + 0.10, 0.12, 'sine', sfxBus);
+      _note(F.G5, t + 0.20, 0.18, 'sine', sfxBus);
+
+    } else if (type === 'wrong') {
+      // Soft 2-note dip — gentle, not alarming for kids
+      _note(F.A4, t,        0.10, 'sine', sfxBus);
+      _note(F.F4, t + 0.10, 0.14, 'sine', sfxBus);
+
+    } else if (type === 'start') {
+      // 4-note upward fanfare — evenly spaced 90ms
+      _note(F.C4, t,        0.10, 'triangle', sfxBus);
+      _note(F.E4, t + 0.09, 0.10, 'triangle', sfxBus);
+      _note(F.G4, t + 0.18, 0.10, 'triangle', sfxBus);
+      _note(F.C5, t + 0.27, 0.20, 'triangle', sfxBus);
+
+    } else if (type === 'complete') {
+      // Victory arpeggio — 4 notes, 120ms apart
+      _note(F.C5,     t,        0.14, 'triangle', sfxBus);
+      _note(F.E5,     t + 0.12, 0.14, 'triangle', sfxBus);
+      _note(F.G5,     t + 0.24, 0.14, 'triangle', sfxBus);
+      _note(F.C5 * 2, t + 0.36, 0.28, 'triangle', sfxBus);
+
+    } else if (type === 'tap') {
+      // Single soft ping
+      _note(F.A5, t, 0.05, 'sine', sfxBus);
+
+    } else if (type === 'drag') {
+      // Soft low pickup tick
+      _note(F.G4, t, 0.04, 'sine', sfxBus);
+
+    } else if (type === 'drop') {
+      // Two-note plop — 60ms apart
+      _note(F.E5, t,        0.07, 'triangle', sfxBus);
+      _note(F.G5, t + 0.06, 0.09, 'triangle', sfxBus);
+    }
+  }
+
+  // ── Toast popup ──────────────────────────────────
+  function _showToast(idx) {
+    const th    = THEMES[idx] || THEMES[0];
+    const toast = document.getElementById('music-toast');
+    const ti    = document.getElementById('toast-icon');
+    const tt    = document.getElementById('toast-title');
+    if (!toast) return;
+    toast.style.borderColor = th.color;
+    if (ti) ti.textContent = th.icon;
+    if (tt) tt.textContent = '🎵 ' + th.name;
+    toast.querySelectorAll('.note-dot').forEach(d => d.style.background = th.color);
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // ── HUD visualizer bars ───────────────────────────
+  function _updateBars(on) {
+    const bars = document.getElementById('music-bars');
+    if (bars) bars.classList.toggle('active', on && !muted);
+  }
+
+  // ── Mute toggle ──────────────────────────────────
+  function _toggleMute() {
+    if (!AC) _initAC();
+    muted = !muted;
+    if (masterGain) {
+      masterGain.gain.cancelScheduledValues(AC.currentTime);
+      masterGain.gain.linearRampToValueAtTime(muted ? 0 : 1, AC.currentTime + 0.08);
+    }
+    const btn = document.getElementById('music-btn');
+    if (btn) { btn.textContent = muted ? '🔇' : '🎵'; btn.classList.toggle('muted', muted); }
+    _updateBars(!muted);
+    if (!muted && curGame >= 0) playGame(curGame);
+    else if (muted) _stopEngine();
+  }
+
+  // ── Init / wire button ────────────────────────────
+  function init() { _initAC(); }
+
+  document.getElementById('music-btn')?.addEventListener('click', () => {
+    _toggleMute();
+    if (!muted) sfx('tap');
+  });
+
+  return { init, playGame, stopCurrent, sfx };
+})();
+
+// ══ Params ══════════════════════════════════════
+const P = new URLSearchParams(location.search);
+const PATIENT_ID   = P.get('id')    || 'NS-TEST';
+const PATIENT_NAME = decodeURIComponent(P.get('name') || 'Friend');
+const MODULE_ID    = 1; // Always module 1 (ages 4-8) in this file
+
+// ══ Canvas / Context ═════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const W = 860, H = 540;
+
+// ══ Telemetry ═══════════════════════════════════
+const telemetry = [], asdFlags = [];
+function logTask(task, data) { telemetry.push({ task, data, ts: Date.now() }); }
+function flagBehavior(msg) {
+  if (asdFlags.includes(msg)) return;
+  asdFlags.push(msg);
+  const el = document.createElement('div');
+  el.className = 'flag'; el.textContent = '⚑ ' + msg;
+  document.getElementById('flags').appendChild(el);
+  setTimeout(() => el.remove(), 5500);
+}
+
+// ══ BG clouds ════════════════════════════════════
+(function spawnClouds() {
+  const bg = document.getElementById('bg-layer');
+  const clouds = [
+    { w:180, h:60, top:'8%', dur:28, delay:0 },
+    { w:120, h:40, top:'18%', dur:22, delay:-8 },
+    { w:220, h:70, top:'5%',  dur:35, delay:-15 },
+    { w:90,  h:30, top:'25%', dur:18, delay:-4 },
+  ];
+  clouds.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'bg-cloud';
+    d.style.cssText = `width:${c.w}px;height:${c.h}px;top:${c.top};animation-duration:${c.dur}s;animation-delay:${c.delay}s;opacity:.7`;
+    bg.appendChild(d);
+  });
+})();
+
+// ══ HUD helpers ══════════════════════════════════
+const GAME_ICONS = ['🎨','🏠','😊','🔍','🌈','🎵'];
+function setHUD(gameIdx, totalGames) {
+  const wrap = document.getElementById('hud-stars');
+  wrap.innerHTML = '';
+  const friends = ['🦊','🐸','🐱','🐻','🦋','🐧'];
+  document.getElementById('hud-friend').textContent = friends[gameIdx] || '🌟';
+  for (let i = 0; i < totalGames; i++) {
+    const d = document.createElement('div');
+    d.className = 'star-dot' + (i < gameIdx ? ' done' : i === gameIdx ? ' cur' : '');
+    wrap.appendChild(d);
+  }
+}
+
+// ══ Flash ════════════════════════════════════════
+function flash(ok, msg) {
+  const el = document.getElementById('flash');
+  el.textContent = ok ? (msg || '🌟 Great!') : (msg || '🔄 Try again!');
+  el.className = 'show ' + (ok ? 'ok' : 'bad');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 1200);
+  MusicEngine.sfx(ok ? 'correct' : 'wrong');
+}
+
+// ══ Pointer ══════════════════════════════════════
+let _clickCb = null, _drag = {};
+function getXY(e) {
+  const r = canvas.getBoundingClientRect();
+  const sc = W / r.width;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - r.left) * sc, y: (src.clientY - r.top) * (H / r.height) };
+}
+canvas.addEventListener('pointerdown', e => { if (_clickCb) _clickCb(getXY(e)); if (_drag.down) _drag.down(getXY(e)); });
+canvas.addEventListener('pointermove', e => {
+  if (_drag.move) _drag.move(getXY(e));
+  if (_hoverFn)   _hoverFn(getXY(e));
+});
+canvas.addEventListener('pointerup', e => { if (_drag.up) _drag.up(getXY(e)); });
+canvas.addEventListener('touchstart', e => { e.preventDefault(); if (_clickCb) _clickCb(getXY(e)); if (_drag.down) _drag.down(getXY(e)); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (_drag.move) _drag.move(getXY(e)); if (_hoverFn) _hoverFn(getXY(e)); }, {passive:false});
+canvas.addEventListener('touchend',   e => { e.preventDefault(); if (_drag.up) _drag.up(getXY(e)); }, {passive:false});
+let _hoverFn = null;
+function setHover(fn)  { _hoverFn = fn; }
+function clearHover()  { _hoverFn = null; }
+function setClick(fn)  { _clickCb = fn; }
+function clearClick()  { _clickCb = null; }
+function setDrag(d,m,u){ _drag = {down:d, move:m, up:u}; }
+function clearDrag()   { _drag = {}; }
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+// ══ Loop ═════════════════════════════════════════
+function loop(fn) {
+  let t = 0, alive = true, id;
+  (function tick() { if (!alive) return; fn(t++); id = requestAnimationFrame(tick); })();
+  return () => { alive = false; cancelAnimationFrame(id); };
+}
+
+// ══ Particles ════════════════════════════════════
+const particles = [];
+function burst(x, y, col, n = 16) {
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const spd = 3 + Math.random() * 7;
+    particles.push({
+      x, y, vx: Math.cos(a) * spd * (.5 + Math.random()),
+      vy: Math.sin(a) * spd - 2, r: 3 + Math.random() * 4,
+      col, life: 1, dec: .02 + Math.random() * .02,
+    });
+  }
+}
+function burstEmoji(x, y, emojis, n = 8) {
+  for (let i = 0; i < n; i++) {
+    particles.push({
+      x, y, vx: (Math.random()-0.5)*12, vy: -(2+Math.random()*8),
+      emoji: emojis[i % emojis.length], life: 1, dec: .016 + Math.random()*0.014,
+      r: 16 + Math.random()*8,
+    });
+  }
+}
+function tickParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += .35; p.life -= p.dec;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    ctx.save(); ctx.globalAlpha = p.life * p.life;
+    if (p.emoji) {
+      ctx.font = p.r + 'px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(p.emoji, p.x, p.y);
+    } else {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+      ctx.fillStyle = p.col; ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// ══ Drawing helpers ═══════════════════════════════
+function bg() {
+  // Sky gradient background
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0, '#e8f4ff');
+  g.addColorStop(.6, '#fff9f0');
+  g.addColorStop(1, '#e8f9e8');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // Grass strip
+  ctx.fillStyle = '#b8edaa';
+  ctx.fillRect(0, H-60, W, 60);
+  ctx.fillStyle = '#8de87a';
+  ctx.fillRect(0, H-56, W, 8);
+
+  // Decorative sun
+  ctx.save(); ctx.globalAlpha = .25;
+  ctx.beginPath(); ctx.arc(W-80, 80, 55, 0, Math.PI*2);
+  ctx.fillStyle = '#ffca3a'; ctx.fill();
+  ctx.restore();
+}
+function rr(x, y, w, h, r, fill, stroke, lw=2) {
+  ctx.beginPath(); ctx.roundRect(x,y,w,h,r);
+  if (fill)  { ctx.fillStyle=fill; ctx.fill(); }
+  if (stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=lw; ctx.stroke(); }
+}
+function circ(x, y, r, fill, stroke, lw=2) {
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  if (fill)  { ctx.fillStyle=fill; ctx.fill(); }
+  if (stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=lw; ctx.stroke(); }
+}
+function txt(s, x, y, col='#2d2d4e', sz=16, wt='700', align='center') {
+  ctx.save(); ctx.font=wt+' '+sz+'px "Nunito",sans-serif';
+  ctx.fillStyle=col; ctx.textAlign=align; ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=4;
+  ctx.fillText(s, x, y); ctx.restore();
+}
+function bigTxt(s, x, y, sz=22, col='#2d2d4e') {
+  ctx.save(); ctx.font='800 '+sz+'px "Baloo 2",sans-serif';
+  ctx.fillStyle=col; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.1)'; ctx.shadowBlur=6;
+  ctx.fillText(s, x, y); ctx.restore();
+}
+function etxt(s, x, y, sz=36) {
+  ctx.save(); ctx.font=sz+'px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(s, x, y); ctx.restore();
+}
+function glow(x, y, r, col, t, lw=4) {
+  ctx.save(); ctx.globalAlpha=.25+.15*Math.sin(t*.1);
+  ctx.beginPath(); ctx.arc(x, y, r*(1+.04*Math.sin(t*.08)), 0, Math.PI*2);
+  ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.stroke(); ctx.restore();
+}
+
+// ── Smiley face helper ──
+const FC = {happy:'#ffca3a', sad:'#6bcff6', angry:'#ff7eb3', scared:'#b288ff',
+            excited:'#ff9966', disgusted:'#4cd964', surprised:'#ff7eb3', neutral:'#c0bcd8'};
+function face(cx, cy, r, emotion) {
+  const col = FC[emotion] || '#ffca3a';
+  // Shadow
+  ctx.save(); ctx.globalAlpha=.15;
+  circ(cx+4, cy+6, r, '#000', null); ctx.restore();
+  // Body
+  circ(cx, cy, r, col, '#fff', 3);
+  // Eyes
+  const er = r * .14;
+  circ(cx - r*.3, cy - r*.1, er, '#2d2d4e', null);
+  circ(cx + r*.3, cy - r*.1, er, '#2d2d4e', null);
+  // Eye shine
+  circ(cx - r*.25, cy - r*.15, er*.35, '#fff', null);
+  circ(cx + r*.35, cy - r*.15, er*.35, '#fff', null);
+  // Mouth
+  ctx.strokeStyle='#2d2d4e'; ctx.lineWidth=r*.07; ctx.lineCap='round';
+  if (emotion==='happy'||emotion==='excited') {
+    ctx.beginPath(); ctx.arc(cx, cy+r*.1, r*.35, .15, Math.PI-.15); ctx.stroke();
+    // rosy cheeks
+    ctx.save(); ctx.globalAlpha=.25;
+    circ(cx-r*.44, cy+r*.1, r*.18, '#ff9999', null);
+    circ(cx+r*.44, cy+r*.1, r*.18, '#ff9999', null); ctx.restore();
+  } else if (emotion==='sad'||emotion==='scared') {
+    ctx.beginPath(); ctx.arc(cx, cy+r*.55, r*.3, Math.PI+.2, -.2); ctx.stroke();
+    // Tears
+    ctx.fillStyle='#6bcff6';
+    ctx.beginPath(); ctx.ellipse(cx-r*.3, cy+r*.32, 3, 5, 0, 0, Math.PI*2); ctx.fill();
+  } else if (emotion==='angry') {
+    ctx.beginPath(); ctx.moveTo(cx-r*.3, cy+r*.28); ctx.lineTo(cx+r*.3, cy+r*.28); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-r*.42,cy-r*.28); ctx.lineTo(cx-r*.14,cy-r*.18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+r*.14,cy-r*.18); ctx.lineTo(cx+r*.42,cy-r*.28); ctx.stroke();
+  } else if (emotion==='surprised') {
+    circ(cx, cy+r*.22, r*.16, '#2d2d4e', null);
+    circ(cx-r*.3, cy-r*.1, er*1.3, '#2d2d4e', null);
+    circ(cx+r*.3, cy-r*.1, er*1.3, '#2d2d4e', null);
+  } else {
+    ctx.beginPath(); ctx.moveTo(cx-r*.3, cy+r*.22); ctx.lineTo(cx+r*.3, cy+r*.22); ctx.stroke();
+  }
+}
+
+// ── Start button ──
+function drawStart(t, label='▶  Let\'s Play!') {
+  const px = W/2, py = H-82;
+  const s = 1 + .06*Math.sin(t*.09);
+  ctx.save(); ctx.translate(px,py); ctx.scale(s,s); ctx.translate(-px,-py);
+  // Shadow
+  ctx.save(); ctx.globalAlpha=.15; rr(px-88,py-22+4,176,48,24,'#ff7eb3',null); ctx.restore();
+  rr(px-88,py-22,176,48,24,'#ff7eb3',null);
+  rr(px-88,py-28,176,48,24,null,'white',2);
+  bigTxt(label, px, py-4, 17, 'white');
+  ctx.restore();
+  glow(px,py-4,60,'#ff7eb3',t,3);
+}
+function waitStart(label, callback) {
+  setClick(p => {
+    if (Math.abs(p.x - W/2) < 96 && p.y > H-110 && p.y < H-56) {
+      clearClick();
+      MusicEngine.sfx('start');
+      callback();
+    }
+  });
+}
+
+// ── Progress dots ──
+function drawProgress(cur, tot, col='#ff7eb3') {
+  const startX = W/2 - (tot*22)/2;
+  for (let i=0; i<tot; i++) {
+    const done = i < cur;
+    ctx.save();
+    ctx.globalAlpha = done ? 1 : .25;
+    circ(startX + i*22 + 11, 20, done ? 7 : 5, done ? col : '#c0bcd8', null);
+    if (done) { txt('✓', startX + i*22 + 11, 20, 'white', 8, '900'); }
+    ctx.restore();
+  }
+}
+
+// ══════════════════════════════════════════════════
+// RESIZE
+// ══════════════════════════════════════════════════
+function resize() {
+  const s = document.getElementById('stage');
+  const sc = Math.min((s.clientWidth-24)/860, (s.clientHeight-24)/540, 1);
+  canvas.style.width  = Math.round(860*sc)+'px';
+  canvas.style.height = Math.round(540*sc)+'px';
+}
+window.addEventListener('resize', resize); resize();
+
+// ══════════════════════════════════════════════════
+// GAME 1 — EMOTION BUBBLES 🎭
+// Children tap the floating bubble that matches the face feeling.
+// Tracks: accuracy, RT, hesitation, misidentification patterns.
+// ══════════════════════════════════════════════════
+async function game_emotionBubbles() {
+  setHUD(0, 6);
+
+  // Tutorial
+  await new Promise(res => {
+    const opts = [{em:'happy',col:'#ffca3a'},{em:'sad',col:'#6bcff6'},{em:'angry',col:'#ff7eb3'},{em:'excited',col:'#ff9966'}];
+    const bubs = opts.map((o,i) => ({ ...o, x:200+i*140, y:H-190, vy:-.45-.1*i, vx:(Math.random()-.5)*.2, wob:i*1.5 }));
+    const stop = loop(t => {
+      bg();
+      bigTxt('Match the feeling! 🎭', W/2, 62, 22, '#2d2d4e');
+      txt('Tap the bubble that shows the SAME feeling', W/2, 96, '#8888aa', 13, '700');
+
+      // Big face (happy)
+      face(W/2-80, H/2-50, 70, 'happy');
+      // Arrow
+      ctx.save(); ctx.globalAlpha=.5+.3*Math.sin(t*.12);
+      txt('👉', W/2+10, H/2-50, '#ff7eb3', 28, '700'); ctx.restore();
+
+      bubs.forEach(b => {
+        b.y+=b.vy; b.x+=b.vx; b.wob+=.04;
+        const wx = b.x+Math.sin(b.wob)*8;
+        if (b.y<-80) b.y=H+50;
+        const isC = b.em==='happy';
+        ctx.save(); ctx.globalAlpha=.15; circ(wx,b.y,52,b.col,null); ctx.restore();
+        ctx.beginPath(); ctx.arc(wx,b.y,52,0,Math.PI*2);
+        ctx.strokeStyle = isC ? b.col : b.col+'88'; ctx.lineWidth = isC ? 4 : 2; ctx.stroke();
+        face(wx,b.y,38,b.em);
+        if (isC && t>55) glow(wx,b.y,60,b.col,t,5);
+      });
+
+      if (t>70) { etxt('👆',bubs[0].x+Math.sin(bubs[0].wob)*8, bubs[0].y+65,26); }
+      if (t>105) burst(bubs[0].x, bubs[0].y,'#ffca3a',14);
+      tickParticles();
+
+      if (t===158) { stop(); drawStart(t); waitStart(null, res); }
+      if (t>158) drawStart(t);
+    });
+  });
+
+  const stories = [
+    { emotion:'happy',   decoys:['sad','angry','neutral'],   valence:'positive' },
+    { emotion:'sad',     decoys:['happy','excited','angry'], valence:'negative' },
+    { emotion:'angry',   decoys:['happy','sad','neutral'],   valence:'negative' },
+    { emotion:'excited', decoys:['sad','angry','surprised'], valence:'positive' },
+    { emotion:'scared',  decoys:['happy','sad','surprised'], valence:'negative' },
+    { emotion:'surprised',decoys:['happy','excited','scared'],valence:'mixed' },
+    { emotion:'neutral', decoys:['happy','sad','angry'],     valence:'mixed' },
+  ];
+
+  const met = { correct:0, rts:[], wrong:0, hesitation_switches:0, first_wrong:0 };
+  const sceneEmojis = { happy:'🌟🎉🎂', sad:'💧😢🌧', angry:'😤⚡', excited:'🎊🎈🎁', scared:'👻🌑', surprised:'🎁❗', neutral:'😑' };
+
+  for (const s of stories) {
+    const all = [s.emotion, ...s.decoys].sort(()=>Math.random()-.5);
+    const bubs = all.map((ef,i) => ({
+      ef, x:170+i*170, y:H-190+Math.random()*20,
+      vy:-.4-.15*Math.random(), vx:(Math.random()-.5)*.22,
+      wob:Math.random()*Math.PI*2, r:54, col:FC[ef],
+      _wx:0, _wy:0,
+    }));
+    const t0 = Date.now(); let resolved=false;
+    let lastHover = null, hoverChanges = 0;
+
+    await new Promise(resolve => {
+      const stop = loop(t => {
+        bg();
+        bigTxt('How does this face feel?', W/2, 52, 20, '#2d2d4e');
+        drawProgress(met.correct, stories.length, '#ffca3a');
+
+        // Scene context strip
+        rr(60,78,W-120,60,16,'rgba(255,255,255,.7)','rgba(255,202,58,.4)',2);
+        const se = sceneEmojis[s.emotion] || '❓';
+        etxt(se.split('')[0], 108, 108, 30);
+        txt('Tap the bubble with the same feeling!', W/2+20, 108, '#555', 13, '700');
+
+        // Big face
+        const fp = 1+.03*Math.sin(t*.07);
+        ctx.save(); ctx.translate(W/2-80,H/2-30); ctx.scale(fp,fp); ctx.translate(-(W/2-80),-(H/2-30));
+        circ(W/2-80, H/2-30, 82,'rgba(255,255,255,.6)',FC[s.emotion],4);
+        face(W/2-80, H/2-30, 62, s.emotion);
+        ctx.restore();
+        glow(W/2-80,H/2-30,90,FC[s.emotion],t,5);
+
+        // Pointer
+        ctx.save(); ctx.globalAlpha=.45+.3*Math.sin(t*.12);
+        txt('→', W/2+18, H/2-30, '#ff7eb3', 32,'800'); ctx.restore();
+
+        // Bubbles
+        bubs.forEach(b => {
+          b.y+=b.vy; b.x+=b.vx; b.wob+=.038;
+          if (b.y<-80) b.y=H+50;
+          const wx = b.x+Math.sin(b.wob)*9;
+          const isHov = lastHover === b.ef;
+
+          ctx.save(); ctx.globalAlpha=.12; circ(wx,b.y,b.r,b.col,null); ctx.restore();
+          ctx.beginPath(); ctx.arc(wx,b.y,b.r,0,Math.PI*2);
+          ctx.strokeStyle = isHov ? b.col : b.col+'77';
+          ctx.lineWidth = isHov ? 4.5 : 2.5; ctx.stroke();
+          face(wx, b.y, b.r*.7, b.ef);
+          if (isHov) glow(wx,b.y,b.r+12,b.col,t,5);
+          b._wx = wx; b._wy = b.y;
+        });
+
+        tickParticles();
+      });
+
+      setHover(p => {
+        let hov = null;
+        bubs.forEach(b => { if ((p.x-b._wx)**2+(p.y-b._wy)**2 < b.r*b.r) hov = b.ef; });
+        if (hov !== lastHover) { if (hov && lastHover) hoverChanges++; lastHover = hov; }
+      });
+
+      setClick(p => {
+        if (resolved) return;
+        for (const b of bubs) {
+          if (!b._wx) continue;
+          if ((p.x-b._wx)**2+(p.y-b._wy)**2 < b.r*b.r) {
+            const rt = Date.now()-t0;
+            met.rts.push(rt);
+            met.hesitation_switches += hoverChanges;
+            if (b.ef===s.emotion) {
+              met.correct++;
+              burst(b._wx,b._wy,b.col,20);
+              burstEmoji(b._wx,b._wy,(sceneEmojis[s.emotion]||'⭐').split(''));
+              flash(true,'🌟 Yes!');
+            } else {
+              met.wrong++;
+              if (lastHover && lastHover===s.emotion) met.first_wrong++;
+              flash(false,'🔄 Not quite!');
+            }
+            resolved=true; clearClick(); clearHover(); stop(); resolve(); break;
+          }
+        }
+      });
+    });
+    await wait(500);
+  }
+
+  const acc = met.correct/stories.length;
+  const avgRT = met.rts.reduce((a,b)=>a+b,0)/(met.rts.length||1);
+  const avgHes = met.hesitation_switches/(stories.length||1);
+  if (acc < .5) flagBehavior('Low emotion recognition (<50%)');
+  if (avgRT > 7000) flagBehavior('High hesitation — emotion task');
+  if (avgHes > 2.5) flagBehavior('Repeated hover-switching — social uncertainty');
+
+  logTask('emotion_bubbles', {
+    accuracy: acc, avg_rt_ms: avgRT, correct: met.correct,
+    total: stories.length, wrong: met.wrong,
+    avg_hesitation_switches: avgHes,
+    first_hover_then_wrong: met.first_wrong,
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// GAME 2 — DECORATE THE ROOM 🏠
+// Children drag colorful items to decorate a room.
+// Tracks: creativity (variation), repetition, placement patterns,
+// color preference, completion drive.
+// ══════════════════════════════════════════════════
+async function game_decorateRoom() {
+  setHUD(1, 6);
+
+  const ROOM = { x:60, y:80, w:W-120, h:H-200 };
+  const ITEMS = [
+    { e:'🪴', col:'#4cd964', cat:'plant' },
+    { e:'🎨', col:'#b288ff', cat:'art' },
+    { e:'⭐', col:'#ffca3a', cat:'star' },
+    { e:'🌈', col:'#ff7eb3', cat:'rainbow' },
+    { e:'🪆', col:'#ff9966', cat:'toy' },
+    { e:'📚', col:'#6bcff6', cat:'book' },
+    { e:'🎀', col:'#ff7eb3', cat:'decor' },
+    { e:'🔮', col:'#b288ff', cat:'magic' },
+  ];
+
+  // Tutorial
+  await new Promise(res => {
+    const stop = loop(t => {
+      bg();
+      // Room frame
+      rr(ROOM.x, ROOM.y, ROOM.w, ROOM.h, 16, 'rgba(255,255,255,.6)', '#b288ff', 3);
+      // Window
+      rr(ROOM.x+30, ROOM.y+25, 100, 80, 8, '#e8f9ff', '#6bcff6', 2);
+      ctx.strokeStyle='#6bcff6'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(ROOM.x+80, ROOM.y+25); ctx.lineTo(ROOM.x+80, ROOM.y+105); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ROOM.x+30, ROOM.y+65); ctx.lineTo(ROOM.x+130, ROOM.y+65); ctx.stroke();
+
+      bigTxt('Decorate your room! 🏠', W/2, 50, 21, '#2d2d4e');
+      txt('Drag anything you like inside!', W/2, 450, '#8888aa', 13, '700');
+
+      // Item tray
+      ITEMS.forEach((it,i) => {
+        const ix = 80+i*98, iy = H-70;
+        rr(ix-32,iy-28,64,56,12,'white',it.col,2.5);
+        etxt(it.e, ix, iy, 30);
+        if (i===0 && t>60) glow(ix,iy,40,it.col,t,4);
+      });
+
+      // Animated drag demo
+      if (t>60) {
+        const prog = Math.min((t-60)/80,1);
+        const sx=80, sy=H-70, ex=280, ey=220;
+        etxt('🪴', sx+(ex-sx)*prog, sy+(ey-sy)*prog, 36);
+        if (prog>.9) { burst(ex,ey,'#4cd964',10); }
+      }
+
+      if (t>75) etxt('👆', 80, H-70+45, 26);
+      tickParticles();
+
+      if (t===165) { stop(); drawStart(t); waitStart(null, res); }
+      if (t>165) drawStart(t);
+    });
+  });
+
+  // Play
+  const placed = []; // { e, col, cat, x, y }
+  let dragging = null, dOX=0, dOY=0;
+  const catCounts = {};
+  const t0 = Date.now();
+  let uniqueItems = new Set();
+  let lastPlacedCat = null;
+  let consecutiveSame = 0;
+  let maxConsecutive = 0;
+
+  await new Promise(resolve => {
+    const stop = loop(t => {
+      bg();
+
+      // Room
+      ctx.save(); ctx.shadowColor='rgba(178,136,255,.3)'; ctx.shadowBlur=20;
+      rr(ROOM.x, ROOM.y, ROOM.w, ROOM.h, 16, 'rgba(255,255,255,.55)', '#b288ff', 3);
+      ctx.restore();
+      // Window dec
+      rr(ROOM.x+30, ROOM.y+25, 100, 80, 8, '#e8f9ff', '#6bcff6', 2);
+      ctx.strokeStyle='#6bcff6'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(ROOM.x+80, ROOM.y+25); ctx.lineTo(ROOM.x+80, ROOM.y+105); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ROOM.x+30, ROOM.y+65); ctx.lineTo(ROOM.x+130, ROOM.y+65); ctx.stroke();
+      etxt('☀️', ROOM.x+80, ROOM.y+65, 24);
+
+      // Placed items
+      placed.forEach(it => {
+        const pulse = 1+.02*Math.sin(t*.06+it.x*.01);
+        ctx.save(); ctx.translate(it.x,it.y); ctx.scale(pulse,pulse); ctx.translate(-it.x,-it.y);
+        etxt(it.e, it.x, it.y, 34); ctx.restore();
+      });
+
+      // Drag ghost
+      if (dragging) { ctx.save(); ctx.globalAlpha=.7; etxt(dragging.e, dragging.cx, dragging.cy, 40); ctx.restore(); }
+
+      // Item tray
+      rr(60, H-112, W-120, 80, 16, 'rgba(255,255,255,.75)', '#ffca3a', 2.5);
+      ITEMS.forEach((it,i) => {
+        const ix = 80+i*98, iy = H-72;
+        const isD = dragging && dragging.cat===it.cat;
+        ctx.save(); ctx.globalAlpha = isD ? .4 : 1;
+        etxt(it.e, ix, iy, 32); ctx.restore();
+      });
+      txt('Drag items into your room ✨', W/2, H-24, '#8888aa', 11, '700');
+
+      // Counter
+      bigTxt(`${placed.length} items placed`, W/2, 50, 16, '#b288ff');
+      drawProgress(Math.min(placed.length, 6), 6, '#b288ff');
+
+      // Done button after 3 items
+      if (placed.length >= 3) {
+        rr(W-140, H-112-54, 116, 42, 20, '#4cd964', null);
+        txt('✓ Done!', W-82, H-112-33, 'white', 13, '800');
+        glow(W-82, H-112-33, 50, '#4cd964', t, 3);
+      }
+
+      tickParticles();
+    });
+
+    setDrag(
+      p => {
+        // Pick from tray
+        ITEMS.forEach((it,i) => {
+          const ix=80+i*98, iy=H-72;
+          if (Math.abs(p.x-ix)<40 && Math.abs(p.y-iy)<36) {
+            dragging = { ...it, cx:p.x, cy:p.y };
+            dOX=p.x-ix; dOY=p.y-iy;
+            MusicEngine.sfx('drag');
+          }
+        });
+      },
+      p => {
+        if (dragging) { dragging.cx=p.x; dragging.cy=p.y; }
+      },
+      p => {
+        if (!dragging) return;
+        // Check drop in room
+        if (p.x>ROOM.x+20 && p.x<ROOM.x+ROOM.w-20 &&
+            p.y>ROOM.y+20 && p.y<ROOM.y+ROOM.h-20) {
+          placed.push({ e:dragging.e, col:dragging.col, cat:dragging.cat, x:p.x, y:p.y });
+          burst(p.x,p.y,dragging.col,14);
+          flash(true, '✨ Nice!');
+          MusicEngine.sfx('drop');
+          catCounts[dragging.cat]=(catCounts[dragging.cat]||0)+1;
+          uniqueItems.add(dragging.e);
+          if (dragging.cat===lastPlacedCat) consecutiveSame++;
+          else consecutiveSame=0;
+          maxConsecutive = Math.max(maxConsecutive, consecutiveSame);
+          lastPlacedCat = dragging.cat;
+        }
+        dragging = null;
+        // Done check
+        if (placed.length >= 3 && p.x>W-160 && p.y>H-180 && p.y<H-130) {
+          clearDrag(); stop(); resolve();
+        }
+      }
+    );
+
+    setClick(p => {
+      if (placed.length>=3 && p.x>W-160 && p.x<W-24 && p.y>H-170 && p.y<H-128) {
+        clearDrag(); clearClick(); stop(); resolve();
+      }
+    });
+  });
+
+  clearDrag(); clearClick();
+
+  const duration = Date.now()-t0;
+  const variety = uniqueItems.size / ITEMS.length;
+  const dominantCat = Object.entries(catCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const repetition = maxConsecutive > 2;
+
+  if (variety < .35) flagBehavior('Low item variety — restricted interest pattern');
+  if (repetition) flagBehavior('Repetitive placement — same item chosen repeatedly');
+  if (placed.length < 3) flagBehavior('Low engagement — room decoration task');
+
+  logTask('decorate_room', {
+    items_placed: placed.length, unique_variety: variety,
+    max_consecutive_same: maxConsecutive,
+    dominant_category: dominantCat,
+    category_counts: catCounts,
+    total_time_ms: duration,
+    placement_positions: placed.map(p=>({x:p.x,y:p.y,cat:p.cat})),
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// GAME 3 — SORT THE OBJECTS 🌈
+// Children sort colorful shapes into labeled bins.
+// Tracks: sorting accuracy, category switching RT, strategy style.
+// ══════════════════════════════════════════════════
+async function game_sortObjects() {
+  setHUD(2, 6);
+
+  // ── Bins: 3 wide, evenly spaced, tall enough for big label ──
+  // Layout: bins sit in bottom half, items in top half
+  const BIN_W = 230, BIN_H = 185, BIN_Y = 302;
+  const BINS = [
+    { col:'#ff7eb3', fill:'rgba(255,126,179,.18)', cat:'animal', x: 22,  y:BIN_Y, w:BIN_W, h:BIN_H, lbl:'Animals', icon:'🐾' },
+    { col:'#ffca3a', fill:'rgba(255,202,58,.18)',  cat:'food',   x:314,  y:BIN_Y, w:BIN_W, h:BIN_H, lbl:'Yummies', icon:'🍽️' },
+    { col:'#6bcff6', fill:'rgba(107,207,246,.18)', cat:'toy',    x:608,  y:BIN_Y, w:BIN_W, h:BIN_H, lbl:'Toys',    icon:'🎮' },
+  ];
+
+  const ITEMS = [
+    {e:'🐶',cat:'animal',col:'#ff7eb3'},{e:'🍎',cat:'food',col:'#ffca3a'},{e:'🎸',cat:'toy',col:'#6bcff6'},
+    {e:'🐱',cat:'animal',col:'#ff7eb3'},{e:'🍕',cat:'food',col:'#ffca3a'},{e:'🪀',cat:'toy',col:'#6bcff6'},
+    {e:'🐸',cat:'animal',col:'#ff7eb3'},{e:'🍦',cat:'food',col:'#ffca3a'},{e:'🎯',cat:'toy',col:'#6bcff6'},
+  ].sort(()=>Math.random()-.5);
+
+  // Helper: draw a bin with BIG readable label
+  function drawBin(b, glowing, t) {
+    ctx.save();
+    if (glowing) { ctx.shadowColor = b.col; ctx.shadowBlur = 32; }
+    // Bin body — solid filled background so it reads clearly
+    rr(b.x, b.y, b.w, b.h, 24, glowing ? b.col+'40' : b.fill, b.col, glowing ? 5 : 3.5);
+    ctx.restore();
+
+    // Icon — very large, top-center of bin
+    etxt(b.icon, b.x + b.w/2, b.y + BIN_H/2 - 28, 52);
+
+    // Label — BIG BOLD text, minimum 26px
+    ctx.save();
+    ctx.font = '800 26px "Baloo 2",sans-serif';
+    ctx.fillStyle = b.col;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,.08)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(b.lbl, b.x + b.w/2, b.y + BIN_H/2 + 36);
+    ctx.restore();
+
+    if (glowing) glow(b.x + b.w/2, b.y + BIN_H/2, 90, b.col, t, 6);
+  }
+
+  // Helper: draw an item card — BIG & clear, children can see it easily
+  function drawItem(o, isDragging) {
+    const sz = 88, r = 20;
+    ctx.save();
+    if (isDragging) { ctx.shadowColor = o.col; ctx.shadowBlur = 24; ctx.globalAlpha = .9; }
+    else { ctx.shadowColor = 'rgba(0,0,0,.12)'; ctx.shadowBlur = 10; }
+    // White card with colored border
+    rr(o.x - sz/2, o.y - sz/2, sz, sz, r, 'white', o.col, isDragging ? 5 : 3.5);
+    // Big emoji
+    etxt(o.e, o.x, o.y, 50);
+    ctx.restore();
+  }
+
+  // Tutorial
+  await new Promise(res => {
+    const stop = loop(t => {
+      bg();
+      // Title — very large
+      ctx.save();
+      ctx.font = '800 28px "Baloo 2",sans-serif';
+      ctx.fillStyle = '#2d2d4e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,.08)'; ctx.shadowBlur = 4;
+      ctx.fillText('Sort the objects! 🌈', W/2, 52);
+      ctx.restore();
+      // Subtitle — big and clear
+      ctx.save();
+      ctx.font = '700 18px "Nunito",sans-serif';
+      ctx.fillStyle = '#666688'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Drag each item into the right box!', W/2, 88);
+      ctx.restore();
+
+      BINS.forEach(b => drawBin(b, false, t));
+
+      // Demo item
+      if (t < 55) {
+        const o = {e:'🐶', col:'#ff7eb3', x:160, y:205};
+        drawItem(o, false);
+      } else {
+        const prog = Math.min((t-55)/70, 1);
+        const tx = BINS[0].x + BINS[0].w/2, ty = BINS[0].y + BIN_H/2;
+        const o = {e:'🐶', col:'#ff7eb3', x:160+(tx-160)*prog, y:205+(ty-205)*prog};
+        drawItem(o, prog>0.1);
+        if(prog>.92) burst(tx, ty, '#ff7eb3', 14);
+      }
+      if(t>50) etxt('👆', 160, 260, 28);
+      tickParticles();
+      if(t===165){stop();drawStart(t);waitStart(null,res);}
+      if(t>165) drawStart(t);
+    });
+  });
+
+  // Item starting positions: two rows of up to 5 across the top area
+  const ITEM_SZ = 82;
+  const objs = ITEMS.map((it,i) => {
+    const col = 3, row = Math.floor(i/col);
+    const perRow = Math.ceil(ITEMS.length/2);
+    const totalW = Math.min(i < perRow ? perRow : ITEMS.length - perRow, perRow) * 120;
+    const startX = W/2 - totalW/2 + 60;
+    const ix = startX + (i % perRow) * 120 + (row===1 ? 60 : 0);
+    const iy = row === 0 ? 170 : 240;
+    return { ...it, placed:false, x:ix, y:iy, _ox:ix, _oy:iy };
+  });
+
+  // Evenly space 9 items in two rows — spacing for 88px cards
+  const ROW1_Y = 165, ROW2_Y = 255;
+  const ROW1_ITEMS = objs.slice(0,5), ROW2_ITEMS = objs.slice(5,9);
+  ROW1_ITEMS.forEach((o,i) => { o.x = 90 + i*168; o.y = ROW1_Y; o._ox = o.x; o._oy = o.y; });
+  ROW2_ITEMS.forEach((o,i) => { o.x = 174 + i*168; o.y = ROW2_Y; o._ox = o.x; o._oy = o.y; });
+
+  const met = {correct:0, wrong:0, switch_times:[], last_cat:null, last_t:Date.now()};
+  let dragObj = null, nearBin = -1;
+
+  await new Promise(resolve => {
+    const stop = loop(t => {
+      bg();
+
+      // Bins (bottom half)
+      BINS.forEach((b,bi) => drawBin(b, nearBin===bi, t));
+
+      // Items (top half) — not yet placed
+      objs.forEach(o => { if(!o.placed) drawItem(o, dragObj===o); });
+
+      // Progress & title
+      const placed = objs.filter(o=>o.placed).length;
+      drawProgress(placed, ITEMS.length, '#ffca3a');
+
+      // Large instruction title
+      ctx.save();
+      ctx.font = '800 26px "Baloo 2",sans-serif';
+      ctx.fillStyle = '#2d2d4e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,.07)'; ctx.shadowBlur = 3;
+      ctx.fillText('Sort them out! 🌈', W/2, 50);
+      ctx.restore();
+
+      tickParticles();
+      if(!objs.some(o=>!o.placed)){ stop(); resolve(); }
+    });
+
+    setDrag(
+      p => {
+        for(const o of objs){
+          if(!o.placed && Math.abs(p.x-o.x)<52 && Math.abs(p.y-o.y)<52){
+            dragObj=o;
+            MusicEngine.sfx('drag');
+            break;
+          }
+        }
+      },
+      p => {
+        if(!dragObj) return;
+        dragObj.x = p.x; dragObj.y = p.y; nearBin = -1;
+        BINS.forEach((b,i) => {
+          if(p.x>b.x && p.x<b.x+b.w && p.y>b.y && p.y<b.y+b.h) nearBin=i;
+        });
+      },
+      p => {
+        if(!dragObj) return;
+        let placed = false;
+        BINS.forEach(b => {
+          if(p.x>b.x && p.x<b.x+b.w && p.y>b.y && p.y<b.y+b.h){
+            dragObj.placed = true; placed = true;
+            const now = Date.now();
+            if(met.last_cat && met.last_cat!==dragObj.cat) met.switch_times.push(now-met.last_t);
+            met.last_cat = dragObj.cat; met.last_t = now;
+            if(dragObj.cat===b.cat){
+              met.correct++;
+              burst(dragObj.x, dragObj.y, b.col, 18);
+              burstEmoji(dragObj.x, dragObj.y, ['⭐','✨'], 6);
+              MusicEngine.sfx('drop');
+              flash(true, '✨ Correct!');
+            } else {
+              met.wrong++;
+              flash(false, '🔄 Wrong box!');
+              dragObj.x=dragObj._ox; dragObj.y=dragObj._oy; dragObj.placed=false;
+            }
+          }
+        });
+        if(!placed){ dragObj.x=dragObj._ox; dragObj.y=dragObj._oy; }
+        dragObj=null; nearBin=-1;
+      }
+    );
+  });
+  clearDrag();
+
+  const avgSwitch = met.switch_times.reduce((a,b)=>a+b,0)/(met.switch_times.length||1);
+  if(met.wrong>3) flagBehavior('Category sorting errors >3');
+  if(avgSwitch>3200) flagBehavior('Slow category-switching — cognitive flexibility');
+
+  logTask('sort_objects',{
+    correct:met.correct, wrong:met.wrong, total:ITEMS.length,
+    accuracy:met.correct/ITEMS.length,
+    avg_switch_time_ms:avgSwitch, switch_count:met.switch_times.length,
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// GAME 4 — JOINT ATTENTION 👁️
+// Robot looks at an object; child taps the object the robot is pointing at.
+// Tracks: gaze-following accuracy, distractor resistance, RT.
+// ══════════════════════════════════════════════════
+async function game_jointAttention() {
+  setHUD(3, 6);
+
+  const ROUNDS = 6;
+  const TARGETS = ['⭐','🌈','🍭','🎈','🏆','🌸'];
+  const DISTRACTORS = [['🦋','🍕'],['🔥','🎸'],['⚽','🦊'],['🌙','🎵'],['🍦','🚂'],['🎀','🔮']];
+
+  // Tutorial
+  await new Promise(res => {
+    const tgX=680, tgY=175;
+    const angle = Math.atan2(tgY-280, tgX-210);
+    const stop = loop(t=>{
+      bg();
+      bigTxt('Follow the robot\'s eyes! 👁', W/2,52,21,'#2d2d4e');
+      txt('Tap what the robot is LOOKING at!', W/2,88,'#8888aa',13,'700');
+
+      // Robot
+      rr(160,230,100,120,18,'white','#6bcff6',3);
+      etxt('🤖',210,290,58);
+      // Robot eye direction
+      const ex=210+Math.cos(angle)*32, ey=280+Math.sin(angle)*22;
+      circ(ex,ey,9,'#6bcff6',null);
+      glow(ex,ey,16,'#6bcff6',t,4);
+
+      const ss=1+.07*Math.sin(t*.12);
+      ctx.save(); ctx.translate(tgX,tgY); ctx.scale(ss,ss); ctx.translate(-tgX,-tgY);
+      etxt('⭐',tgX,tgY,52); ctx.restore();
+      glow(tgX,tgY,38,'#ffca3a',t,5);
+
+      // Lure items (faded)
+      etxt('🦋',300,140,36); etxt('🍕',520,380,36);
+
+      if(t>75){const f=Math.min((t-75)/55,1); etxt('👆',350+(tgX-350)*f,280+(tgY-280)*f+30,32);}
+      if(t>130) burst(tgX,tgY,'#ffca3a',14);
+      tickParticles();
+
+      if(t===165){stop();drawStart(t);waitStart(null,res);}
+      if(t>165) drawStart(t);
+    });
+  });
+
+  const met={correct:0,rts:[],lure_clicks:0};
+  for(let r=0;r<ROUNDS;r++){
+    const q=r%4;
+    const tX = q<2 ? 560+Math.random()*180 : 70+Math.random()*160;
+    const tY = q%2===0 ? 90+Math.random()*100 : 340+Math.random()*110;
+    const l1X = q<2 ? 70+Math.random()*160 : 560+Math.random()*180;
+    const l1Y = q%2===0 ? 340+Math.random()*100 : 90+Math.random()*100;
+    const l2X = 340+Math.random()*170;
+    const l2Y = q%2===0 ? 380+Math.random()*80 : 90+Math.random()*70;
+    const angle = Math.atan2(tY-280, tX-210);
+    const lures = [{e:DISTRACTORS[r][0],x:l1X,y:l1Y},{e:DISTRACTORS[r][1],x:l2X,y:l2Y}];
+    const t0=Date.now(); let resolved=false;
+
+    await new Promise(resolve=>{
+      const stop = loop(t=>{
+        bg();
+        bigTxt('What is the robot looking at? 🤖', W/2,52,19,'#2d2d4e');
+        drawProgress(met.correct,ROUNDS,'#6bcff6');
+
+        // Robot
+        ctx.save(); ctx.shadowColor='#6bcff6'; ctx.shadowBlur=16;
+        rr(155,228,108,130,18,'white','#6bcff6',3); ctx.restore();
+        etxt('🤖',209,292,58);
+        // Eye glow showing direction
+        const ex=209+Math.cos(angle)*34, ey=278+Math.sin(angle)*24;
+        glow(ex,ey,20,'#6bcff6',t,6);
+        circ(ex,ey,10,'#6bcff6','white',2);
+
+        const ss=1+.07*Math.sin(t*.1);
+        ctx.save(); ctx.translate(tX,tY); ctx.scale(ss,ss); ctx.translate(-tX,-tY);
+        etxt(TARGETS[r],tX,tY,52); ctx.restore();
+        glow(tX,tY,36,'#ffca3a',t,4);
+
+        lures.forEach(l=>etxt(l.e,l.x,l.y,42));
+
+        tickParticles();
+      });
+
+      setClick(p=>{
+        if(resolved)return;
+        if((p.x-tX)**2+(p.y-tY)**2<1800){
+          met.correct++; met.rts.push(Date.now()-t0);
+          burst(tX,tY,'#ffca3a',18); burstEmoji(tX,tY,['⭐','🌟'],6);
+          flash(true,'👏 Yes!'); resolved=true; clearClick(); stop(); resolve();
+        }
+        for(const l of lures){
+          if((p.x-l.x)**2+(p.y-l.y)**2<1400){
+            met.lure_clicks++; met.rts.push(Date.now()-t0);
+            flash(false,'👀 Look at the robot!'); resolved=true; clearClick(); stop(); resolve(); return;
+          }
+        }
+      });
+    });
+    await wait(580);
+  }
+
+  const acc=met.correct/ROUNDS;
+  if(acc<.5) flagBehavior('Joint attention failure (<50%)');
+  if(met.lure_clicks>2) flagBehavior('Ignoring gaze cues — ASD social marker');
+
+  logTask('joint_attention',{
+    accuracy:acc, avg_rt_ms:met.rts.reduce((a,b)=>a+b,0)/(met.rts.length||1),
+    correct:met.correct, total:ROUNDS, lure_clicks:met.lure_clicks,
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// GAME 5 — COLOR PATTERN COPY 🌈
+// Child copies a color sequence by tapping colored buttons.
+// Tracks: sequence memory, repetitive tapping, error type,
+// working memory span.
+// ══════════════════════════════════════════════════
+async function game_colorPattern() {
+  setHUD(4, 6);
+
+  const BTNS = [
+    {col:'#ff7eb3',label:'Pink',  x:160,y:355},
+    {col:'#ffca3a',label:'Yellow',x:300,y:355},
+    {col:'#4cd964',label:'Green', x:440,y:355},
+    {col:'#6bcff6',label:'Blue',  x:580,y:355},
+    {col:'#b288ff',label:'Purple',x:720,y:355},
+  ];
+  const BR = 56; // slightly bigger buttons
+
+  // ── Helper: draw the colored dot row (the "pattern bar") ──
+  function drawPatternBar(seq, revealedCount, playerSeq) {
+    const dotR = 28;
+    const totalW = seq.length * (dotR*2 + 12) - 12;
+    const startX = W/2 - totalW/2 + dotR;
+    seq.forEach((s, i) => {
+      const px = startX + i*(dotR*2+12);
+      const py = 165;
+      const revealed = revealedCount === undefined ? true : i < revealedCount;
+      const tapped   = playerSeq !== undefined && i < playerSeq.length;
+      ctx.save();
+      ctx.globalAlpha = revealed ? 1 : 0.2;
+      // Shadow glow on revealed dots
+      if (revealed) { ctx.shadowColor = BTNS[s].col; ctx.shadowBlur = 14; }
+      circ(px, py, dotR, BTNS[s].col, 'white', 3);
+      ctx.restore();
+      // Tick mark if tapped
+      if (tapped) {
+        circ(px, py, dotR*0.5, 'rgba(255,255,255,0.85)', null);
+        ctx.save();
+        ctx.font = '700 18px "Nunito",sans-serif';
+        ctx.fillStyle = BTNS[s].col;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('✓', px, py);
+        ctx.restore();
+      }
+    });
+  }
+
+  // ── Helper: draw color buttons ──
+  function drawBtns(litIdx, pendingIdx) {
+    BTNS.forEach((b, i) => {
+      const isLit  = i === litIdx;
+      const isPend = i === pendingIdx;
+      ctx.save();
+      if (isLit || isPend) { ctx.shadowColor = b.col; ctx.shadowBlur = 32; }
+      circ(b.x, b.y, BR, (isLit||isPend) ? b.col : 'white', b.col, (isLit||isPend) ? 5 : 3.5);
+      ctx.restore();
+      // BIG label — 16px bold, kids can see it
+      ctx.save();
+      ctx.font = '800 16px "Baloo 2",sans-serif';
+      ctx.fillStyle = b.col;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(b.label, b.x, b.y + BR + 22);
+      ctx.restore();
+    });
+  }
+
+  // ── Tutorial ──
+  await new Promise(res => {
+    const seq = [0, 2];
+    const stop = loop(t => {
+      bg();
+
+      // BIG robot watching icon
+      const eyeScale = 1 + 0.08*Math.sin(t*0.10);
+      ctx.save(); ctx.font = Math.round(52*eyeScale)+'px serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('👀', W/2, 52); ctx.restore();
+
+      // "WATCH → TAP" visual label row
+      ctx.save();
+      ctx.font = '800 20px "Baloo 2",sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#2d2d4e';
+      ctx.fillText('Watch 👀  →  Tap 👆', W/2, 96);
+      ctx.restore();
+
+      // Pattern preview dots
+      drawPatternBar(seq, seq.length);
+
+      // Buttons with flashing demo
+      const litIdx = t > 55 ? seq[Math.floor((t-55)/48) % seq.length] : -1;
+      drawBtns(litIdx, -1);
+      if (litIdx >= 0) glow(BTNS[litIdx].x, BTNS[litIdx].y, BR+20, BTNS[litIdx].col, t, 6);
+
+      tickParticles();
+      if (t === 162) { stop(); drawStart(t, '▶  Play!'); waitStart(null, res); }
+      if (t > 162) drawStart(t, '▶  Play!');
+    });
+  });
+
+  const sequences = [[0,2],[1,3],[2,4,0],[0,1,3],[1,0,2,4],[3,1,0,2],[0,2,4,1,3]];
+  const met = {correct_seqs:0, errors:0, extra_taps:0, rts:[], span:0};
+  let tapLog = [];
+
+  for (let r = 0; r < sequences.length; r++) {
+    const seq = sequences[r];
+
+    // ── WATCH PHASE: show each note one at a time ──
+    for (let si = 0; si < seq.length; si++) {
+      await new Promise(rs => {
+        let done = false;
+        const stop = loop(t => {
+          bg();
+
+          // Giant bouncing 👀 eye with "WATCH!" label — no reading needed
+          const eyeSz = 58 + 6*Math.sin(t*0.18);
+          ctx.save(); ctx.font = Math.round(eyeSz)+'px serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.shadowColor='rgba(107,207,246,0.5)'; ctx.shadowBlur=24;
+          ctx.fillText('👀', W/2 - 52, 54); ctx.restore();
+
+          // "WATCH!" in huge friendly text
+          ctx.save();
+          ctx.font = '900 30px "Baloo 2",sans-serif';
+          ctx.fillStyle = '#6bcff6';
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(107,207,246,0.35)'; ctx.shadowBlur = 10;
+          ctx.fillText('WATCH!', W/2 - 10, 54); ctx.restore();
+
+          // Pattern progress dots — revealed so far
+          drawPatternBar(seq, si + 1, undefined);
+
+          // Buttons — light up current note
+          drawBtns(seq[si], -1);
+          glow(BTNS[seq[si]].x, BTNS[seq[si]].y, BR+22, BTNS[seq[si]].col, t, 7);
+
+          tickParticles();
+          if (t === 40 && !done) { done = true; stop(); rs(); }
+        });
+      });
+      await wait(200);
+    }
+    await wait(320);
+
+    // ── YOUR TURN PHASE ──
+    let playerSeq = [], resolved = false;
+    const t0 = Date.now();
+    await new Promise(resolve => {
+      const stop = loop(t => {
+        bg();
+
+        // Giant bouncing 👆 hand — tells child it's their turn visually
+        const handBounce = Math.abs(Math.sin(t * 0.12)) * 10;
+        ctx.save(); ctx.font = '56px serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.shadowColor='rgba(255,126,179,0.5)'; ctx.shadowBlur=22;
+        ctx.fillText('👆', W/2 - 58, 46 - handBounce); ctx.restore();
+
+        // "YOUR TURN!" in huge pink text
+        ctx.save();
+        ctx.font = '900 30px "Baloo 2",sans-serif';
+        ctx.fillStyle = '#ff7eb3';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(255,126,179,0.35)'; ctx.shadowBlur = 10;
+        ctx.fillText('YOUR TURN!', W/2 - 16, 46); ctx.restore();
+
+        // Pattern dots with tick marks as child taps
+        drawPatternBar(seq, seq.length, playerSeq);
+
+        // Next dot to tap — extra large pulsing arrow below it
+        const nextIdx = playerSeq.length < seq.length ? seq[playerSeq.length] : -1;
+        if (nextIdx >= 0) {
+          // Big pulsing arrow pointing at next button
+          const arrowBounce = 6 + 4*Math.sin(t*0.18);
+          ctx.save(); ctx.font = '32px serif';
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText('⬇️', BTNS[nextIdx].x, BTNS[nextIdx].y - BR - arrowBounce - 14);
+          ctx.restore();
+        }
+
+        // Buttons — highlight the NEXT one to tap, greyed rest
+        drawBtns(-1, nextIdx);
+        if (nextIdx >= 0) glow(BTNS[nextIdx].x, BTNS[nextIdx].y, BR+22, BTNS[nextIdx].col, t, 7);
+
+        tickParticles();
+      });
+
+      setClick(p => {
+        if (resolved) return;
+        for (const b of BTNS) {
+          if ((p.x-b.x)**2 + (p.y-b.y)**2 < BR*BR) {
+            const idx = BTNS.indexOf(b);
+            met.rts.push(Date.now()-t0);
+            tapLog.push(idx);
+            playerSeq.push(idx);
+            MusicEngine.sfx('tap');
+            burst(b.x, b.y, b.col, 14);
+
+            if (playerSeq[playerSeq.length-1] !== seq[playerSeq.length-1]) {
+              met.errors++;
+              flash(false, '🔄 Oops!');
+              resolved = true; clearClick(); stop(); resolve();
+            } else if (playerSeq.length === seq.length) {
+              met.correct_seqs++;
+              met.span = Math.max(met.span, seq.length);
+              burstEmoji(W/2, 200, ['⭐','🌟','✨'], 10);
+              flash(true, '🌟 Perfect!');
+              resolved = true; clearClick(); stop(); resolve();
+            }
+            break;
+          }
+        }
+      });
+    });
+    await wait(520);
+    if(met.errors>2) break; // Stop if struggling
+  }
+
+  // Detect repetitive tapping (same button many times)
+  let maxRepeat=0, curRepeat=1;
+  for(let i=1;i<tapLog.length;i++){
+    if(tapLog[i]===tapLog[i-1]) curRepeat++; else curRepeat=1;
+    maxRepeat=Math.max(maxRepeat,curRepeat);
+  }
+
+  if(met.errors>4) flagBehavior('Working memory/sequence errors >4');
+  if(maxRepeat>3) flagBehavior('Repetitive tapping pattern detected');
+  if(met.span<3) flagBehavior('Low sequential memory span (<3 items)');
+
+  logTask('color_pattern',{
+    correct_seqs:met.correct_seqs, errors:met.errors, total:sequences.length,
+    max_span:met.span, max_consecutive_same_tap:maxRepeat,
+    tap_log:tapLog.slice(0,30),
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// GAME 6 — FOCUS QUEST 🎯
+// A target animal floats among distractors. Child taps only the
+// target as fast as possible. New target revealed each round.
+// Tracks: attention, inhibition (distractor taps), RT, consistency.
+// ══════════════════════════════════════════════════
+async function game_focusQuest() {
+  setHUD(5, 6);
+
+  const ROUNDS = 5;
+  const ANIMALS = ['🐶','🐱','🐸','🦊','🐻','🐧','🦋','🐙','🦁','🐷'];
+
+  // Tutorial
+  await new Promise(res=>{
+    const stop=loop(t=>{
+      bg();
+      bigTxt('Find the Animal! 🎯', W/2,46,24,'#2d2d4e');
+
+      // BIG instruction — child-readable
+      ctx.save();
+      ctx.font='700 18px "Nunito",sans-serif';
+      ctx.fillStyle='#666688'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('Tap ONLY the animal in the box! 👇', W/2, 84);
+      ctx.restore();
+
+      // Target card — large and clear
+      const cW=230, cH=82, cX=W/2-cW/2, cY=100;
+      ctx.save(); ctx.shadowColor='#ffca3a'; ctx.shadowBlur=18;
+      rr(cX,cY,cW,cH,22,'#ffca3a33','#ffca3a',4); ctx.restore();
+      ctx.save(); ctx.font='700 15px "Nunito",sans-serif';
+      ctx.fillStyle='#888'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('Find:', cX+16, cY+cH/2); ctx.restore();
+      etxt('🐶', cX+108, cY+cH/2, 48);
+      ctx.save(); ctx.font='800 15px "Baloo 2",sans-serif';
+      ctx.fillStyle='#ffca3a'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('← Tap me!', cX+148, cY+cH/2); ctx.restore();
+      glow(cX+cW/2, cY+cH/2, cH, '#ffca3a', t, 4);
+
+      // Floaters — ALL with bright white bubbles, clearly visible
+      const floaters=[
+        {e:'🐶',x:230+Math.sin(t*.04)*28,y:270+Math.cos(t*.03)*18,target:true,  col:'#ffca3a'},
+        {e:'🐱',x:560+Math.sin(t*.05+1)*22,y:220+Math.cos(t*.04)*16,target:false,col:'#ff9966'},
+        {e:'🐸',x:430+Math.sin(t*.03+2)*25,y:360+Math.cos(t*.05)*20,target:false,col:'#4cd964'},
+        {e:'🦊',x:690+Math.sin(t*.04+3)*18,y:320+Math.cos(t*.03)*14,target:false,col:'#ff7eb3'},
+      ];
+      floaters.forEach(f=>{
+        const br = f.target ? 52 : 44;
+        ctx.save();
+        ctx.shadowColor = f.target ? f.col : 'rgba(0,0,0,.1)';
+        ctx.shadowBlur  = f.target ? 22 : 8;
+        circ(f.x, f.y, br, 'white', f.col, f.target ? 5 : 3.5);
+        ctx.restore();
+        etxt(f.e, f.x, f.y, f.target ? 50 : 40);
+        if(f.target && t>55) glow(f.x, f.y, br+10, f.col, t, 5);
+      });
+
+      if(t>75){const fl=floaters[0]; etxt('👆',fl.x,fl.y+64,28);}
+      if(t>115) burst(floaters[0].x,floaters[0].y,'#ffca3a',16);
+      tickParticles();
+
+      if(t===160){stop();drawStart(t,'▶ Play Focus Quest!');waitStart(null,res);}
+      if(t>160) drawStart(t,'▶ Play Focus Quest!');
+    });
+  });
+
+  // Animal bubble colors for vivid backgrounds
+  const ANIMAL_COLS = {'🐶':'#ffca3a','🐱':'#ff9966','🐸':'#4cd964','🦊':'#ff7eb3','🐻':'#b288ff','🐧':'#6bcff6','🦋':'#ff7eb3','🐙':'#ff9966','🦁':'#ffca3a','🐷':'#ff7eb3'};
+
+  const met={correct:0,rts:[],wrong_taps:0,miss_rt:[]};
+
+  for(let r=0;r<ROUNDS;r++){
+    const target=ANIMALS[r];
+    const targetCol = ANIMAL_COLS[target] || '#ffca3a';
+    const nDistract=3+r;
+    const pool=ANIMALS.filter(a=>a!==target);
+    const distractors=pool.sort(()=>Math.random()-.5).slice(0,nDistract);
+    const allItems=[{e:target,target:true},...distractors.map(e=>({e,target:false}))];
+    // assign positions — keep away from top HUD area and target card
+    const positions=[];
+    allItems.forEach(it=>{
+      let x,y,ok;
+      for(let tries=0;tries<80;tries++){
+        x=110+Math.random()*(W-220); y=175+Math.random()*(H-290);
+        ok=positions.every(p=>(x-p.x)**2+(y-p.y)**2>7200);
+        if(ok)break;
+      }
+      positions.push({x,y});
+      it.x=x; it.y=y;
+      it.vx=(Math.random()-.5)*1.1; it.vy=(Math.random()-.5)*1.1;
+      it.wob=Math.random()*Math.PI*2;
+      it.col = ANIMAL_COLS[it.e] || '#6bcff6';
+    });
+
+    const t0=Date.now(); let resolved=false;
+
+    await new Promise(resolve=>{
+      const stop=loop(t=>{
+        bg();
+
+        // ── BIG title
+        ctx.save();
+        ctx.font='800 26px "Baloo 2",sans-serif';
+        ctx.fillStyle='#2d2d4e'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.shadowColor='rgba(0,0,0,.08)'; ctx.shadowBlur=4;
+        ctx.fillText('Find the animal! 🎯', W/2, 46);
+        ctx.restore();
+
+        // ── TARGET card — large, bright, unmissable
+        const cardW=220, cardH=80, cardX=W/2-cardW/2, cardY=72;
+        ctx.save();
+        ctx.shadowColor=targetCol; ctx.shadowBlur=18;
+        rr(cardX, cardY, cardW, cardH, 20, targetCol+'33', targetCol, 4);
+        ctx.restore();
+        // "Find:" label inside card
+        ctx.save();
+        ctx.font='700 15px "Nunito",sans-serif';
+        ctx.fillStyle='#555'; ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText('Find:', cardX+16, cardY+cardH/2);
+        ctx.restore();
+        // Big emoji in card
+        etxt(target, cardX+100, cardY+cardH/2, 46);
+        // "→ Tap me!" text
+        ctx.save();
+        ctx.font='800 14px "Baloo 2",sans-serif';
+        ctx.fillStyle=targetCol; ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText('← Tap me!', cardX+145, cardY+cardH/2);
+        ctx.restore();
+        glow(cardX+cardW/2, cardY+cardH/2, cardH, targetCol, t, 4);
+
+        drawProgress(met.correct,ROUNDS,'#ff9966');
+
+        // ── Animals — each with a bright solid bubble, full opacity
+        allItems.forEach(it=>{
+          it.x+=it.vx; it.y+=it.vy; it.wob+=.032;
+          if(it.x<90||it.x>W-90) it.vx*=-1;
+          if(it.y<160||it.y>H-90) it.vy*=-1;
+          const wx=it.x+Math.sin(it.wob)*5;
+          const bubR = it.target ? 52 : 44;
+          const bubCol = it.col;
+
+          // Solid white bubble with colored border — fully opaque
+          ctx.save();
+          ctx.shadowColor = it.target ? bubCol : 'rgba(0,0,0,.1)';
+          ctx.shadowBlur  = it.target ? 22 : 8;
+          circ(wx, it.y, bubR, 'white', bubCol, it.target ? 5 : 3.5);
+          ctx.restore();
+
+          // Emoji — big and clear
+          etxt(it.e, wx, it.y, it.target ? 50 : 40);
+
+          // Pulsing ring on target
+          if(it.target) glow(wx, it.y, bubR+10, bubCol, t, 5);
+        });
+
+        tickParticles();
+      });
+
+      setClick(p=>{
+        if(resolved)return;
+        for(const it of allItems){
+          // Use actual wobble x for hit test
+          const wx = it.x + Math.sin(it.wob)*5;
+          const hitR = it.target ? 56 : 48;
+          if((p.x-wx)**2+(p.y-it.y)**2 < hitR*hitR){
+            const rt=Date.now()-t0;
+            if(it.target){
+              met.correct++; met.rts.push(rt);
+              burst(wx, it.y, it.col, 22);
+              burstEmoji(wx, it.y, ['⭐','🌟','✨'], 8);
+              flash(true,'🌟 Found it!');
+            } else {
+              met.wrong_taps++; met.miss_rt.push(rt);
+              flash(false,'❌ Not that one!');
+            }
+            resolved=true; clearClick(); stop(); resolve(); return;
+          }
+        }
+      });
+    });
+    await wait(540);
+  }
+
+  const acc=met.correct/ROUNDS;
+  const avgRT=met.rts.reduce((a,b)=>a+b,0)/(met.rts.length||1);
+  if(acc<.5) flagBehavior('Low visual attention — focus task (<50%)');
+  if(met.wrong_taps>3) flagBehavior('High impulsivity / inhibition difficulty');
+  if(avgRT>6000) flagBehavior('Slow sustained attention — focus task');
+
+  logTask('focus_quest',{
+    accuracy:acc, avg_rt_ms:avgRT, correct:met.correct,
+    total:ROUNDS, wrong_taps:met.wrong_taps,
+  });
+  await wait(300);
+}
+
+// ══════════════════════════════════════════════════
+// SCORING
+// ══════════════════════════════════════════════════
+function clamp(v,lo=0,hi=100){return Math.max(lo,Math.min(hi,v));}
+
+function scoreAll(tel){
+  const d={social_communication:50,theory_of_mind:50,cognitive_flexibility:50,sensory_repetitive:50};
+  for(const t of tel){
+    if(t.task==='emotion_bubbles')
+      d.social_communication=clamp((1-t.data.accuracy)*78+(t.data.avg_hesitation_switches||0)*4);
+    else if(t.task==='decorate_room')
+      d.sensory_repetitive=clamp((1-t.data.unique_variety)*55+(t.data.max_consecutive_same||0)*10);
+    else if(t.task==='sort_objects')
+      d.cognitive_flexibility=clamp(((t.data.wrong||0)/t.data.total)*70+Math.min((t.data.avg_switch_time_ms||0)/3000*25,25));
+    else if(t.task==='joint_attention')
+      d.theory_of_mind=clamp((1-t.data.accuracy)*75+(t.data.lure_clicks||0)*8);
+    else if(t.task==='color_pattern')
+      d.sensory_repetitive=clamp(d.sensory_repetitive*.5+(t.data.max_consecutive_same_tap||0)*12*.5);
+    else if(t.task==='focus_quest')
+      d.cognitive_flexibility=clamp(d.cognitive_flexibility*.5+((1-t.data.accuracy)*60+(t.data.wrong_taps||0)*5)*.5);
+  }
+  const W2={social_communication:.38,theory_of_mind:.28,cognitive_flexibility:.2,sensory_repetitive:.14};
+  const composite=clamp(Object.entries(W2).reduce((s,[k,w])=>s+(d[k]||50)*w,0));
+  const risk=composite<35?'Low':composite<57?'Moderate':'High';
+  return{domains:d,composite,risk,flags:[...asdFlags]};
+}
+
+async function submitResults(scored){
+  const payload={
+    patient_id:PATIENT_ID, patient_name:PATIENT_NAME,
+    age_group:'4-8', module_id:1,
+    telemetry, domains:scored.domains,
+    composite:scored.composite, risk:scored.risk, flags:scored.flags,
+    timestamp:new Date().toISOString(),
+  };
+  try{
+    const res=await fetch('http://localhost:8000/api/submit',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+    });
+    if(res.ok){
+      const data=await res.json();
+      if(data.analysis?.clinical_report?.behavioral_flags)
+        data.analysis.clinical_report.behavioral_flags.forEach(f=>flagBehavior(f));
+    }
+  }catch(e){console.warn('[StarWorld] Backend offline — results stored locally');}
+  try{
+    const h=JSON.parse(localStorage.getItem('starworld_history')||'[]');
+    h.unshift({patient_id:PATIENT_ID,patient_name:PATIENT_NAME,...scored,timestamp:new Date().toISOString()});
+    localStorage.setItem('starworld_history',JSON.stringify(h.slice(0,50)));
+    localStorage.setItem('starworld_last',JSON.stringify(payload));
+  }catch(e){}
+}
+
+function showComplete(s){
+  const LABELS={social_communication:'Social Skills',theory_of_mind:'Mind Reading',cognitive_flexibility:'Flexibility',sensory_repetitive:'Focus & Habits'};
+  const COLORS={social_communication:'#ff7eb3',theory_of_mind:'#6bcff6',cognitive_flexibility:'#4cd964',sensory_repetitive:'#ffca3a'};
+  document.getElementById('risk-pill').textContent=s.risk+' Indicator';
+  document.getElementById('risk-pill').className='risk-pill risk-'+s.risk;
+  document.getElementById('score-grid').innerHTML=Object.entries(s.domains).map(([k,v])=>
+    `<div class="score-item">
+      <div class="score-lbl">${LABELS[k]}</div>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${v}%;background:${COLORS[k]}"></div></div>
+      <div class="score-val" style="color:${COLORS[k]}">${Math.round(v)}</div>
+    </div>`).join('');
+  const uniqueFlags=[...new Set(asdFlags)].slice(0,5);
+  document.getElementById('flag-list').innerHTML=uniqueFlags.map(f=>`<div class="complete-flag">⚑ ${f}</div>`).join('');
+  document.getElementById('complete').classList.add('show');
+  // Fireworks
+  let fc=0;
+  const fwInterval=setInterval(()=>{
+    const x=100+Math.random()*(W-200), y=100+Math.random()*200;
+    const cols=['#ff7eb3','#ffca3a','#6bcff6','#4cd964','#b288ff'];
+    burst(x,y,cols[fc%cols.length],24);
+    burstEmoji(x,y,['⭐','🌟','✨'],6);
+    fc++;
+    if(fc>8) clearInterval(fwInterval);
+    // Render particles on canvas still
+    bg();
+    tickParticles();
+  },280);
+}
+
+// ── Run ══════════════════════════════════════════
+// Init audio on first pointer interaction
+document.addEventListener('pointerdown', () => MusicEngine.init(), { once: true });
+
+(async()=>{
+  setHUD(0,6);
+  MusicEngine.playGame(0);
+  await game_emotionBubbles();
+  MusicEngine.playGame(1);
+  await game_decorateRoom();
+  MusicEngine.playGame(2);
+  await game_sortObjects();
+  MusicEngine.playGame(3);
+  await game_jointAttention();
+  MusicEngine.playGame(4);
+  await game_colorPattern();
+  MusicEngine.playGame(5);
+  await game_focusQuest();
+  MusicEngine.stopCurrent();
+  MusicEngine.sfx('complete');
+  const scored=scoreAll(telemetry);
+  await submitResults(scored);
+  showComplete(scored);
+})();
+
+// ── Download Report as JPEG ─────────────────────────────
+function downloadReport() {
+  const c = document.createElement('canvas');
+  const x = c.getContext('2d');
+  const W2 = 800, H2 = 1100;
+  c.width = W2 * 2; c.height = H2 * 2;
+  x.scale(2, 2);
+
+  // Background
+  const g = x.createLinearGradient(0, 0, W2, H2);
+  g.addColorStop(0, '#fff9f0');
+  g.addColorStop(.5, '#ffe8f5');
+  g.addColorStop(1, '#e8f5ff');
+  x.fillStyle = g; x.fillRect(0, 0, W2, H2);
+
+  // Top rainbow bar
+  const bar = x.createLinearGradient(0, 0, W2, 0);
+  bar.addColorStop(0, '#ffca3a');
+  bar.addColorStop(.33, '#ff7eb3');
+  bar.addColorStop(.66, '#6bcff6');
+  bar.addColorStop(1, '#4cd964');
+  x.fillStyle = bar; x.fillRect(0, 0, W2, 8);
+
+  // Title
+  x.font = '800 38px "Baloo 2", sans-serif';
+  x.fillStyle = '#2d2d4e'; x.textAlign = 'center';
+  x.shadowColor = 'rgba(0,0,0,.08)'; x.shadowBlur = 6;
+  x.fillText('🌟 StarWorld Report', W2/2, 70);
+  x.shadowBlur = 0;
+
+  x.font = '700 14px "Nunito", sans-serif';
+  x.fillStyle = '#8888aa';
+  x.fillText('Behavioral Pattern Observation  •  ' + new Date().toLocaleDateString(), W2/2, 100);
+
+  // Patient
+  x.font = '800 18px "Baloo 2", sans-serif';
+  x.fillStyle = '#2d2d4e';
+  x.fillText('Patient: ' + (PATIENT_NAME || 'Friend') + '  •  ID: ' + PATIENT_ID, W2/2, 140);
+
+  // Risk pill
+  const scored = scoreAll(telemetry);
+  const rp = scored.risk;
+  const rpColor = rp === 'Low' ? '#4cd964' : rp === 'Moderate' ? '#ffca3a' : '#ff4757';
+  const rpBg   = rp === 'Low' ? 'rgba(76,217,100,.15)' : rp === 'Moderate' ? 'rgba(255,202,58,.15)' : 'rgba(255,71,87,.12)';
+  x.fillStyle = rpBg;
+  x.beginPath(); x.roundRect(W2/2 - 90, 168, 180, 42, 24); x.fill();
+  x.strokeStyle = rpColor; x.lineWidth = 3;
+  x.beginPath(); x.roundRect(W2/2 - 90, 168, 180, 42, 24); x.stroke();
+  x.font = '800 18px "Baloo 2", sans-serif';
+  x.fillStyle = rpColor;
+  x.fillText(rp + ' Indicator', W2/2, 195);
+
+  // Score bars
+  const LABELS = {social_communication:'Social Skills',theory_of_mind:'Mind Reading',cognitive_flexibility:'Flexibility',sensory_repetitive:'Focus & Habits'};
+  const COLORS = {social_communication:'#ff7eb3',theory_of_mind:'#6bcff6',cognitive_flexibility:'#4cd964',sensory_repetitive:'#ffca3a'};
+  let y = 250;
+  Object.entries(scored.domains).forEach(([k, v]) => {
+    x.font = '700 13px "Nunito", sans-serif';
+    x.fillStyle = '#555577'; x.textAlign = 'left';
+    x.fillText(LABELS[k], 70, y);
+    x.font = '800 14px "Baloo 2", sans-serif';
+    x.textAlign = 'right';
+    x.fillStyle = COLORS[k];
+    x.fillText(Math.round(v), W2 - 70, y);
+
+    // bar bg
+    x.fillStyle = 'rgba(0,0,0,.06)';
+    x.beginPath(); x.roundRect(70, y + 10, W2 - 140, 10, 5); x.fill();
+    // bar fill
+    x.fillStyle = COLORS[k];
+    x.beginPath(); x.roundRect(70, y + 10, (W2 - 140) * (v / 100), 10, 5); x.fill();
+
+    y += 58;
+  });
+
+  // Composite score circle
+  y += 10;
+  const cx = W2/2, cy = y + 55, r = 55;
+  x.beginPath(); x.arc(cx, cy, r, 0, Math.PI*2);
+  x.strokeStyle = '#e8e0d5'; x.lineWidth = 6; x.stroke();
+  x.beginPath(); x.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + (Math.PI*2 * scored.composite / 100));
+  x.strokeStyle = '#ffca3a'; x.lineWidth = 6; x.stroke();
+  x.font = '800 42px "Baloo 2", sans-serif';
+  x.fillStyle = '#2d2d4e'; x.textAlign = 'center';
+  x.fillText(Math.round(scored.composite), cx, cy + 14);
+  x.font = '700 11px "Nunito", sans-serif';
+  x.fillStyle = '#8888aa';
+  x.fillText('OVERALL SCORE', cx, cy + 36);
+
+  // Flags
+  y += 140;
+  const uniqueFlags = [...new Set(asdFlags)].slice(0, 6);
+  if (uniqueFlags.length) {
+    x.font = '800 15px "Baloo 2", sans-serif';
+    x.fillStyle = '#b8860b'; x.textAlign = 'left';
+    x.fillText('⚑ Observed Patterns:', 70, y);
+    y += 28;
+    uniqueFlags.forEach(f => {
+      x.fillStyle = 'rgba(255,201,38,.10)';
+      x.strokeStyle = 'rgba(255,201,38,.40)';
+      x.lineWidth = 1.5;
+      x.beginPath(); x.roundRect(70, y - 14, W2 - 140, 28, 8); x.fill(); x.stroke();
+      x.font = '600 12px "Nunito", sans-serif';
+      x.fillStyle = '#8a6a00'; x.textAlign = 'left';
+      x.fillText(f, 84, y + 4);
+      y += 34;
+    });
+  }
+
+  // Footer
+  x.font = '600 11px "Nunito", sans-serif';
+  x.fillStyle = '#aaaacc'; x.textAlign = 'center';
+  x.fillText('StarWorld Adventure  •  NeuroStat AI  •  Confidential', W2/2, H2 - 28);
+
+  const link = document.createElement('a');
+  link.download = 'StarWorld_Report_' + PATIENT_ID + '_' + new Date().toISOString().slice(0,10) + '.png';
+  link.href = c.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>

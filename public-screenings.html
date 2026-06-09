@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Screenings — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: var(--bg); }
+        .page-wrapper { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+        .back-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:var(--radius-full); border:1.5px solid var(--border-med); background:var(--card); color:var(--text-sec); font-size:.84rem; font-weight:600; cursor:pointer; text-decoration:none; transition:all .2s; }
+        .back-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-pale); }
+        .page-title { font-size:1.7rem; font-weight:400; font-family:var(--font-h); }
+        .page-subtitle { font-size:.85rem; color:var(--text-muted); margin-top:.2rem; }
+
+        .privacy-notice { display:flex; align-items:center; gap:.6rem; padding:.75rem 1.1rem; border-radius:var(--radius-sm); background:rgba(61,107,69,.07); border:1px solid rgba(61,107,69,.18); font-size:.82rem; color:var(--text-sec); margin-bottom:1.5rem; }
+
+        .summary-bar { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+        .summary-chip { padding:.38rem 1rem; border-radius:var(--radius-full); font-size:.8rem; font-weight:600; font-family:var(--font-ui); }
+        .summary-chip.total    { background:var(--primary-pale);         color:var(--primary); border:1px solid rgba(61,107,69,.2); }
+        .summary-chip.complete { background:rgba(61,107,69,.10);         color:var(--success); border:1px solid rgba(61,107,69,.22); }
+        .summary-chip.high     { background:rgba(184,92,92,.10);         color:var(--danger);  border:1px solid rgba(184,92,92,.25); }
+        .summary-chip.moderate { background:rgba(193,123,92,.10);        color:var(--warning); border:1px solid rgba(193,123,92,.25); }
+        .summary-chip.low      { background:rgba(61,107,69,.10);         color:var(--success); border:1px solid rgba(61,107,69,.22); }
+        .summary-chip.pending  { background:rgba(100,100,100,.08);       color:var(--text-muted); border:1px solid rgba(100,100,100,.15); }
+
+        .filter-bar { display:flex; gap:.5rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
+        .filter-btn { padding:.38rem 1rem; border-radius:var(--radius-full); border:1.5px solid var(--border-med); background:var(--card); font-size:.82rem; font-weight:600; cursor:pointer; color:var(--text-sec); transition:all .2s; font-family:var(--font-ui); }
+        .filter-btn.active        { border-color:var(--primary); color:var(--primary); background:var(--primary-pale); }
+        .filter-btn.active-danger { border-color:var(--danger);  color:var(--danger);  background:rgba(184,92,92,.08); }
+
+        .table-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
+        .table-card table { width:100%; border-collapse:collapse; font-size:.9rem; }
+        .table-card thead tr { background:var(--surface); border-bottom:2px solid var(--border-med); }
+        .table-card th { padding:.85rem 1.1rem; text-align:left; font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-family:var(--font-ui); }
+        .table-card td { padding:.9rem 1.1rem; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+        .table-card tbody tr:last-child td { border-bottom:none; }
+        .table-card tbody tr:hover td { background:var(--primary-pale); }
+
+        .age-group-badge { display:inline-block; padding:.22rem .7rem; border-radius:var(--radius-full); font-size:.75rem; font-weight:600; background:rgba(61,107,69,.1); color:var(--primary); border:1px solid rgba(61,107,69,.2); font-family:var(--font-ui); }
+
+        .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
+        .empty-state .empty-icon { font-size:2.5rem; margin-bottom:1rem; }
+
+        @media (max-width:600px) { .table-card { overflow-x:auto; } }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <div class="page-header">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button onclick="window.close()" class="back-btn">← Close</button>
+            <div>
+                <div class="page-title" id="page-title">All Screenings</div>
+                <div class="page-subtitle" id="page-subtitle">Loading…</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <span style="font-size:.75rem;color:var(--text-muted);">NeuroStrat AI · Public View</span>
+        </div>
+    </div>
+
+    <!-- Privacy notice -->
+    <div class="privacy-notice">
+        <span>🔒</span>
+        <span>This is a <strong>public view</strong> — only Age, Age Group, Risk Level, Date, and Status are shown. No names, Patient IDs, emails, or report links are visible here.</span>
+    </div>
+
+    <!-- Summary chips (dynamic) -->
+    <div class="summary-bar" id="summary-bar"></div>
+
+    <!-- Filter buttons -->
+    <div class="filter-bar">
+        <button class="filter-btn active" id="btn-all"      onclick="applyFilter('all')">All</button>
+        <button class="filter-btn"        id="btn-high"     onclick="applyFilter('high')">🔴 High Risk</button>
+        <button class="filter-btn"        id="btn-moderate" onclick="applyFilter('moderate')">🟠 Moderate</button>
+        <button class="filter-btn"        id="btn-low"      onclick="applyFilter('low')">🟢 Low Risk</button>
+        <button class="filter-btn"        id="btn-pending"  onclick="applyFilter('pending')">⏳ Pending</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Age</th>
+                    <th>Age Group</th>
+                    <th>Risk Level</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="screenings-body">
+                <tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+const API_BASE = 'http://localhost:8000';
+let allRecords  = [];
+let currentFilter = 'all';
+
+/** Map age → age group label */
+function ageGroup(age) {
+    const a = parseInt(age);
+    if (isNaN(a)) return '—';
+    if (a >= 4  && a <= 8)  return '4–8';
+    if (a >= 9  && a <= 12) return '9–12';
+    if (a >= 13 && a <= 16) return '13–16';
+    if (a >= 17 && a <= 22) return '17–22';
+    if (a > 22)             return '22+';
+    return '—';
+}
+
+function riskKey(risk) {
+    if (!risk) return 'pending';
+    const r = (risk||'').toLowerCase();
+    if (r.includes('high'))     return 'high';
+    if (r.includes('moderate')) return 'moderate';
+    if (r.includes('low'))      return 'low';
+    return 'pending';
+}
+
+async function loadData() {
+    // 1. Try backend
+    try {
+        const resp = await fetch(`${API_BASE}/api/history`, { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) {
+            const history = await resp.json();
+            allRecords = history.map((h, i) => ({
+                idx:    i + 1,
+                age:    h.age,
+                risk:   h.risk_tier || null,
+                date:   h.created_at ? new Date(h.created_at).toLocaleDateString() : '—',
+                status: h.status,
+            }));
+            renderAll();
+            return;
+        }
+    } catch (_) {}
+
+    // 2. Fall back to ns_history (global, not per-user — public view)
+    const raw = JSON.parse(localStorage.getItem('ns_history') || '[]');
+    allRecords = raw.map((s, i) => ({
+        idx:    i + 1,
+        age:    s.age || '—',
+        risk:   s.risk || s.risk_tier || null,
+        date:   s.date || '—',
+        status: s.status || 'complete',
+    }));
+    renderAll();
+}
+
+function renderAll() {
+    const total = allRecords.length;
+    document.getElementById('page-title').textContent = 'All Screenings';
+    document.getElementById('page-subtitle').textContent =
+        `${total} total record${total !== 1 ? 's' : ''} · public anonymized view`;
+    document.title = `All Screenings (${total}) — NeuroStrat AI`;
+
+    // Summary chips
+    const high     = allRecords.filter(r => riskKey(r.risk) === 'high').length;
+    const mod      = allRecords.filter(r => riskKey(r.risk) === 'moderate').length;
+    const low      = allRecords.filter(r => riskKey(r.risk) === 'low').length;
+    const complete = allRecords.filter(r => r.status === 'complete').length;
+    const pending  = allRecords.filter(r => riskKey(r.risk) === 'pending').length;
+
+    document.getElementById('summary-bar').innerHTML = `
+        <span class="summary-chip total">Total: ${total}</span>
+        <span class="summary-chip complete">Complete: ${complete}</span>
+        <span class="summary-chip high">High Risk: ${high}</span>
+        <span class="summary-chip moderate">Moderate: ${mod}</span>
+        <span class="summary-chip low">Low Risk: ${low}</span>
+        <span class="summary-chip pending">Pending: ${pending}</span>`;
+
+    applyFilter(currentFilter, false);
+}
+
+function applyFilter(filter, updateURL = true) {
+    currentFilter = filter;
+    ['all','high','moderate','low','pending'].forEach(f => {
+        const btn = document.getElementById('btn-' + f);
+        if (!btn) return;
+        btn.classList.remove('active','active-danger');
+        if (f === filter) btn.classList.add(f === 'high' ? 'active-danger' : 'active');
+    });
+
+    const filtered = filter === 'all'
+        ? allRecords
+        : allRecords.filter(r => riskKey(r.risk) === filter);
+
+    renderTable(filtered);
+}
+
+function renderTable(records) {
+    const tbody = document.getElementById('screenings-body');
+    if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <strong>No records found</strong>
+                <p style="font-size:.9rem;margin-top:.4rem;">${currentFilter !== 'all'
+                    ? 'No ' + currentFilter + ' risk cases recorded yet.'
+                    : 'No screenings have been completed yet.'}</p>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = records.map(r => {
+        const rk = riskKey(r.risk);
+        const riskBadge = r.risk
+            ? `<span class="risk-badge risk-${rk}" style="font-size:.74rem;padding:.22rem .7rem;">${r.risk}</span>`
+            : `<span style="color:var(--text-muted);font-size:.8rem;">Pending</span>`;
+        const statusColor = r.status === 'complete'
+            ? 'var(--success)'
+            : r.status === 'in-progress' ? 'var(--warning)' : 'var(--text-muted)';
+        const ag = ageGroup(r.age);
+
+        return `<tr>
+            <td style="font-size:.8rem;color:var(--text-muted);font-family:monospace;">${r.idx}</td>
+            <td>${r.age !== '—' ? r.age + ' yrs' : '—'}</td>
+            <td><span class="age-group-badge">${ag !== '—' ? 'Ages ' + ag : '—'}</span></td>
+            <td>${riskBadge}</td>
+            <td><span style="font-size:.78rem;color:${statusColor};">● ${r.status || '—'}</span></td>
+            <td style="font-size:.84rem;color:var(--text-sec);">${r.date}</td>
+        </tr>`;
+    }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>

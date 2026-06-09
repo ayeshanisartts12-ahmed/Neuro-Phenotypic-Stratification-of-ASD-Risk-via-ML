@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span></div>
+    <nav><ul class="nav-menu">
+        <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+        <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+        <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+        <li><a href="faq.html" class="active"><span class="nav-icon">❓</span> FAQ's</a></li>
+        <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+        <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul></nav>
+    <div class="sidebar-footer"><button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button></div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>Frequently Asked Questions</h2>
+        </div>
+        <div class="topbar-right"><div class="user-avatar" data-user-avatar>U</div></div>
+    </header>
+
+    <div class="page-content">
+        <div style="max-width:800px;margin:0 auto;">
+
+            <div class="section-header reveal text-center">
+                <h2>Have Questions?</h2>
+                <p>Everything you need to know about the NeuroStrat AI platform</p>
+            </div>
+
+            <!-- Search -->
+            <div class="search-bar reveal">
+                <input type="text" id="faq-search" class="form-input" placeholder="Search questions..." style="padding-left:2.5rem;">
+            </div>
+
+            <!-- FAQ Categories -->
+            <div id="faq-list">
+
+                <!-- Category: Understanding ASD -->
+                <p style="font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 1rem;font-weight:600;" class="reveal">Understanding ASD</p>
+
+                <div class="accordion-item reveal" id="faq-item-1">
+                    <div class="accordion-header">
+                        <h4>1. What is Autism Spectrum Disorder (ASD)?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Autism Spectrum Disorder is a neurodevelopmental condition that affects communication, social interaction, behavior, and learning patterns. It is called a “spectrum” because symptoms and abilities can vary from person to person.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-3">
+                    <div class="accordion-header">
+                        <h4>3. At what age can ASD be identified?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Signs of ASD can sometimes appear as early as 1–3 years of age. However, some individuals may not be diagnosed until later childhood or even adulthood.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-4">
+                    <div class="accordion-header">
+                        <h4>4. Is ASD a disease?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">No. ASD is not a disease. It is a developmental condition that affects how a person communicates, behaves, and interacts with the world.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-5">
+                    <div class="accordion-header">
+                        <h4>5. What causes ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">There is no single known cause of ASD. Research suggests that genetic, neurological, and environmental factors may contribute to its development.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-6">
+                    <div class="accordion-header">
+                        <h4>6. Can ASD be cured?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">There is currently no medical cure for ASD, but early support, therapy, education, and intervention can significantly improve communication, learning, and daily life skills.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-8">
+                    <div class="accordion-header">
+                        <h4>8. Can individuals with ASD live a normal life?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Yes. Many individuals with ASD live successful and independent lives. With proper support, education, and understanding, they can achieve their goals and contribute greatly to society.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-9">
+                    <div class="accordion-header">
+                        <h4>9. Is every person with ASD the same?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">No. ASD affects every individual differently. Some may need significant support, while others may have strong academic, creative, or technical abilities.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-10">
+                    <div class="accordion-header">
+                        <h4>10. Does ASD affect intelligence?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Not necessarily. Individuals with ASD can have a wide range of intellectual abilities. Some may face learning challenges, while others may have exceptional talents in specific areas.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-11">
+                    <div class="accordion-header">
+                        <h4>11. Can girls have ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Yes. ASD affects both boys and girls. However, symptoms in girls may sometimes appear differently, making diagnosis more challenging.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-12">
+                    <div class="accordion-header">
+                        <h4>12. Is ASD related to parenting style?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">No. ASD is not caused by parenting style, family environment, or emotional upbringing.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-13">
+                    <div class="accordion-header">
+                        <h4>13. Can adults have ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Yes. Some individuals are diagnosed in adulthood after recognizing lifelong communication or social interaction challenges.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-23">
+                    <div class="accordion-header">
+                        <h4>23. Is ASD hereditary?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Research suggests that genetics may play a role in ASD, but it is usually influenced by multiple factors rather than a single cause.</p>
+                    </div>
+                </div>
+
+                <!-- Category: Symptoms & Detection -->
+                <p style="font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:2rem 0 1rem;font-weight:600;" class="reveal">Symptoms & Detection</p>
+
+                <div class="accordion-item reveal" id="faq-item-2">
+                    <div class="accordion-header">
+                        <h4>2. What are the early signs of ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Some common early signs include:</p>
+                        <ul style="padding-left:1.25rem; margin-top:.4rem; margin-bottom:.4rem; line-height:1.75; color:var(--text-sec);">
+                            <li>Delayed speech or communication</li>
+                            <li>Limited eye contact</li>
+                            <li>Repetitive behaviors</li>
+                            <li>Difficulty understanding emotions</li>
+                            <li>Sensitivity to sounds, lights, or touch</li>
+                            <li>Preference for routines</li>
+                            <li>Limited social interaction</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-7">
+                    <div class="accordion-header">
+                        <h4>7. Why is early detection important?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Early detection helps children receive support and intervention at the right time, which can improve language development, social skills, learning ability, and overall quality of life.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-24">
+                    <div class="accordion-header">
+                        <h4>24. What should parents do if they notice signs of ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Parents should consult a healthcare professional or developmental specialist as early as possible for screening and guidance.</p>
+                    </div>
+                </div>
+
+                <!-- Category: Support & Care -->
+                <p style="font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:2rem 0 1rem;font-weight:600;" class="reveal">Support & Care</p>
+
+                <div class="accordion-item reveal" id="faq-item-14">
+                    <div class="accordion-header">
+                        <h4>14. What therapies are commonly used for ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Common support approaches include:</p>
+                        <ul style="padding-left:1.25rem; margin-top:.4rem; margin-bottom:.4rem; line-height:1.75; color:var(--text-sec);">
+                            <li>Speech Therapy</li>
+                            <li>Behavioral Therapy</li>
+                            <li>Occupational Therapy</li>
+                            <li>Social Skills Training</li>
+                            <li>Educational Support Programs</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-15">
+                    <div class="accordion-header">
+                        <h4>15. How can families support someone with ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Families can help by:</p>
+                        <ul style="padding-left:1.25rem; margin-top:.4rem; margin-bottom:.4rem; line-height:1.75; color:var(--text-sec);">
+                            <li>Showing patience and understanding</li>
+                            <li>Creating supportive routines</li>
+                            <li>Encouraging communication</li>
+                            <li>Seeking professional guidance</li>
+                            <li>Promoting confidence and independence</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-16">
+                    <div class="accordion-header">
+                        <h4>16. What challenges do people with ASD commonly face?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Some common challenges include:</p>
+                        <ul style="padding-left:1.25rem; margin-top:.4rem; margin-bottom:.4rem; line-height:1.75; color:var(--text-sec);">
+                            <li>Social communication difficulties</li>
+                            <li>Sensory sensitivities</li>
+                            <li>Anxiety or stress in unfamiliar situations</li>
+                            <li>Difficulty adapting to change</li>
+                            <li>Learning or behavioral challenges</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-21">
+                    <div class="accordion-header">
+                        <h4>21. Can children with ASD attend school?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Yes. Many children with ASD can attend school successfully with proper educational support, inclusive learning environments, and understanding teachers.</p>
+                    </div>
+                </div>
+
+                <!-- Category: AI, Technology & Mission -->
+                <p style="font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:2rem 0 1rem;font-weight:600;" class="reveal">AI, Technology & Mission</p>
+
+                <div class="accordion-item reveal" id="faq-item-17">
+                    <div class="accordion-header">
+                        <h4>17. Can technology help in ASD screening and support?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Yes. Artificial Intelligence and Machine Learning technologies can assist in early risk screening, behavioral analysis, and helping healthcare professionals identify possible ASD-related patterns earlier.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-18">
+                    <div class="accordion-header">
+                        <h4>18. What is AI-based ASD risk stratification?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">AI-based ASD risk stratification uses intelligent systems to analyze behavioral and neuro-phenotypic patterns and classify individuals into categories such as High Risk, Moderate Risk, or Low Risk for further clinical evaluation.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-19">
+                    <div class="accordion-header">
+                        <h4>19. Is ASD screening the same as diagnosis?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">No. Screening only identifies possible signs or risk levels. A formal diagnosis must always be performed by qualified healthcare professionals and specialists.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-25">
+                    <div class="accordion-header">
+                        <h4>25. What is the main goal of your ASD project?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">The goal of this project is to use Artificial Intelligence and Machine Learning to support early ASD risk stratification, improve awareness, assist healthcare systems, and promote timely intervention for better outcomes in Pakistan.</p>
+                    </div>
+                </div>
+
+                <!-- Category: Awareness & Society -->
+                <p style="font-size:.82rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin:2rem 0 1rem;font-weight:600;" class="reveal">Awareness & Society</p>
+
+                <div class="accordion-item reveal" id="faq-item-20">
+                    <div class="accordion-header">
+                        <h4>20. Why is ASD awareness important in Pakistan?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Awareness is important because many families in Pakistan still lack information about ASD. Increasing awareness can help promote early detection, reduce stigma, and improve access to healthcare and educational support.</p>
+                    </div>
+                </div>
+                <div class="accordion-item reveal" id="faq-item-22">
+                    <div class="accordion-header">
+                        <h4>22. How can society support individuals with ASD?</h4>
+                        <span class="accordion-icon">+</span>
+                    </div>
+                    <div class="accordion-body">
+                        <p style="margin-bottom:.5rem; line-height:1.8; color:var(--text-sec);">Society can support individuals with ASD by:</p>
+                        <ul style="padding-left:1.25rem; margin-top:.4rem; margin-bottom:.4rem; line-height:1.75; color:var(--text-sec);">
+                            <li>Promoting awareness and acceptance</li>
+                            <li>Encouraging inclusive education</li>
+                            <li>Providing equal opportunities</li>
+                            <li>Reducing stigma and misconceptions</li>
+                            <li>Supporting families and caregivers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="card text-center reveal mt-4" style="padding:2rem;">
+                <h3 style="margin-bottom:.5rem;">Still have questions?</h3>
+                <p style="color:var(--text-sec);margin-bottom:1.25rem;">Our research team is available to assist with clinical or technical queries.</p>
+                <button class="btn btn-primary" onclick="openContactModal()">Contact Research Team</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div id="contact-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Contact Research Suite</h3>
+            <button class="modal-close" onclick="closeContactModal()">&times;</button>
+        </div>
+        <div class="modal-tabs">
+            <button class="tab-btn active" id="btn-tab-chat" onclick="switchContactTab('chat')">💬 Live Chat Assistant</button>
+            <button class="tab-btn" id="btn-tab-email" onclick="switchContactTab('email')">✉️ Email Team</button>
+        </div>
+        
+        <!-- Tab Content: Chatbot -->
+        <div id="tab-chat" class="tab-content active">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-bubble bot">
+                        <p>Hello! I am the NeuroStrat AI Research Assistant. How can I help you today?</p>
+                    </div>
+                </div>
+                <div class="chat-suggestions">
+                    <button class="chip chip-sage" onclick="sendSuggestedMessage('How does the screening work?')">How does screening work?</button>
+                    <button class="chip chip-sage" onclick="sendSuggestedMessage('Is my data confidential?')">Is my data confidential?</button>
+                    <button class="chip chip-sage" onclick="sendSuggestedMessage('How accurate is the AI?')">How accurate is the AI?</button>
+                </div>
+                <div class="chat-input-wrapper">
+                    <input type="text" id="chat-input" class="form-input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendUserMessage()">
+                    <button class="btn btn-primary btn-sm" onclick="sendUserMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Content: Email -->
+        <div id="tab-email" class="tab-content">
+            <div class="email-container text-center">
+                <div class="email-icon">✉️</div>
+                <h4 style="margin-bottom: .5rem;">Send an Email to our Research Team</h4>
+                <p style="color:var(--text-sec); margin-bottom:1.5rem; font-size:.9rem; line-height: 1.6;">
+                    Have technical questions, feedback, or clinical inquiries? Send us an email and our team will get back to you within 24 hours.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:320px; margin:0 auto;">
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=research@neurostrat.ai&su=NeuroStrat%20AI%20Inquiry&body=Hello%20NeuroStrat%20Research%20Team,%0A%0AI%20have%20the%20following%20query..." target="_blank" class="btn btn-primary btn-block">
+                        Open Gmail Compose
+                    </a>
+                    <a href="mailto:research@neurostrat.ai?subject=NeuroStrat%20AI%20Inquiry" class="btn btn-outline btn-block">
+                        Use Default Email Client
+                    </a>
+                </div>
+                <div style="margin-top:1.5rem; font-size:.8rem; color:var(--text-muted);">
+                    Direct address: <code style="background:var(--surface); padding:2px 6px; border-radius:4px; font-family: monospace;">research@neurostrat.ai</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal styling */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 35, 25, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+.modal-card {
+    background: var(--card);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 550px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: scaleIn 0.3s cubic-bezier(.22,1,.36,1);
+    position: relative;
+    z-index: 1001;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1.5px solid var(--border);
+    background: var(--surface);
+}
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-sec);
+    transition: color 0.2s;
+    line-height: 1;
+}
+.modal-close:hover {
+    color: var(--danger);
+}
+.modal-tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+}
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 1rem;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--text-sec);
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+}
+.tab-btn:hover {
+    color: var(--primary);
+    background: rgba(61,107,69,0.05);
+}
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--card);
+}
+.tab-content {
+    display: none;
+    padding: 1.5rem;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* Chatbot styles */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 0.5rem;
+    margin-bottom: 1rem;
+}
+.chat-bubble {
+    max-width: 80%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+.chat-bubble.bot {
+    background: var(--surface);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border: 1px solid var(--border);
+}
+.chat-bubble.user {
+    background: var(--primary);
+    color: #EEF4EE;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+.chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.chat-suggestions .chip {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border-med);
+}
+.chat-suggestions .chip:hover {
+    background: var(--primary);
+    color: #EEF4EE;
+}
+.chat-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+}
+.chat-input-wrapper input {
+    flex: 1;
+}
+
+/* Email styles */
+.email-container {
+    padding: 2rem 1rem;
+}
+.email-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.loader-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    height: 1.2rem;
+}
+.loader-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--text-sec);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.loader-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loader-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+</style>
+
+<script src="script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    initSearch('faq-search', '.accordion-item');
+});
+
+function openContactModal() {
+    document.getElementById('contact-modal').classList.remove('hidden');
+}
+
+function closeContactModal() {
+    document.getElementById('contact-modal').classList.add('hidden');
+}
+
+function switchContactTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    if (tabName === 'chat') {
+        document.getElementById('btn-tab-chat').classList.add('active');
+        document.getElementById('tab-chat').classList.add('active');
+    } else {
+        document.getElementById('btn-tab-email').classList.add('active');
+        document.getElementById('tab-email').classList.add('active');
+    }
+}
+
+function sendUserMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    appendMessage(msg, 'user');
+    input.value = '';
+    
+    // Simulate bot typing
+    simulateBotReply(msg);
+}
+
+function sendSuggestedMessage(msg) {
+    appendMessage(msg, 'user');
+    simulateBotReply(msg);
+}
+
+function appendMessage(text, sender) {
+    const container = document.getElementById('chat-messages');
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${sender}`;
+    bubble.innerHTML = `<p>${text}</p>`;
+    container.appendChild(bubble);
+    container.scrollTop = container.scrollHeight;
+}
+
+function simulateBotReply(userMsg) {
+    const container = document.getElementById('chat-messages');
+    const loader = document.createElement('div');
+    loader.className = 'chat-bubble bot';
+    loader.id = 'chat-loader';
+    loader.innerHTML = `
+        <div class="loader-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    container.appendChild(loader);
+    container.scrollTop = container.scrollHeight;
+    
+    const query = userMsg.toLowerCase();
+    let reply = "I'm here to help, but that specific query is best answered by our clinical research team. Please check the 'Email Team' tab to send us a direct message!";
+    
+    if (query.includes('work') || query.includes('screening') || query.includes('how to')) {
+        reply = "NeuroStrat AI uses interactive multi-modal games designed for specific age cohorts. By analyzing metrics like gameplay dynamics, audio responses, and semantic inputs, our system estimates the risk probability of ASD and generates a clinical report.";
+    } else if (query.includes('confidential') || query.includes('data') || query.includes('privacy') || query.includes('safe')) {
+        reply = "Absolutely. All screening telemetry is completely anonymized and stored securely in our encrypted SQLite database. Only authorized practitioners can access full patient records and clinical PDF summaries.";
+    } else if (query.includes('accuracy') || query.includes('accurate') || query.includes('valid')) {
+        reply = "Our models use weighted scoring parameters based on validated clinical literature. While highly reliable for early stratification, NeuroStrat AI is a screening aid and does not replace a professional clinical diagnosis.";
+    } else if (query.includes('contact') || query.includes('email') || query.includes('doctor') || query.includes('research')) {
+        reply = "You can send an email directly to our research team at <a href='mailto:research@neurostrat.ai'>research@neurostrat.ai</a> or switch to the 'Email Team' tab to open Gmail compose automatically!";
+    } else if (query.includes('hello') || query.includes('hi') || query.includes('hey')) {
+        reply = "Hello! Feel free to ask me about NeuroStrat AI, data confidentiality, or how our screening tests work.";
+    } else if (query.includes('autism') || query.includes('asd')) {
+        reply = "Autism Spectrum Disorder (ASD) is a developmental condition affecting social interaction and behavior. Early risk stratification helps families seek professional evaluation early.";
+    }
+    
+    setTimeout(() => {
+        const loaderEl = document.getElementById('chat-loader');
+        if (loaderEl) loaderEl.remove();
+        appendMessage(reply, 'bot');
+    }, 1000 + Math.random() * 500);
+}
+</script>
+</body>
+</html>

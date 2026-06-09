@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Risk Cases — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: var(--bg); }
+        .page-wrapper { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .page-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+        .back-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:var(--radius-full); border:1.5px solid var(--border-med); background:var(--card); color:var(--text-sec); font-size:.84rem; font-weight:600; cursor:pointer; text-decoration:none; transition:all .2s; }
+        .back-btn:hover { border-color:var(--danger); color:var(--danger); background:rgba(184,92,92,.06); }
+        .page-title { font-size:1.7rem; font-weight:400; font-family:var(--font-h); }
+        .page-subtitle { font-size:.85rem; color:var(--text-muted); margin-top:.2rem; }
+
+        /* High-risk alert banner */
+        .risk-alert { display:flex; align-items:center; gap:.75rem; padding:1rem 1.25rem; border-radius:var(--radius-sm); background:rgba(184,92,92,.07); border:1.5px solid rgba(184,92,92,.25); font-size:.88rem; color:var(--danger); margin-bottom:1.5rem; }
+        .risk-alert strong { font-weight:700; }
+
+        .privacy-notice { display:flex; align-items:center; gap:.6rem; padding:.75rem 1.1rem; border-radius:var(--radius-sm); background:rgba(61,107,69,.07); border:1px solid rgba(61,107,69,.18); font-size:.82rem; color:var(--text-sec); margin-bottom:1.5rem; }
+
+        .summary-bar { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+        .summary-chip { padding:.38rem 1rem; border-radius:var(--radius-full); font-size:.8rem; font-weight:600; font-family:var(--font-ui); }
+        .summary-chip.danger  { background:rgba(184,92,92,.12); color:var(--danger);  border:1.5px solid rgba(184,92,92,.28); }
+        .summary-chip.total   { background:var(--primary-pale); color:var(--primary); border:1px solid rgba(61,107,69,.2); }
+        .summary-chip.age     { background:rgba(193,123,92,.10);color:var(--warning); border:1px solid rgba(193,123,92,.25); }
+
+        /* Age distribution mini-chart */
+        .age-dist { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem; }
+        .age-dist h3 { font-size:.95rem; margin-bottom:1rem; font-family:var(--font-ui); font-weight:600; }
+        .age-dist-row { display:flex; align-items:center; gap:.75rem; margin-bottom:.6rem; }
+        .age-dist-label { width:80px; font-size:.82rem; color:var(--text-sec); font-family:var(--font-ui); font-weight:600; }
+        .age-dist-bar-bg { flex:1; height:10px; background:var(--surface); border-radius:var(--radius-full); overflow:hidden; }
+        .age-dist-bar-fill { height:100%; border-radius:var(--radius-full); background:var(--danger); transition:width 1.2s cubic-bezier(.22,1,.36,1); }
+        .age-dist-val { width:40px; text-align:right; font-size:.82rem; font-weight:700; color:var(--danger); font-family:var(--font-ui); }
+
+        .table-card { background:var(--card); border:1.5px solid rgba(184,92,92,.22); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
+        .table-card table { width:100%; border-collapse:collapse; font-size:.9rem; }
+        .table-card thead tr { background:rgba(184,92,92,.05); border-bottom:2px solid rgba(184,92,92,.18); }
+        .table-card th { padding:.85rem 1.1rem; text-align:left; font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-family:var(--font-ui); }
+        .table-card td { padding:.9rem 1.1rem; border-bottom:1px solid var(--border); color:var(--text); vertical-align:middle; }
+        .table-card tbody tr:last-child td { border-bottom:none; }
+        .table-card tbody tr:hover td { background:rgba(184,92,92,.03); }
+
+        .age-group-badge { display:inline-block; padding:.22rem .7rem; border-radius:var(--radius-full); font-size:.75rem; font-weight:600; background:rgba(184,92,92,.1); color:var(--danger); border:1px solid rgba(184,92,92,.22); font-family:var(--font-ui); }
+
+        .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <div class="page-header">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button onclick="window.close()" class="back-btn">← Close</button>
+            <div>
+                <div class="page-title" id="page-title">High Risk Cases</div>
+                <div class="page-subtitle" id="page-subtitle">Loading…</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <span style="font-size:.75rem;color:var(--text-muted);">NeuroStrat AI · Referral View</span>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    <div class="risk-alert">
+        <span style="font-size:1.25rem;">🔴</span>
+        <span><strong>Clinical Attention Required —</strong> Patients in this list have been flagged as High Risk by the AI screening model. Immediate referral to a developmental specialist is recommended.</span>
+    </div>
+
+    <!-- Privacy -->
+    <div class="privacy-notice">
+        <span>🔒</span>
+        <span>This view shows <strong>Age Group, Date, and Risk Level only</strong>. No names, Patient IDs, emails, or report links are exposed.</span>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-bar" id="summary-bar"></div>
+
+    <!-- Age group distribution chart (dynamic) -->
+    <div class="age-dist" id="age-dist-section">
+        <h3>🔴 High Risk by Age Group</h3>
+        <div id="age-dist-chart"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Age Group</th>
+                    <th>Age (years)</th>
+                    <th>Risk Level</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="cases-body">
+                <tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+const API_BASE = 'http://localhost:8000';
+let highRiskRecords = [];
+let allTotal = 0;
+
+function ageGroup(age) {
+    const a = parseInt(age);
+    if (isNaN(a)) return '—';
+    if (a >= 4  && a <= 8)  return '4–8';
+    if (a >= 9  && a <= 12) return '9–12';
+    if (a >= 13 && a <= 16) return '13–16';
+    if (a >= 17 && a <= 22) return '17–22';
+    if (a > 22)             return '22+';
+    return '—';
+}
+
+function isHighRisk(risk) {
+    return (risk||'').toLowerCase().includes('high');
+}
+
+async function loadData() {
+    try {
+        const resp = await fetch(`${API_BASE}/api/history`, { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) {
+            const history = await resp.json();
+            allTotal = history.length;
+            highRiskRecords = history
+                .filter(h => isHighRisk(h.risk_tier))
+                .map((h, i) => ({
+                    idx:    i + 1,
+                    age:    h.age,
+                    risk:   h.risk_tier || 'High Risk',
+                    date:   h.created_at ? new Date(h.created_at).toLocaleDateString() : '—',
+                    status: h.status,
+                }));
+            renderAll();
+            return;
+        }
+    } catch (_) {}
+
+    // Fallback localStorage
+    const raw = JSON.parse(localStorage.getItem('ns_history') || '[]');
+    allTotal = raw.length;
+    highRiskRecords = raw
+        .filter(s => isHighRisk(s.risk || s.risk_tier))
+        .map((s, i) => ({
+            idx:    i + 1,
+            age:    s.age || '—',
+            risk:   s.risk || s.risk_tier || 'High Risk',
+            date:   s.date || '—',
+            status: s.status || 'complete',
+        }));
+    renderAll();
+}
+
+function renderAll() {
+    const count = highRiskRecords.length;
+    const pct   = allTotal > 0 ? Math.round((count / allTotal) * 100) : 0;
+
+    document.getElementById('page-title').textContent = 'High Risk Cases';
+    document.getElementById('page-subtitle').textContent =
+        `${count} high-risk record${count !== 1 ? 's' : ''} out of ${allTotal} total screenings (${pct}%)`;
+    document.title = `High Risk Cases (${count}) — NeuroStrat AI`;
+
+    // Summary chips
+    const groups = { '4–8': 0, '9–12': 0, '13–16': 0, '17–22': 0, '22+': 0 };
+    highRiskRecords.forEach(r => {
+        const g = ageGroup(r.age);
+        if (groups[g] !== undefined) groups[g]++;
+    });
+
+    document.getElementById('summary-bar').innerHTML = `
+        <span class="summary-chip danger">🔴 High Risk: ${count}</span>
+        <span class="summary-chip total">Total Screened: ${allTotal}</span>
+        <span class="summary-chip age">Referral Rate: ${pct}%</span>`;
+
+    // Age distribution chart (dynamic from real data)
+    const maxGroup = Math.max(...Object.values(groups), 1);
+    document.getElementById('age-dist-chart').innerHTML = Object.entries(groups).map(([g, v]) => `
+        <div class="age-dist-row">
+            <div class="age-dist-label">Ages ${g}</div>
+            <div class="age-dist-bar-bg">
+                <div class="age-dist-bar-fill" style="width:0%" id="adb-${g.replace(/[^0-9]/g,'_')}"></div>
+            </div>
+            <div class="age-dist-val">${v}</div>
+        </div>`).join('');
+
+    // Animate bars after paint
+    setTimeout(() => {
+        Object.entries(groups).forEach(([g, v]) => {
+            const el = document.getElementById('adb-' + g.replace(/[^0-9]/g,'_'));
+            if (el) el.style.width = (v / maxGroup * 100) + '%';
+        });
+    }, 100);
+
+    renderTable();
+}
+
+function renderTable() {
+    const tbody = document.getElementById('cases-body');
+    if (highRiskRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">
+            <div class="empty-state">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
+                <strong>No High Risk Cases</strong>
+                <p style="font-size:.9rem;margin-top:.4rem;">No screenings have been flagged as high risk yet.</p>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = highRiskRecords.map(r => {
+        const ag = ageGroup(r.age);
+        const statusColor = r.status === 'complete' ? 'var(--success)'
+            : r.status === 'in-progress' ? 'var(--warning)' : 'var(--text-muted)';
+        return `<tr>
+            <td style="font-size:.8rem;color:var(--text-muted);font-family:monospace;">${r.idx}</td>
+            <td><span class="age-group-badge">${ag !== '—' ? 'Ages ' + ag : '—'}</span></td>
+            <td>${r.age !== '—' ? r.age + ' yrs' : '—'}</td>
+            <td><span class="risk-badge risk-high" style="font-size:.74rem;padding:.22rem .7rem;">${r.risk}</span></td>
+            <td style="font-size:.84rem;color:var(--text-sec);">${r.date}</td>
+            <td><span style="font-size:.78rem;color:${statusColor};">● ${r.status || '—'}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>

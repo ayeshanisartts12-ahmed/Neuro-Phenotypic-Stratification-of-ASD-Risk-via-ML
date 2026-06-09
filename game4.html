@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soft Focus — Teen Mind & Social Pattern Observatory</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f1;
+    --bg-warm: #f5ebe0;
+    --surface: rgba(255, 253, 249, 0.85);
+    --surface-solid: #fffdf9;
+    --elevated: #ffffff;
+    --border: rgba(139, 115, 85, 0.12);
+    --border-hover: rgba(139, 115, 85, 0.22);
+    --text: #4a4036;
+    --text-secondary: #8c7e6e;
+    --text-muted: #b5a89a;
+    --accent-lavender: #c4b5fd;
+    --accent-lavender-deep: #a78bfa;
+    --accent-peach: #fdba74;
+    --accent-peach-deep: #fb923c;
+    --accent-mint: #6ee7b7;
+    --accent-mint-deep: #34d399;
+    --accent-rose: #fda4af;
+    --accent-rose-deep: #f472b6;
+    --accent-sky: #7dd3fc;
+    --accent-sky-deep: #38bdf8;
+    --accent-cream: #fef3c7;
+    --shadow-soft: 0 8px 32px rgba(139, 115, 85, 0.08);
+    --shadow-medium: 0 12px 48px rgba(139, 115, 85, 0.12);
+    --shadow-heavy: 0 24px 80px rgba(139, 115, 85, 0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(196, 181, 253, 0.35) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(253, 186, 116, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(110, 231, 183, 0.2) 0%, transparent 45%),
+      radial-gradient(circle at 80% 10%, rgba(253, 164, 175, 0.25) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(60px);
+  }
+
+  .screen { position: relative; z-index: 1; display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── INTRO ── */
+  #intro { align-items: center; justify-content: center; padding: 48px 24px; text-align: center; }
+  .system-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(196, 181, 253, 0.15);
+    border: 1.5px solid rgba(167, 139, 250, 0.3);
+    border-radius: 100px; padding: 10px 22px;
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    color: var(--accent-lavender-deep); letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 36px;
+    backdrop-filter: blur(10px);
+    animation: fadeSlideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    box-shadow: 0 4px 16px var(--glow-lavender);
+  }
+  .system-badge::before {
+    content: ''; width: 7px; height: 7px;
+    background: var(--accent-lavender-deep); border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent-lavender-deep);
+    animation: gentlePulse 3s ease-in-out infinite;
+  }
+  .intro-headline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(40px, 7vw, 72px); font-weight: 700;
+    line-height: 1.05; letter-spacing: -2px; margin-bottom: 14px;
+    animation: fadeSlideDown 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    color: var(--text);
+  }
+  .intro-headline .highlight {
+    background: linear-gradient(135deg, var(--accent-peach-deep) 0%, var(--accent-rose-deep) 50%, var(--accent-lavender-deep) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .intro-sub {
+    font-family: 'Caveat', cursive; font-size: 26px;
+    color: var(--text-secondary); margin-bottom: 28px;
+    animation: fadeSlideDown 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .intro-desc {
+    max-width: 560px; font-size: 15px; line-height: 1.85;
+    color: var(--text-secondary); margin-bottom: 44px; font-weight: 400;
+    animation: fadeSlideDown 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; max-width: 660px; width: 100%; margin-bottom: 44px;
+    animation: fadeSlideDown 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .feature-cell {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 24px 18px; text-align: center;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px); box-shadow: var(--shadow-soft);
+    cursor: default;
+  }
+  .feature-cell:hover {
+    border-color: var(--border-hover); transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-medium);
+  }
+  .feature-cell .f-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+  .feature-cell .f-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+  .btn-enter {
+    background: linear-gradient(135deg, var(--accent-lavender-deep), var(--accent-rose-deep));
+    color: #fff; border: none; border-radius: 16px; padding: 18px 48px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    letter-spacing: 0.5px; cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeSlideDown 0.8s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    box-shadow: 0 8px 32px rgba(167, 139, 250, 0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    position: relative; overflow: hidden;
+  }
+  .btn-enter:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 16px 48px rgba(167, 139, 250, 0.4); }
+
+  /* ── GAME CONTAINER ── */
+  #game { max-width: 900px; margin: 0 auto; padding: 28px 24px 48px; }
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; padding: 16px 22px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 20px; backdrop-filter: blur(12px); box-shadow: var(--shadow-soft);
+  }
+  .gh-brand {
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 20px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent-peach-deep), var(--accent-lavender-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .gh-pill {
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-muted);
+    background: rgba(139, 115, 85, 0.04); padding: 5px 12px;
+    border-radius: 8px; border: 1.5px solid var(--border); font-weight: 700;
+  }
+  .progress-track { flex: 1; max-width: 220px; margin: 0 16px; }
+  .progress-track .pt-label {
+    display: flex; justify-content: space-between;
+    font-family: 'Space Mono', monospace; font-size: 9px;
+    color: var(--text-muted); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+  }
+  .progress-track .pt-bar { height: 4px; background: rgba(139, 115, 85, 0.08); border-radius: 2px; overflow: hidden; }
+  .progress-track .pt-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent-peach), var(--accent-lavender), var(--accent-mint));
+    border-radius: 2px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* ── PHASE CARDS ── */
+  .phase-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 24px; padding: 36px; position: relative;
+    overflow: hidden; backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-soft); animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .phase-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; background: linear-gradient(90deg, var(--accent-peach), var(--accent-lavender), var(--accent-mint));
+    opacity: 0.8;
+  }
+  .phase-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 100px;
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .phase-badge.p1 { background: rgba(110, 231, 183, 0.12); color: var(--accent-mint-deep); border: 1.5px solid rgba(52, 211, 153, 0.3); }
+  .phase-badge.p2 { background: rgba(253, 186, 116, 0.12); color: var(--accent-peach-deep); border: 1.5px solid rgba(251, 146, 60, 0.3); animation: softAlertPulse 3s infinite; }
+  .phase-badge.p3 { background: rgba(196, 181, 253, 0.12); color: var(--accent-lavender-deep); border: 1.5px solid rgba(167, 139, 250, 0.3); }
+  .phase-badge.p4 { background: rgba(253, 164, 175, 0.12); color: var(--accent-rose-deep); border: 1.5px solid rgba(244, 114, 182, 0.3); }
+  .phase-badge.p5 { background: rgba(125, 211, 252, 0.12); color: var(--accent-sky-deep); border: 1.5px solid rgba(56, 189, 248, 0.3); }
+
+  .scenario-title {
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 14px;
+  }
+  .scenario-body {
+    font-size: 16px; line-height: 1.85; color: var(--text); margin-bottom: 20px; font-weight: 400;
+  }
+  .scenario-context {
+    background: rgba(196, 181, 253, 0.08); border: 1.5px solid rgba(167, 139, 250, 0.15);
+    border-left: 3px solid var(--accent-lavender-deep); border-radius: 0 14px 14px 0;
+    padding: 14px 18px; font-size: 15px; color: var(--text-secondary);
+    line-height: 1.7; font-style: italic; font-family: 'Caveat', cursive;
+  }
+
+  /* ── CHOICE CARDS ── */
+  .choices-grid {
+    display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 24px;
+  }
+  .choice-card {
+    background: rgba(255,255,255,0.5); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 18px 22px; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: flex-start; gap: 14px;
+    font-size: 15px; line-height: 1.6; color: var(--text);
+  }
+  .choice-card:hover {
+    border-color: var(--accent-lavender-deep); background: rgba(196, 181, 253, 0.08);
+    transform: translateX(6px); box-shadow: 0 4px 16px rgba(196, 181, 253, 0.15);
+  }
+  .choice-card.selected {
+    border-color: var(--accent-mint-deep); background: rgba(110, 231, 183, 0.1);
+    box-shadow: 0 4px 16px rgba(110, 231, 183, 0.15);
+  }
+  .choice-card .choice-letter {
+    width: 32px; height: 32px; min-width: 32px; border-radius: 10px;
+    background: var(--bg-warm); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
+    color: var(--text-muted); transition: all 0.3s;
+  }
+  .choice-card:hover .choice-letter { background: var(--accent-lavender); color: #fff; border-color: var(--accent-lavender-deep); }
+  .choice-card.selected .choice-letter { background: var(--accent-mint-deep); color: #fff; border-color: var(--accent-mint-deep); }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--accent-mint-deep), var(--accent-sky-deep));
+    color: #fff; border: none; border-radius: 16px; padding: 16px 36px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: center; gap: 10px; margin-top: 24px;
+    width: 100%; justify-content: center;
+    box-shadow: 0 8px 28px rgba(52, 211, 153, 0.25), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    letter-spacing: 0.3px;
+  }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 36px rgba(52, 211, 153, 0.35); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── SENSORY ROOM ── */
+  .sensory-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px;
+  }
+  .sensory-item {
+    background: rgba(255,255,255,0.6); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 24px; text-align: center; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sensory-item:hover { transform: translateY(-4px); border-color: var(--accent-peach); box-shadow: 0 8px 24px rgba(253, 186, 116, 0.15); }
+  .sensory-item.selected {
+    border-color: var(--accent-mint-deep); background: rgba(110, 231, 183, 0.08);
+    box-shadow: 0 8px 24px rgba(110, 231, 183, 0.15);
+  }
+  .sensory-item .s-emoji { font-size: 40px; margin-bottom: 10px; display: block; }
+  .sensory-item .s-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .sensory-item .s-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── PATTERN WALL ── */
+  .pattern-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 24px;
+  }
+  .pattern-cell {
+    aspect-ratio: 1; border-radius: 14px; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; border: 2px solid transparent;
+  }
+  .pattern-cell:hover { transform: scale(1.08); }
+  .pattern-cell.selected { border-color: var(--accent-mint-deep); box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.2); }
+  .pattern-cell.wrong { border-color: var(--accent-rose-deep); animation: shake 0.4s; }
+  .pattern-cell.correct { border-color: var(--accent-mint-deep); animation: popIn 0.4s; }
+
+  /* ── ENERGY METER ── */
+  .energy-meter {
+    margin-top: 24px; padding: 24px; background: rgba(255,255,255,0.5);
+    border-radius: 20px; border: 1.5px solid var(--border);
+  }
+  .energy-slider {
+    -webkit-appearance: none; width: 100%; height: 8px; border-radius: 4px;appearance: none;
+    background: linear-gradient(90deg, var(--accent-mint), var(--accent-peach), var(--accent-rose));
+    outline: none; margin: 16px 0;
+  }
+  .energy-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--accent-lavender-deep);
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2); cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .energy-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .energy-labels {
+    display: flex; justify-content: space-between;
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-muted);
+  }
+
+  /* ── TEXT RESPONSE ── */
+  .response-area {
+    width: 100%; background: rgba(255,255,255,0.6); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 24px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 15px; line-height: 1.8; resize: none; min-height: 140px;
+    transition: all 0.4s ease; outline: none; margin-top: 20px;
+  }
+  .response-area:focus {
+    border-color: rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 0 4px rgba(196, 181, 253, 0.1), var(--shadow-medium);
+  }
+  .response-area::placeholder { color: var(--text-muted); font-weight: 300; }
+
+  /* ── FINAL ── */
+  #final { align-items: center; padding: 60px 24px; max-width: 820px; margin: 0 auto; }
+  .final-head { text-align: center; margin-bottom: 48px; animation: fadeSlideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .final-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(110, 231, 183, 0.1); border: 1.5px solid rgba(52, 211, 153, 0.2);
+    border-radius: 100px; padding: 8px 18px; font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--accent-mint-deep); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 24px; backdrop-filter: blur(10px); font-weight: 700;
+  }
+  .final-title {
+    font-family: 'DM Sans', sans-serif; font-size: clamp(34px, 6vw, 60px); font-weight: 700;
+    letter-spacing: -2px; margin-bottom: 12px; line-height: 1.05;
+    background: linear-gradient(135deg, var(--text), var(--text-secondary));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .final-sub { color: var(--text-secondary); font-size: 16px; font-weight: 400; }
+  .final-score-board {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 28px;
+    padding: 44px; text-align: center; margin-bottom: 32px; width: 100%;
+    position: relative; overflow: hidden; animation: fadeSlideUp 0.6s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    backdrop-filter: blur(16px); box-shadow: var(--shadow-medium);
+  }
+  .final-score-board::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 4px; background: linear-gradient(90deg, var(--accent-peach), var(--accent-lavender), var(--accent-mint), var(--accent-rose));
+  }
+  .fsb-big {
+    font-family: 'DM Sans', sans-serif; font-size: 84px; font-weight: 700;
+    letter-spacing: -4px; line-height: 1;
+    background: linear-gradient(135deg, var(--accent-peach-deep), var(--accent-lavender-deep), var(--accent-mint-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.15));
+  }
+  .fsb-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; margin-top: 8px; margin-bottom: 28px; font-weight: 700; }
+  .fsb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+  .fsb-cell {
+    background: rgba(139, 115, 85, 0.03); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 20px; text-align: left; transition: all 0.4s ease;
+  }
+  .fsb-cell:hover { border-color: var(--border-hover); transform: translateY(-2px); background: rgba(139, 115, 85, 0.06); box-shadow: var(--shadow-soft); }
+  .fsb-name { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 700; }
+  .fsb-value { font-family: 'DM Sans', sans-serif; font-size: 28px; font-weight: 700; }
+  .profile-card {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 24px;
+    padding: 36px; width: 100%; margin-bottom: 28px;
+    animation: fadeSlideUp 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    backdrop-filter: blur(16px); box-shadow: var(--shadow-soft);
+  }
+  .pc-title { font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .pc-archetype {
+    display: inline-block; background: rgba(196, 181, 253, 0.1);
+    border: 1.5px solid rgba(167, 139, 250, 0.2); border-radius: 10px;
+    padding: 6px 16px; font-family: 'Space Mono', monospace; font-size: 11px;
+    color: var(--accent-lavender-deep); letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 18px; font-weight: 700;
+  }
+  .pc-text { font-size: 15px; line-height: 1.9; color: var(--text-secondary); font-weight: 400; }
+  .final-actions { display: flex; gap: 14px; animation: fadeSlideUp 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; width: 100%; }
+  .btn-new-session {
+    flex: 1; background: linear-gradient(135deg, var(--accent-lavender-deep), var(--accent-rose-deep));
+    color: #fff; border: none; border-radius: 16px; padding: 18px 32px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(167, 139, 250, 0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    letter-spacing: 0.5px; text-decoration: none; text-align: center; display: inline-flex;
+    align-items: center; justify-content: center;
+  }
+  .btn-new-session:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 16px 48px rgba(167, 139, 250, 0.4); }
+  .btn-download {
+    flex: 1; background: linear-gradient(135deg, var(--accent-mint-deep), var(--accent-sky-deep));
+    color: #fff; border: none; border-radius: 16px; padding: 18px 32px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(52, 211, 153, 0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    letter-spacing: 0.5px; text-decoration: none; text-align: center; display: inline-flex;
+    align-items: center; justify-content: center;
+  }
+  .btn-download:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 16px 48px rgba(52, 211, 153, 0.4); }
+  .btn-dashboard {
+    flex: 1; background: var(--surface); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 16px; padding: 18px 32px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-soft); text-decoration: none; text-align: center;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-dashboard:hover { transform: translateY(-3px) scale(1.02); border-color: var(--border-hover); background: rgba(139,115,85,0.04); }
+  .btn-consult {
+    flex: 1; background: linear-gradient(135deg, var(--accent-rose-deep), #e11d48);
+    color: #fff; border: none; border-radius: 16px; padding: 18px 32px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(244, 114, 182, 0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
+    letter-spacing: 0.5px; text-decoration: none; text-align: center; display: inline-flex;
+    align-items: center; justify-content: center;
+  }
+  .btn-consult:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 16px 48px rgba(244, 114, 182, 0.4); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface-solid); border: 1.5px solid var(--border-hover);
+    border-radius: 14px; padding: 14px 28px; font-family: 'Space Mono', monospace;
+    font-size: 12px; color: var(--text-secondary); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 999;
+    white-space: nowrap; backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-medium); font-weight: 700;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-30px); filter: blur(4px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); filter: blur(4px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  @keyframes gentlePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+  @keyframes softAlertPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(253, 186, 116, 0); } 50% { box-shadow: 0 0 0 8px rgba(253, 186, 116, 0.1); } }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @keyframes popIn { 0% { transform: scale(0.8); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .fsb-grid { grid-template-columns: repeat(2, 1fr); }
+    .sensory-grid { grid-template-columns: 1fr; }
+    .pattern-grid { grid-template-columns: repeat(3, 1fr); }
+    .final-actions { flex-direction: column; }
+    .game-header { flex-wrap: wrap; gap: 12px; }
+    .progress-track { order: 3; width: 100%; max-width: none; margin: 0; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     INTRO
+  ═══════════════════════════════════════════ -->
+<div id="intro" class="screen active">
+  <div class="system-badge">Soft Focus v2.0 — Interactive Pattern Observatory</div>
+
+  <h1 class="intro-headline">
+    <span class="highlight">Soft Focus</span><br>
+    <span style="font-size:0.55em; letter-spacing:-1px; color: var(--text-secondary);">Teen Mind & Social Pattern Observatory</span>
+  </h1>
+
+  <p class="intro-sub">Understanding how you navigate the unsolved moments</p>
+
+  <p class="intro-desc">
+    This is not a test. It is a mirror made of moments. You will play through five interactive 
+    rooms — each designed to feel like a real situation from your life. Some choices feel right. 
+    Some feel wrong. There are no correct answers. Only patterns. We observe how your mind 
+    organizes, adapts, and holds its shape when the social rules suddenly change.
+  </p>
+
+  <div class="feature-grid">
+    <div class="feature-cell">
+      <div class="f-icon">🌸</div>
+      <div class="f-label">Social Navigation</div>
+    </div>
+    <div class="feature-cell">
+      <div class="f-icon">🧩</div>
+      <div class="f-label">Cognitive Flexibility</div>
+    </div>
+    <div class="feature-cell">
+      <div class="f-icon">🎭</div>
+      <div class="f-label">Identity & Masking</div>
+    </div>
+    <div class="feature-cell">
+      <div class="f-icon">🌊</div>
+      <div class="f-label">Emotional Regulation</div>
+    </div>
+    <div class="feature-cell">
+      <div class="f-icon">🗣️</div>
+      <div class="f-label">Communication Flow</div>
+    </div>
+    <div class="feature-cell">
+      <div class="f-icon">🧠</div>
+      <div class="f-label">Sensory & Attention</div>
+    </div>
+  </div>
+
+  <button class="btn-enter" onclick="startSession()">Begin Session →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     GAME
+  ═══════════════════════════════════════════ -->
+<div id="game" class="screen">
+  <div class="game-header">
+    <div class="gh-brand">Soft Focus</div>
+    <div class="progress-track">
+      <div class="pt-label">
+        <span>Room Progress</span>
+        <span id="progressText">0 / 5</span>
+      </div>
+      <div class="pt-bar">
+        <div class="pt-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="gh-pill" id="sessionId">ID: ————</div>
+  </div>
+
+  <div id="gameContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     FINAL
+  ═══════════════════════════════════════════ -->
+<div id="final" class="screen">
+  <div class="final-head">
+    <div class="final-badge">✓ Session Complete</div>
+    <h1 class="final-title">Your Mind<br>Map</h1>
+    <p class="final-sub">Aggregated pattern analysis across all rooms</p>
+  </div>
+
+  <div class="final-score-board">
+    <div class="fsb-big" id="finalScore">—</div>
+    <div class="fsb-label">Overall Social-Emotional Flexibility Index</div>
+    <div class="fsb-grid" id="finalGrid"></div>
+  </div>
+
+  <div class="profile-card">
+    <div class="pc-title">Your Pattern Archetype</div>
+    <div class="pc-archetype" id="finalArchetype">Processing...</div>
+    <p class="pc-text" id="finalProfile"></p>
+  </div>
+
+  <div class="final-actions">
+    <button class="btn-download" onclick="downloadReport()">
+      <span style="margin-right:8px;">📥</span> Download Report
+    </button>
+    <a href="dashboard.html" class="btn-dashboard">
+      <span style="margin-right:8px;">🏠</span> Go Back to Dashboard
+    </a>
+    <a href="consult-doctor.html" class="btn-consult">
+      <span style="margin-right:8px;">🩺</span> Consult a Doctor
+    </a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  TEEN SCENARIO DATABASE — 5 Interactive Rooms
+// ═══════════════════════════════════════════
+const ROOMS = [
+  {
+    id: 'R1', name: 'The Social Maze',
+    badge: 'p1', badgeText: 'Room 1 — Social Navigation',
+    title: 'THE CAFETERIA CROSSROADS',
+    body: 'It is lunch period. You have been sitting with the same three people since semester started. Today, they are talking about a party you were not invited to. They keep glancing at you. The noise of the cafeteria is making your jaw tight. You have 15 minutes left.',
+    context: 'This room tests how you navigate social uncertainty, sensory load, and belonging pressure.',
+    type: 'choices',
+    choices: [
+      { id: 'c1', text: 'Stay and pretend you are fine. Laugh when they laugh. Keep your face relaxed even though your hands are shaking.', scores: { masking: 8, social_anxiety: 6, avoidance: 2, assertiveness: 1, sensory_cope: 2, routine_cling: 5 } },
+      { id: 'c2', text: 'Get up and go to the bathroom. Stand in the stall for five minutes until your heart slows down. Maybe you will eat outside instead.', scores: { masking: 3, social_anxiety: 8, avoidance: 7, assertiveness: 2, sensory_cope: 6, routine_cling: 3 } },
+      { id: 'c3', text: 'Ask directly: "Are you guys going to something? It is okay if I was not invited, I just do not like not knowing."', scores: { masking: 2, social_anxiety: 3, avoidance: 1, assertiveness: 8, sensory_cope: 3, routine_cling: 2 } },
+      { id: 'c4', text: 'Put in your earbuds and open your phone. You do not need to participate in conversations that make you feel small. You will eat quickly and leave.', scores: { masking: 4, social_anxiety: 5, avoidance: 6, assertiveness: 4, sensory_cope: 7, routine_cling: 6 } },
+      { id: 'c5', text: 'Start talking about your special interest — the new game mechanics or the band you discovered. If they engage, great. If not, at least you are being yourself.', scores: { masking: 1, social_anxiety: 4, avoidance: 2, assertiveness: 6, sensory_cope: 4, routine_cling: 4 } }
+    ]
+  },
+  {
+    id: 'R2', name: 'The Sensory Room',
+    badge: 'p2', badgeText: 'Room 2 — Sensory Profile',
+    title: 'YOUR SENSORY WORLD',
+    body: 'Think about an average school day. Which of these sensations bother you the most? You can select multiple. Be honest — this is about your real experience, not what you think should bother you.',
+    context: 'This room maps your sensory processing profile — a key dimension of how you experience the world.',
+    type: 'sensory',
+    items: [
+      { id: 's1', emoji: '🔊', label: 'Loud sudden noises', desc: 'Fire alarms, shouting, chair scraping', scores: { auditory: 8, sensory_total: 8 } },
+      { id: 's2', emoji: '💡', label: 'Fluorescent lights', desc: 'Buzzing, flickering, too bright', scores: { visual: 8, sensory_total: 8 } },
+      { id: 's3', emoji: '👕', label: 'Clothing textures', desc: 'Tags, seams, tight waistbands, new fabrics', scores: { tactile: 8, sensory_total: 8 } },
+      { id: 's4', emoji: '🍕', label: 'Food smells/textures', desc: 'Strong cafeteria smells, mixed textures', scores: { olfactory: 8, sensory_total: 8 } },
+      { id: 's5', emoji: '🤝', label: 'Unexpected touch', desc: 'Shoulder taps, hugs, crowding in hallways', scores: { tactile: 6, sensory_total: 6 } },
+      { id: 's6', emoji: '📢', label: 'Multiple voices', desc: 'Several conversations at once, overlapping noise', scores: { auditory: 7, sensory_total: 7 } },
+      { id: 's7', emoji: '🌡️', label: 'Temperature swings', desc: 'Classroom too hot, then too cold, unpredictable', scores: { intero: 5, sensory_total: 5 } },
+      { id: 's8', emoji: '✨', label: 'None of these really', desc: 'I am generally okay with sensory input', scores: { auditory: 1, visual: 1, tactile: 1, olfactory: 1, intero: 1, sensory_total: 1 } }
+    ]
+  },
+  {
+    id: 'R3', name: 'The Pattern Wall',
+    badge: 'p3', badgeText: 'Room 3 — Systemizing & Focus',
+    title: 'FIND THE PATTERN',
+    body: 'Below is a grid of symbols. Some follow a rule. Others break it. Click all the symbols that DO NOT belong. You have 30 seconds. Trust your instinct — do not overthink.',
+    context: 'This room tests your systemizing tendency — how naturally you spot rules, patterns, and inconsistencies.',
+    type: 'pattern',
+    timeLimit: 30,
+    grid: [
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '■', color: '#c4b5fd', belongs: false },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#fdba74', belongs: false },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '●', color: '#c4b5fd', belongs: false },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#6ee7b7', belongs: false },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '▲', color: '#c4b5fd', belongs: false },
+      { char: '◆', color: '#c4b5fd', belongs: true },
+      { char: '◆', color: '#c4b5fd', belongs: true }
+    ]
+  },
+  {
+    id: 'R4', name: 'The Sudden Shift',
+    badge: 'p4', badgeText: 'Room 4 — Adaptation Under Pressure',
+    title: 'THE PLAN THAT BROKE',
+    body: 'You have been looking forward to Saturday for two weeks. You planned every hour: wake up, coffee, work on your project, watch your show, sleep early. Your best friend texts: "Emergency. I need you. Can you come over right now?" They do not explain.',
+    context: 'This room tests how you handle the collision between planned routine and unexpected social demand.',
+    type: 'adaptation',
+    stages: [
+      {
+        prompt: 'What is your FIRST reaction?',
+        choices: [
+          { id: 'a1', text: 'Panic. Your whole day is ruined. You feel like you cannot breathe.', scores: { rigidity: 8, empathy: 6, distress: 9 } },
+          { id: 'a2', text: 'Annoyance. You had a plan. Why do people always do this on your scheduled days?', scores: { rigidity: 7, empathy: 3, distress: 6 } },
+          { id: 'a3', text: 'Worry. Something is wrong. You immediately start getting ready.', scores: { rigidity: 2, empathy: 9, distress: 5 } },
+          { id: 'a4', text: 'You text back: "Can you give me 30 minutes? I need to finish something first."', scores: { rigidity: 4, empathy: 7, distress: 3 } },
+          { id: 'a5', text: 'You ignore the text for 20 minutes while you process. Then you decide.', scores: { rigidity: 5, empathy: 5, distress: 4 } }
+        ]
+      },
+      {
+        prompt: 'You go. When you arrive, they say: "Sorry, false alarm. My mom and I fought. I am fine now. You can go if you want." Your entire Saturday plan is disrupted. What do you do?',
+        choices: [
+          { id: 'b1', text: 'You feel angry but hide it. You stay for an hour to be polite, then leave and feel exhausted.', scores: { rigidity: 6, empathy: 5, distress: 7, masking: 7 } },
+          { id: 'b2', text: 'You say: "I am glad you are okay, but I had plans and this was hard for me. I am going to go now."', scores: { rigidity: 3, empathy: 6, distress: 4, masking: 2 } },
+          { id: 'b3', text: 'You stay and try to restart your day from here. Maybe you can do your project at their house.', scores: { rigidity: 4, empathy: 7, distress: 3, masking: 4 } },
+          { id: 'b4', text: 'You feel so overwhelmed by the change that you just sit there silently, not knowing what to do.', scores: { rigidity: 8, empathy: 4, distress: 8, masking: 3 } }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'R5', name: 'The Mirror',
+    badge: 'p5', badgeText: 'Room 5 — Identity & Energy',
+    title: 'WHO ARE YOU WHEN NO ONE IS WATCHING?',
+    body: 'This is the final room. Answer from your real self, not the version you show others.',
+    context: 'This room explores your social energy, masking patterns, and identity consistency.',
+    type: 'composite',
+    sections: [
+      {
+        title: 'Social Energy Map',
+        body: 'You have a limited amount of social energy each day. How do you distribute it?',
+        type: 'energy',
+        sliders: [
+          { id: 'e1', label: 'Classroom participation', min: 'Avoid eye contact', max: 'Raise hand often', scores: { social_motivation: 1, masking: 0.5 } },
+          { id: 'e2', label: 'Group chats / DMs', min: 'Read only, rarely reply', max: 'Active, initiate often', scores: { social_motivation: 1, masking: 0.3 } },
+          { id: 'e3', label: 'In-person hangouts', min: 'Need days to recover', max: 'Energized by people', scores: { social_motivation: 1, introversion: -1 } },
+          { id: 'e4', label: 'Family dinners', min: 'Eat fast, escape early', max: 'Stay, chat, engage', scores: { social_motivation: 0.5, masking: 0.5 } }
+        ]
+      },
+      {
+        title: 'The Masking Question',
+        body: 'Think about the last time you were with people you do not fully trust. How much of yourself were you performing?',
+        type: 'choices',
+        choices: [
+          { id: 'm1', text: 'I was a completely different person. I scripted responses, monitored my face, and counted minutes until I could leave.', scores: { masking: 10, identity_drift: 9, exhaustion: 9 } },
+          { id: 'm2', text: 'I was mostly myself but softer. I hid the intense parts, the obsessions, the directness.', scores: { masking: 6, identity_drift: 5, exhaustion: 6 } },
+          { id: 'm3', text: 'I was pretty much myself. If they do not like the real me, that is their problem.', scores: { masking: 2, identity_drift: 1, exhaustion: 2 } },
+          { id: 'm4', text: 'I do not know who the "real me" is anymore. I have been performing for so long.', scores: { masking: 9, identity_drift: 10, exhaustion: 8 } }
+        ]
+      },
+      {
+        title: 'Your Safe World',
+        body: 'Describe what your ideal alone-time looks like. No judgment. Be specific.',
+        type: 'text',
+        placeholder: 'Example: "Lights dim, weighted blanket, same playlist I have had since 2021, organizing my collection by color and size, no one asking me anything..."',
+        scores: { text_depth: 1 }
+      }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let currentRoom = 0;
+let sessionScores = {
+  masking: 0, social_anxiety: 0, avoidance: 0, assertiveness: 0,
+  sensory_cope: 0, routine_cling: 0, auditory: 0, visual: 0,
+  tactile: 0, olfactory: 0, intero: 0, sensory_total: 0,
+  systemizing: 0, rigidity: 0, empathy: 0, distress: 0,
+  social_motivation: 0, introversion: 0, identity_drift: 0,
+  exhaustion: 0, text_depth: 0
+};
+let roomResults = [];
+let currentSelections = {};
+let patternTimer = null;
+let patternTimeLeft = 30;
+let patternSelected = [];
+let patternCorrect = [];
+let finalDims = {};
+let finalArchetype = '';
+let finalProfile = '';
+
+function startSession() {
+  currentRoom = 0;
+  sessionScores = {
+    masking: 0, social_anxiety: 0, avoidance: 0, assertiveness: 0,
+    sensory_cope: 0, routine_cling: 0, auditory: 0, visual: 0,
+    tactile: 0, olfactory: 0, intero: 0, sensory_total: 0,
+    systemizing: 0, rigidity: 0, empathy: 0, distress: 0,
+    social_motivation: 0, introversion: 0, identity_drift: 0,
+    exhaustion: 0, text_depth: 0
+  };
+  roomResults = [];
+  finalDims = {};
+  finalArchetype = '';
+  finalProfile = '';
+
+  document.getElementById('intro').classList.remove('active');
+  document.getElementById('game').classList.add('active');
+  document.getElementById('final').classList.remove('active');
+
+  const sid = 'SF-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  document.getElementById('sessionId').textContent = 'ID: ' + sid;
+
+  loadRoom();
+}
+
+function loadRoom() {
+  const room = ROOMS[currentRoom];
+  const total = ROOMS.length;
+
+  document.getElementById('progressText').textContent = `${currentRoom} / ${total}`;
+  document.getElementById('progressFill').style.width = `${(currentRoom / total) * 100}%`;
+
+  const content = document.getElementById('gameContent');
+  content.innerHTML = '';
+  currentSelections = {};
+
+  const card = document.createElement('div');
+  card.className = 'phase-card';
+  card.id = 'roomCard';
+
+  let html = `
+    <div class="phase-badge ${room.badge}">${room.badgeText}</div>
+    <div class="scenario-title">${room.title}</div>
+    <div class="scenario-body">${room.body}</div>
+    <div class="scenario-context">📍 What this reveals: ${room.context}</div>
+  `;
+
+  if (room.type === 'choices') {
+    html += `<div class="choices-grid" id="choicesGrid">`;
+    room.choices.forEach((c, i) => {
+      html += `
+        <div class="choice-card" onclick="selectChoice('${c.id}', this)" data-id="${c.id}">
+          <div class="choice-letter">${String.fromCharCode(65 + i)}</div>
+          <div>${c.text}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    html += `<button class="btn-submit" id="submitBtn" onclick="submitChoices()" disabled>Continue →</button>`;
+  }
+
+  else if (room.type === 'sensory') {
+    html += `<div class="sensory-grid" id="sensoryGrid">`;
+    room.items.forEach(item => {
+      html += `
+        <div class="sensory-item" onclick="toggleSensory('${item.id}', this)" data-id="${item.id}">
+          <span class="s-emoji">${item.emoji}</span>
+          <div class="s-label">${item.label}</div>
+          <div class="s-desc">${item.desc}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    html += `<button class="btn-submit" id="submitBtn" onclick="submitSensory()">Continue →</button>`;
+  }
+
+  else if (room.type === 'pattern') {
+    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+      <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--text-muted);">Find the symbols that break the pattern</div>
+      <div id="patternTimer" style="font-family:'Space Mono',monospace; font-size:14px; font-weight:700; color:var(--accent-peach-deep);">00:30</div>
+    </div>`;
+    html += `<div class="pattern-grid" id="patternGrid">`;
+    room.grid.forEach((cell, i) => {
+      html += `<div class="pattern-cell" onclick="selectPattern(${i}, this)" style="background:${cell.color}20; color:${cell.color};" data-index="${i}" data-belongs="${cell.belongs}">${cell.char}</div>`;
+    });
+    html += `</div>`;
+    html += `<button class="btn-submit" id="submitBtn" onclick="submitPattern()">I Found Them →</button>`;
+
+    patternTimeLeft = room.timeLimit;
+    patternSelected = [];
+    patternCorrect = room.grid.map((c, i) => !c.belongs ? i : -1).filter(i => i !== -1);
+
+    if (patternTimer) clearInterval(patternTimer);
+    patternTimer = setInterval(() => {
+      patternTimeLeft--;
+      const el = document.getElementById('patternTimer');
+      if (el) {
+        const m = Math.floor(patternTimeLeft / 60).toString().padStart(2, '0');
+        const s = (patternTimeLeft % 60).toString().padStart(2, '0');
+        el.textContent = `${m}:${s}`;
+        if (patternTimeLeft <= 10) el.style.color = 'var(--accent-rose-deep)';
+      }
+      if (patternTimeLeft <= 0) {
+        clearInterval(patternTimer);
+        submitPattern();
+      }
+    }, 1000);
+  }
+
+  else if (room.type === 'adaptation') {
+    html += `<div id="adaptationStages">`;
+    room.stages.forEach((stage, si) => {
+      html += `<div class="adaptation-stage" id="adaptStage${si}" style="${si > 0 ? 'display:none;' : ''}">`;
+      html += `<div style="font-size:14px; font-weight:600; color:var(--text-secondary); margin:20px 0 12px; font-family:'Caveat',cursive; font-size:18px;">${stage.prompt}</div>`;
+      html += `<div class="choices-grid">`;
+      stage.choices.forEach((c, i) => {
+        html += `
+          <div class="choice-card" onclick="selectAdaptation(${si}, '${c.id}', this)" data-stage="${si}" data-id="${c.id}">
+            <div class="choice-letter">${String.fromCharCode(65 + i)}</div>
+            <div>${c.text}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      html += `<button class="btn-submit" id="adaptSubmit${si}" onclick="submitAdaptation(${si})" disabled>Continue →</button>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  else if (room.type === 'composite') {
+    html += `<div id="compositeSections">`;
+    room.sections.forEach((sec, si) => {
+      html += `<div class="composite-section" id="compSection${si}" style="${si > 0 ? 'display:none; margin-top:32px;' : 'margin-top:24px;'}">`;
+      html += `<div style="font-size:14px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; font-family:'Space Mono',monospace; font-size:10px;">${sec.title}</div>`;
+      html += `<div style="font-size:15px; color:var(--text); margin-bottom:16px; line-height:1.7;">${sec.body}</div>`;
+
+      if (sec.type === 'energy') {
+        sec.sliders.forEach(sl => {
+          html += `<div class="energy-meter">`;
+          html += `<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;"><span>${sl.label}</span></div>`;
+          html += `<input type="range" class="energy-slider" id="${sl.id}" min="0" max="100" value="50" oninput="updateSliderLabel('${sl.id}')">`;
+          html += `<div class="energy-labels"><span>${sl.min}</span><span>${sl.max}</span></div>`;
+          html += `</div>`;
+        });
+        html += `<button class="btn-submit" onclick="submitCompositeSection(${si})">Continue →</button>`;
+      }
+      else if (sec.type === 'choices') {
+        html += `<div class="choices-grid">`;
+        sec.choices.forEach((c, i) => {
+          html += `
+            <div class="choice-card" onclick="selectCompositeChoice(${si}, '${c.id}', this)" data-section="${si}" data-id="${c.id}">
+              <div class="choice-letter">${String.fromCharCode(65 + i)}</div>
+              <div>${c.text}</div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+        html += `<button class="btn-submit" id="compSubmit${si}" onclick="submitCompositeSection(${si})" disabled>Continue →</button>`;
+      }
+      else if (sec.type === 'text') {
+        html += `<textarea class="response-area" id="compText${si}" placeholder="${sec.placeholder}" style="min-height:120px;"></textarea>`;
+        html += `<button class="btn-submit" onclick="submitCompositeSection(${si})">Continue →</button>`;
+      }
+
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  card.innerHTML = html;
+  content.appendChild(card);
+}
+
+function selectChoice(id, el) {
+  document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  currentSelections.choice = id;
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitChoices() {
+  const room = ROOMS[currentRoom];
+  const choice = room.choices.find(c => c.id === currentSelections.choice);
+  if (choice) {
+    Object.entries(choice.scores).forEach(([k, v]) => {
+      sessionScores[k] += v;
+    });
+  }
+  roomResults.push({ room: room.id, type: 'choice', selection: currentSelections.choice });
+  nextScenario();
+}
+
+function toggleSensory(id, el) {
+  if (id === 's8') {
+    document.querySelectorAll('.sensory-item').forEach(item => {
+      if (item.dataset.id !== 's8') item.classList.remove('selected');
+    });
+    document.querySelectorAll('.sensory-item').forEach(item => {
+      if (item.dataset.id === 's8') item.classList.add('selected');
+    });
+    currentSelections.sensory = ['s8'];
+  } else {
+    document.querySelectorAll('.sensory-item').forEach(item => {
+      if (item.dataset.id === 's8') item.classList.remove('selected');
+    });
+    el.classList.toggle('selected');
+    const selected = Array.from(document.querySelectorAll('.sensory-item.selected')).map(s => s.dataset.id);
+    currentSelections.sensory = selected;
+  }
+}
+
+function submitSensory() {
+  const room = ROOMS[currentRoom];
+  const selected = currentSelections.sensory || [];
+  if (selected.length === 0) {
+    showToast('Select at least one sensation that affects you.');
+    return;
+  }
+
+  selected.forEach(id => {
+    const item = room.items.find(i => i.id === id);
+    if (item) {
+      Object.entries(item.scores).forEach(([k, v]) => {
+        sessionScores[k] += v;
+      });
+    }
+  });
+
+  if (selected.includes('s8')) {
+    sessionScores.sensory_total = 1;
+  } else {
+    sessionScores.sensory_total = Math.min(40, sessionScores.sensory_total);
+  }
+
+  roomResults.push({ room: room.id, type: 'sensory', selections: selected });
+  nextScenario();
+}
+
+function selectPattern(index, el) {
+  if (patternSelected.includes(index)) {
+    patternSelected = patternSelected.filter(i => i !== index);
+    el.classList.remove('selected');
+  } else {
+    patternSelected.push(index);
+    el.classList.add('selected');
+  }
+}
+
+function submitPattern() {
+  if (patternTimer) clearInterval(patternTimer);
+  const room = ROOMS[currentRoom];
+
+  let correct = 0;
+  let wrong = 0;
+
+  patternSelected.forEach(idx => {
+    const cell = room.grid[idx];
+    const el = document.querySelector(`[data-index="${idx}"]`);
+    if (!cell.belongs) {
+      correct++;
+      if (el) el.classList.add('correct');
+    } else {
+      wrong++;
+      if (el) el.classList.add('wrong');
+    }
+  });
+
+  patternCorrect.forEach(idx => {
+    if (!patternSelected.includes(idx)) {
+      const el = document.querySelector(`[data-index="${idx}"]`);
+      if (el) el.style.border = `2px dashed var(--accent-mint-deep)`;
+    }
+  });
+
+  const accuracy = patternCorrect.length > 0 ? correct / patternCorrect.length : 0;
+  const speed = patternTimeLeft / room.timeLimit;
+  const systemizing = Math.round((accuracy * 70) + (speed * 20) + (correct * 3));
+  sessionScores.systemizing = Math.min(100, systemizing);
+
+  roomResults.push({ room: room.id, type: 'pattern', correct, wrong, timeLeft: patternTimeLeft });
+
+  setTimeout(() => nextScenario(), 800);
+}
+
+function selectAdaptation(stage, id, el) {
+  document.querySelectorAll(`[data-stage="${stage}"]`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  currentSelections[`adapt${stage}`] = id;
+  document.getElementById(`adaptSubmit${stage}`).disabled = false;
+}
+
+function submitAdaptation(stage) {
+  const room = ROOMS[currentRoom];
+  const choice = room.stages[stage].choices.find(c => c.id === currentSelections[`adapt${stage}`]);
+  if (choice) {
+    Object.entries(choice.scores).forEach(([k, v]) => {
+      sessionScores[k] += v;
+    });
+  }
+
+  if (stage < room.stages.length - 1) {
+    document.getElementById(`adaptStage${stage}`).style.display = 'none';
+    document.getElementById(`adaptStage${stage + 1}`).style.display = 'block';
+    document.getElementById(`adaptStage${stage + 1}`).scrollIntoView({ behavior: 'smooth' });
+  } else {
+    roomResults.push({ room: room.id, type: 'adaptation', selections: Object.keys(currentSelections).filter(k => k.startsWith('adapt')).map(k => currentSelections[k]) });
+    nextScenario();
+  }
+}
+
+function selectCompositeChoice(section, id, el) {
+  document.querySelectorAll(`[data-section="${section}"]`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  currentSelections[`comp${section}`] = id;
+  document.getElementById(`compSubmit${section}`).disabled = false;
+}
+
+function updateSliderLabel(id) {
+  // Visual feedback handled by CSS
+}
+
+function submitCompositeSection(section) {
+  const room = ROOMS[currentRoom];
+  const sec = room.sections[section];
+
+  if (sec.type === 'energy') {
+    sec.sliders.forEach(sl => {
+      const val = parseInt(document.getElementById(sl.id).value);
+      Object.entries(sl.scores).forEach(([k, multiplier]) => {
+        sessionScores[k] += Math.round((val / 100) * 10 * multiplier);
+      });
+    });
+  }
+  else if (sec.type === 'choices') {
+    const choice = sec.choices.find(c => c.id === currentSelections[`comp${section}`]);
+    if (choice) {
+      Object.entries(choice.scores).forEach(([k, v]) => {
+        sessionScores[k] += v;
+      });
+    }
+  }
+  else if (sec.type === 'text') {
+    const text = document.getElementById(`compText${section}`).value.trim();
+    const depth = Math.min(10, Math.floor(text.length / 30));
+    sessionScores.text_depth += depth;
+
+    const lower = text.toLowerCase();
+    const routineWords = ['same', 'always', 'routine', 'schedule', 'order', 'organize', 'system', 'exact', 'precise', 'specific'];
+    const sensoryWords = ['noise', 'light', 'quiet', 'dark', 'soft', 'texture', 'smell', 'sound', 'temperature', 'comfort'];
+    const socialWords = ['alone', 'nobody', 'peace', 'quiet', 'no one', 'escape', 'hide', 'safe', 'sanctuary'];
+
+    routineWords.forEach(w => { if (lower.includes(w)) sessionScores.routine_cling += 1; });
+    sensoryWords.forEach(w => { if (lower.includes(w)) sessionScores.sensory_total += 1; });
+    socialWords.forEach(w => { if (lower.includes(w)) sessionScores.introversion += 1; });
+  }
+
+  if (section < room.sections.length - 1) {
+    document.getElementById(`compSection${section}`).style.display = 'none';
+    document.getElementById(`compSection${section + 1}`).style.display = 'block';
+    document.getElementById(`compSection${section + 1}`).scrollIntoView({ behavior: 'smooth' });
+  } else {
+    roomResults.push({ room: room.id, type: 'composite', selections: currentSelections });
+    nextScenario();
+  }
+}
+
+function nextScenario() {
+  currentRoom++;
+  if (currentRoom >= ROOMS.length) {
+    showFinalReport();
+  } else {
+    loadRoom();
+  }
+}
+
+function showFinalReport() {
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('final').classList.add('active');
+
+  const s = sessionScores;
+
+  const socialFlex = Math.round((s.assertiveness * 3) + (s.empathy * 2) + (s.avoidance * -2) + (s.social_motivation * 2) + 30);
+  const sensoryLoad = Math.round((s.sensory_total / 4) * 10);
+  const cogRigidity = Math.round((s.routine_cling * 3) + (s.rigidity * 3) + (s.systemizing * 0.3) + 10);
+  const maskingDepth = Math.round((s.masking * 4) + (s.identity_drift * 3) + (s.exhaustion * 0.5));
+  const systemizing = Math.round(s.systemizing);
+  const emotionReg = Math.round((s.distress * -2) + (s.social_anxiety * -1.5) + (s.sensory_cope * -1) + 90);
+
+  finalDims = {
+    'Social Flexibility': Math.max(0, Math.min(100, socialFlex)),
+    'Sensory Load': Math.max(0, Math.min(100, sensoryLoad)),
+    'Cognitive Rigidity': Math.max(0, Math.min(100, cogRigidity)),
+    'Masking Depth': Math.max(0, Math.min(100, maskingDepth)),
+    'Systemizing': Math.max(0, Math.min(100, systemizing)),
+    'Emotional Regulation': Math.max(0, Math.min(100, emotionReg))
+  };
+
+  const avg = Math.round(Object.values(finalDims).reduce((a, b) => a + b, 0) / 6);
+  document.getElementById('finalScore').textContent = avg;
+
+  const colors = {
+    'Social Flexibility': 'var(--accent-lavender-deep)',
+    'Sensory Load': 'var(--accent-peach-deep)',
+    'Cognitive Rigidity': 'var(--accent-rose-deep)',
+    'Masking Depth': 'var(--accent-sky-deep)',
+    'Systemizing': 'var(--accent-mint-deep)',
+    'Emotional Regulation': 'var(--accent-lavender-deep)'
+  };
+
+  const grid = document.getElementById('finalGrid');
+  grid.innerHTML = Object.entries(finalDims).map(([k, v]) => `
+    <div class="fsb-cell">
+      <div class="fsb-name">${k}</div>
+      <div class="fsb-value" style="color:${colors[k]}">${v}</div>
+    </div>
+  `).join('');
+
+  const highSensory = finalDims['Sensory Load'] > 60;
+  const highMasking = finalDims['Masking Depth'] > 60;
+  const highRigidity = finalDims['Cognitive Rigidity'] > 60;
+  const highSystemizing = finalDims['Systemizing'] > 70;
+  const lowSocialFlex = finalDims['Social Flexibility'] < 40;
+  const lowEmotionReg = finalDims['Emotional Regulation'] < 40;
+
+  if (highSensory && highMasking && lowSocialFlex) {
+    finalArchetype = 'The Quiet Observer';
+    finalProfile = `Your pattern suggests someone who experiences the world intensely but has learned to hide it. Your sensory load (${finalDims['Sensory Load']}) is high, meaning everyday environments may require active management. Your masking depth (${finalDims['Masking Depth']}) indicates you have developed sophisticated social camouflage. Your social flexibility (${finalDims['Social Flexibility']}) suggests you prefer observation over participation. Your systemizing score (${finalDims['Systemizing']}) shows you think in rules and patterns. Consider environments with sensory control and explicit communication.`;
+  }
+  else if (highSystemizing && highRigidity && !highMasking) {
+    finalArchetype = 'The System Architect';
+    finalProfile = `You see rules where others see chaos. Your systemizing score (${finalDims['Systemizing']}) is exceptional. Your cognitive rigidity (${finalDims['Cognitive Rigidity']}) suggests you prefer predictability. However, your masking is lower, meaning you are more authentically yourself. Your social flexibility (${finalDims['Social Flexibility']}) is moderate. You may prefer structured social interaction over open-ended hanging out. Your emotional regulation (${finalDims['Emotional Regulation']}) is ${lowEmotionReg ? 'a growth area' : 'solid'}. Your mind is a precision instrument.`;
+  }
+  else if (highMasking && !highSensory && !highRigidity) {
+    finalArchetype = 'The Social Chameleon';
+    finalProfile = `You have become exceptionally good at reading social situations and adapting to them. Your masking depth (${finalDims['Masking Depth']}) is high, but your sensory load (${finalDims['Sensory Load']}) is manageable. Your cognitive rigidity (${finalDims['Cognitive Rigidity']}) is moderate. The question is: do you know who you are when no one is watching? Your social flexibility (${finalDims['Social Flexibility']}) is decent. Consider where in your life you are allowed to be boring, weird, or quiet.`;
+  }
+  else if (lowSocialFlex && lowEmotionReg && !highSystemizing) {
+    finalArchetype = 'The Sensitive Drifter';
+    finalProfile = `You feel things deeply and social navigation does not come naturally. Your social flexibility (${finalDims['Social Flexibility']}) is low, and your emotional regulation (${finalDims['Emotional Regulation']}) is also low. Your sensory load (${finalDims['Sensory Load']}) may be moderate or high. Your systemizing (${finalDims['Systemizing']}) is not your primary strength. You process socially and emotionally rather than through rules. Consider smaller groups, explicit communication, and written expression.`;
+  }
+  else if (!highMasking && !highSensory && !highRigidity && finalDims['Social Flexibility'] > 50) {
+    finalArchetype = 'The Balanced Navigator';
+    finalProfile = `Your profile shows relatively balanced functioning across all dimensions. Your social flexibility (${finalDims['Social Flexibility']}) is solid, your sensory load (${finalDims['Sensory Load']}) is manageable, and your masking (${finalDims['Masking Depth']}) is moderate. Your cognitive rigidity (${finalDims['Cognitive Rigidity']}) is moderate. Your emotional regulation (${finalDims['Emotional Regulation']}) is functional. The question for you is: where do you still feel like you are performing?`;
+  }
+  else {
+    finalArchetype = 'The Complex Pattern';
+    finalProfile = `Your profile does not fit neatly into one archetype. You show ${highSensory ? 'high sensory sensitivity' : 'moderate sensory processing'} combined with ${highMasking ? 'significant masking' : 'moderate authenticity'}, ${highRigidity ? 'preference for structure' : 'adaptability to change'}, and ${highSystemizing ? 'strong systemizing' : 'intuitive processing'}. Your social flexibility is ${finalDims['Social Flexibility'] > 50 ? 'functional' : 'a challenge area'}, and your emotional regulation is ${finalDims['Emotional Regulation'] > 50 ? 'solid' : 'a growth edge'}. This complexity suggests you are still figuring out your patterns — which is exactly what people your age are supposed to be doing.`;
+  }
+
+  document.getElementById('finalArchetype').textContent = finalArchetype;
+  document.getElementById('finalProfile').textContent = finalProfile;
+}
+
+// ═══════════════════════════════════════════
+//  DOWNLOAD REPORT AS JPEG
+// ═══════════════════════════════════════════
+const LOGO_URL = 'https://media.glassdoor.com/sqll/977930/neurostat-analytical-solutions-squarelogo-1469182129316.png';
+
+function downloadReport() {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const W = 800;
+  const H = 1200;
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  ctx.scale(2, 2);
+
+  // Background
+  ctx.fillStyle = '#faf6f1';
+  ctx.fillRect(0, 0, W, H);
+
+  // Top gradient bar
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#fb923c');
+  grad.addColorStop(0.33, '#a78bfa');
+  grad.addColorStop(0.66, '#34d399');
+  grad.addColorStop(1, '#f472b6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, 6);
+
+  // Logo
+  const logo = new Image();
+  logo.crossOrigin = 'anonymous';
+  logo.onload = function() {
+    ctx.drawImage(logo, W/2 - 40, 30, 80, 80);
+    drawReportContent(ctx, W, H);
+  };
+  logo.onerror = function() {
+    // Fallback: draw text logo
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = 'bold 24px "DM Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NeuroStat AI', W/2, 80);
+    drawReportContent(ctx, W, H);
+  };
+  logo.src = LOGO_URL;
+}
+
+function drawReportContent(ctx, W, H) {
+  const avg = Math.round(Object.values(finalDims).reduce((a, b) => a + b, 0) / 6);
+
+  // Title
+  ctx.fillStyle = '#4a4036';
+  ctx.font = 'bold 36px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Your Mind Map', W/2, 150);
+
+  ctx.fillStyle = '#8c7e6e';
+  ctx.font = '14px "Space Mono", monospace';
+  ctx.fillText('Social-Emotional Flexibility Report', W/2, 180);
+
+  // Score circle
+  ctx.beginPath();
+  ctx.arc(W/2, 280, 70, 0, Math.PI * 2);
+  ctx.strokeStyle = '#e8e0d5';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(W/2, 280, 70, -Math.PI/2, -Math.PI/2 + (Math.PI * 2 * avg / 100));
+  ctx.strokeStyle = '#a78bfa';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.fillStyle = '#4a4036';
+  ctx.font = 'bold 56px "DM Sans", sans-serif';
+  ctx.fillText(avg.toString(), W/2, 295);
+
+  ctx.fillStyle = '#b5a89a';
+  ctx.font = '10px "Space Mono", monospace';
+  ctx.fillText('/ 100', W/2, 320);
+
+  ctx.fillStyle = '#8c7e6e';
+  ctx.font = '12px "DM Sans", sans-serif';
+  ctx.fillText('Overall Index', W/2, 345);
+
+  // Metrics
+  const metrics = [
+    { name: 'Social Flexibility', value: finalDims['Social Flexibility'], color: '#a78bfa' },
+    { name: 'Sensory Load', value: finalDims['Sensory Load'], color: '#fb923c' },
+    { name: 'Cognitive Rigidity', value: finalDims['Cognitive Rigidity'], color: '#f472b6' },
+    { name: 'Masking Depth', value: finalDims['Masking Depth'], color: '#38bdf8' },
+    { name: 'Systemizing', value: finalDims['Systemizing'], color: '#34d399' },
+    { name: 'Emotional Regulation', value: finalDims['Emotional Regulation'], color: '#a78bfa' }
+  ];
+
+  let y = 400;
+  metrics.forEach(m => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8c7e6e';
+    ctx.font = 'bold 11px "Space Mono", monospace';
+    ctx.fillText(m.name.toUpperCase(), 60, y);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = m.color;
+    ctx.font = 'bold 14px "Space Mono", monospace';
+    ctx.fillText(m.value.toString(), W - 60, y);
+
+    // Bar background
+    ctx.fillStyle = 'rgba(139,115,85,0.08)';
+    ctx.fillRect(60, y + 8, W - 120, 8);
+
+    // Bar fill
+    ctx.fillStyle = m.color;
+    ctx.fillRect(60, y + 8, (W - 120) * (m.value / 100), 8);
+
+    y += 50;
+  });
+
+  // Archetype
+  y += 10;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#a78bfa';
+  ctx.font = 'bold 12px "Space Mono", monospace';
+  ctx.fillText('YOUR PATTERN ARCHETYPE', W/2, y);
+
+  ctx.fillStyle = '#4a4036';
+  ctx.font = 'bold 22px "DM Sans", sans-serif';
+  ctx.fillText(finalArchetype, W/2, y + 30);
+
+  // Profile text (wrapped)
+  y += 60;
+  ctx.fillStyle = '#8c7e6e';
+  ctx.font = '13px "DM Sans", sans-serif';
+  ctx.textAlign = 'left';
+  wrapText(ctx, finalProfile, 60, y, W - 120, 20);
+
+  // Footer
+  ctx.fillStyle = '#b5a89a';
+  ctx.font = '10px "Space Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('Soft Focus v2.0 — NeuroStat AI — Confidential Report', W/2, H - 30);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'SoftFocus_MindMap_' + new Date().toISOString().slice(0,10) + '.jpg';
+  link.href = canvas.toDataURL('image/jpeg', 0.92);
+  link.click();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, y);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

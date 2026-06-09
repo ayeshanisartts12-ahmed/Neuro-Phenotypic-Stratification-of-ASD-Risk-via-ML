@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Screening — NeuroStrat AI</title>
+    <meta name="description" content="Register a patient for AI-powered ASD behavioral screening on NeuroStrat AI.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Age module card grid ── */
+        .age-module-card {
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 2px solid var(--glass-border);
+            cursor: pointer;
+            transition: all .3s;
+            text-align: center;
+        }
+        .age-module-card:hover,
+        .age-module-card.selected {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, .08);
+            transform: translateY(-4px);
+        }
+        .age-module-card .icon { font-size: 2.5rem; margin-bottom: .75rem; }
+        .age-module-card h4 { font-size: .95rem; margin-bottom: .3rem; }
+        .age-module-card p  { font-size: .8rem; color: var(--text-sec); }
+
+        /* ── Module preview box ── */
+        .module-preview {
+            padding: 2rem; border-radius: var(--radius);
+            border: 1px solid rgba(124,58,237,.3);
+            background: rgba(124,58,237,.05);
+            text-align: center; display: none;
+            animation: fadeUp .5s ease;
+        }
+        .module-preview.show { display: block; }
+        .module-preview h3  { font-size: 1.3rem; margin-bottom: .75rem; }
+        .module-preview p   { color: var(--text-sec); margin-bottom: 1.5rem; }
+
+        .feature-tags { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 1.5rem; }
+        .feature-tag  { padding: .3rem .8rem; border-radius: var(--radius-full); border: 1px solid rgba(124,58,237,.3); color: var(--accent); font-size: .75rem; }
+
+        /* ── Voice bars animation ── */
+        .voice-visualizer { display: flex; gap: 3px; justify-content: center; align-items: center; height: 40px; margin: 1rem 0; }
+        .voice-bar { width: 4px; border-radius: 2px; background: var(--primary); animation: voiceBar .8s ease-in-out infinite alternate; }
+        @keyframes voiceBar { 0% { height: 6px; opacity: .4 } 100% { height: 32px; opacity: 1 } }
+
+        /* ── Game block grid preview ── */
+        .game-preview { display: grid; grid-template-columns: repeat(4,1fr); gap: .5rem; margin: 1rem 0; }
+        .game-block {
+            height: 40px; border-radius: 6px;
+            background: linear-gradient(135deg, rgba(124,58,237,.3), rgba(6,182,212,.2));
+            border: 1px solid rgba(255,255,255,.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6rem; text-align: center; padding: 2px;
+            color: rgba(255,255,255,0.9); line-height: 1.1;
+        }
+
+        /* ── Polling / waiting UI ── */
+        #polling-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(8,8,20,.92); backdrop-filter: blur(12px);
+            flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+        }
+        #polling-overlay.active { display: flex; }
+        .poll-spinner {
+            width: 64px; height: 64px;
+            border: 4px solid rgba(124,58,237,.2);
+            border-top-color: var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .poll-title  { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+        .poll-sub    { font-size: .9rem; color: var(--text-sec); text-align: center; max-width: 420px; line-height: 1.6; }
+        .poll-id     { font-size: .85rem; color: var(--primary); font-family: monospace; padding: .4rem 1.2rem; border-radius: var(--radius-sm); background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.25); }
+        .poll-status { font-size: .85rem; color: var(--accent); }
+
+        /* ── Step wizard ── */
+        .wizard-steps { display: flex; gap: 0; margin-bottom: 2rem; }
+        .wizard-step { flex: 1; padding: .75rem .5rem; text-align: center; font-size: .8rem; color: var(--text-muted); border-bottom: 2px solid var(--glass-border); transition: all .3s; }
+        .wizard-step.active { color: var(--primary); border-color: var(--primary); font-weight: 600; }
+        .wizard-step.done   { color: var(--success);  border-color: var(--success); }
+
+        /* ── Toast notifications ── */
+        #ns-toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 99999; display: flex; flex-direction: column; gap: .5rem; }
+        .ns-toast {
+            padding: .75rem 1.25rem; border-radius: 10px; font-size: .85rem;
+            color: #fff; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+            animation: nsSlideIn .3s ease; pointer-events: none; font-family: inherit;
+        }
+        .ns-toast.success { background: #10b981; }
+        .ns-toast.error   { background: #ef4444; }
+        .ns-toast.info    { background: #06b6d4; }
+        .ns-toast.warning { background: #f59e0b; }
+        @keyframes nsSlideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:none; } }
+    </style>
+</head>
+
+<body>
+    <canvas id="particles-canvas"></canvas>
+    <div class="bg-orbs">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+    <div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+    <div id="ns-toast-container"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span>
+        </div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+                <li><a href="register.html" class="active"><span class="nav-icon">✦</span> Register</a></li>
+                <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+                <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+                <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+                <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+                <li><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button>
+        </div>
+    </aside>
+
+    <!-- Polling Overlay -->
+    <div id="polling-overlay">
+        <div class="poll-spinner"></div>
+        <div class="poll-title">🎮 AI Module Running…</div>
+        <div class="poll-sub">
+            The Pygame screening window is now open on your desktop.<br>
+            Complete <strong>all tasks</strong> in the game window — results will load automatically when you finish.
+        </div>
+        <div class="poll-id" id="poll-patient-id">NS-XXXXXX</div>
+        <div class="poll-status" id="poll-status-text">⏳ Waiting for game to complete…</div>
+        <button class="btn btn-glass btn-sm" style="margin-top:.5rem;" onclick="cancelPolling()">✕ Cancel &amp; Return</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="topbar glass">
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <h2>ASD Screening Registration</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-avatar" data-user-avatar>U</div>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <div style="max-width:760px;margin:0 auto;">
+
+                <!-- Wizard Steps -->
+                <div class="wizard-steps reveal" id="wizard-steps">
+                    <div class="wizard-step active" id="step-ind-1">① Personal Info</div>
+                    <div class="wizard-step" id="step-ind-2">② Consent</div>
+                    <div class="wizard-step" id="step-ind-3">③ Launch</div>
+                </div>
+
+                <!-- ── Step 1: Personal Information ── -->
+                <div class="card form-step active reveal" id="form-step-1">
+                    <h3 style="margin-bottom:1.5rem;">Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="reg-name">Full Name *</label>
+                            <input type="text" id="reg-name" class="form-input" placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-gender">Gender *</label>
+                            <select id="reg-gender" class="form-input">
+                                <option value="">Select gender</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-age">Age (years) *</label>
+                            <input type="number" id="reg-age" class="form-input" placeholder="e.g. 14" min="4" max="80">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Email Address *</label>
+                            <input type="email" id="reg-email" class="form-input" placeholder="you@email.com">
+                        </div>
+                        <div class="form-group full">
+                            <label for="reg-country">Country *</label>
+                            <select id="reg-country" class="form-input">
+                                <option value="">Select country</option>
+                                <option>Pakistan</option>
+                                <option>United States</option>
+                                <option>United Kingdom</option>
+                                <option>Canada</option>
+                                <option>Australia</option>
+                                <option>India</option>
+                                <option>Germany</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group full">
+                            <label for="reg-notes">Medical Notes (optional)</label>
+                            <textarea id="reg-notes" class="form-input" placeholder="Any previous diagnoses, medications, or relevant history..."></textarea>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-top:1.5rem;">
+                        <button class="btn btn-primary" onclick="reg_nextStep(1)">Next: Consent →</button>
+                    </div>
+                </div>
+
+                <!-- ── Step 2: Consent & Privacy ── -->
+                <div class="card form-step" id="form-step-2">
+                    <h3 style="margin-bottom:1rem;">Consent &amp; Privacy</h3>
+                    <div style="background:rgba(0,0,0,.2);border-radius:var(--radius-sm);padding:1.25rem;margin-bottom:1.5rem;max-height:220px;overflow-y:auto;font-size:.85rem;color:var(--text-sec);line-height:1.7;">
+                        <strong style="color:var(--text);">Data Collection Notice</strong><br><br>
+                        By participating in this screening, you consent to the collection and processing of behavioral,
+                        vocal, and cognitive interaction data. This data is used solely for AI-assisted ASD risk
+                        stratification research.<br><br>
+                        <strong style="color:var(--text);">Privacy &amp; HIPAA-Inspired Protections</strong><br><br>
+                        All data is encrypted in transit and at rest. Personally identifiable information is anonymized
+                        before AI model processing. You may request deletion of your data at any time.<br><br>
+                        <strong style="color:var(--text);">Ethical AI Disclaimer</strong><br><br>
+                        This platform provides AI-assisted behavioral risk stratification and is NOT a substitute for
+                        professional clinical diagnosis. Results should be interpreted only by qualified healthcare
+                        professionals.
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:.75rem;">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="consent-data">
+                            I consent to the collection and processing of my interaction data for research purposes.
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="consent-disclaimer">
+                            I understand this is not a clinical diagnosis and results require professional review.
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="consent-privacy">
+                            I have read and agree to the Privacy Policy and Terms of Service.
+                        </label>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:1.5rem;">
+                        <button class="btn btn-glass" onclick="reg_prevStep(2)">← Back</button>
+                        <button class="btn btn-primary" onclick="reg_nextStep(2)">Next: Launch →</button>
+                    </div>
+                </div>
+
+                <!-- ── Step 3: Summary & Launch ── -->
+                <div class="card form-step text-center" id="form-step-3">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
+                    <h3 style="margin-bottom:.75rem;">Ready to Begin</h3>
+                    <p style="color:var(--text-sec);margin-bottom:1rem;" id="launch-summary"></p>
+
+                    <div id="launch-module-info"
+                         style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.5rem;text-align:left;">
+                    </div>
+
+                    <!-- Patient ID shown after successful registration -->
+                    <div id="patient-id-box"
+                         style="display:none;margin-bottom:1.5rem;padding:.75rem;border-radius:var(--radius-sm);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:.9rem;">
+                        ✅ Registered — Patient ID:
+                        <strong id="display-patient-id" style="color:var(--success);font-family:monospace;"></strong>
+                    </div>
+
+                    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn btn-glass" onclick="reg_prevStep(3)" id="back-btn-3">← Back</button>
+                        <button class="btn btn-primary" onclick="launchModule()" id="launch-btn" style="animation:glow 2s infinite;">
+                            Start Assessment ✦
+                        </button>
+                    </div>
+                    <p style="margin-top:1.5rem;font-size:.75rem;color:var(--text-muted);">
+                        ⚠ The assessment will begin in your browser.<br>
+                        Please complete all tasks — your results will be saved and displayed automatically at the end.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Load script.js if present; fallbacks defined below handle missing file -->
+    <script src="script.js" onerror="console.warn('script.js not found — using built-in fallbacks.')"></script>
+
+    <script>
+    // ══════════════════════════════════════════════════════════════════════════
+    // NeuroStrat AI — register.html  (Production)
+    //
+    // Full integration with FastAPI backend at localhost:8000
+    //   POST /api/register  → get patient_id + module info
+    //   POST /api/launch/id → spawn Pygame subprocess
+    //   GET  /api/status/id → poll until status=complete
+    //   redirect → results.html?id=NS-XXXXXX
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── Config ─────────────────────────────────────────────────────────────
+    const API_BASE      = 'http://localhost:8000';
+    const POLL_INTERVAL = 5000;  // 5 seconds — matches backend write latency
+
+    // ── State ──────────────────────────────────────────────────────────────
+    let selectedGroup    = null;   // e.g. '4-8'
+    let regData          = {};     // form fields from Step 1
+    let currentPatientId = null;   // NS-XXXXXX from /api/register
+    let pollTimer        = null;
+    let pollCount        = 0;
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Fallbacks — work even if script.js is missing
+    // ══════════════════════════════════════════════════════════════════════════
+
+    if (typeof showToast !== 'function') {
+        window.showToast = function(message, type = 'info') {
+            const icons = { success:'✅ ', error:'❌ ', info:'ℹ ', warning:'⚠ ' };
+            const t = document.createElement('div');
+            t.className = `ns-toast ${type}`;
+            t.textContent = (icons[type] || '') + message;
+            document.getElementById('ns-toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3800);
+        };
+    }
+
+    if (typeof logout !== 'function') {
+        window.logout = function() {
+            if (confirm('Log out of NeuroStrat AI?')) {
+                localStorage.removeItem('ns_user');
+                window.location.href = 'index.html';
+            }
+        };
+    }
+
+    // Sidebar toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle  = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar && !toggle._wired) {
+            toggle._wired = true;
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                overlay && overlay.classList.toggle('hidden');
+            });
+            overlay && overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.add('hidden');
+            });
+        }
+
+        // Set user avatar initial
+        const user = JSON.parse(localStorage.getItem('ns_user') || '{}');
+        const av = document.querySelector('[data-user-avatar]');
+        if (av && user.name) av.textContent = user.name.charAt(0).toUpperCase();
+
+        // Auto-fill email field from logged-in user
+        const emailField = document.getElementById('reg-email');
+        if (emailField && user.email) {
+            emailField.value = user.email;
+        }
+    });
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Age Group Helpers  — mirrors router.py route_by_age() exactly
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Map an age → module metadata.
+     * age_group values MUST match router.py ModuleRoute.age_group.
+     */
+    function getAgeGroup(age) {
+        const a = parseInt(age, 10);
+        if (isNaN(a)) return null;
+        if (a >= 4  && a <= 8)  return { group: '4-8',   label: 'Behavioral Adventure Platform',  moduleId: 1 };
+        if (a >= 9  && a <= 12) return { group: '9-12',  label: 'Social Simulation Platform',      moduleId: 2 };
+        if (a >= 13 && a <= 16) return { group: '12-16', label: 'Voice Interaction Platform',       moduleId: 3 };
+        if (a >= 17 && a <= 22) return { group: '17-22', label: 'Social Reasoning Platform',        moduleId: 4 };
+        if (a >= 23)            return { group: '22+',   label: 'Cognitive Interaction Platform',   moduleId: 5 };
+        return null;
+    }
+
+    /** Short description for Step 4 summary — mirrors router.py description field. */
+    function getModuleDescription(group) {
+        const desc = {
+            '4-8':   'Colorful interactive tasks for young children: emotion matching, pattern completion, object sorting, and memory sequences.',
+            '9-12':  'Story-based school scenarios testing empathy, Theory of Mind, and social decision-making.',
+            '12-16': 'AI assistant questions analyzed for hesitation, confidence, and communication patterns.',
+            '17-22': 'Professional social simulations with typed verbal reasoning and adaptability assessment.',
+            '22+':   'Adaptive cognitive challenges: Stroop task, Dual N-Back, and context-switching scenarios.',
+        };
+        return desc[group] || 'Adaptive AI screening module tailored to patient age.';
+    }
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Wizard Navigation
+    // ══════════════════════════════════════════════════════════════════════════
+
+    function reg_nextStep(from) {
+        if (from === 1) {
+            const name    = document.getElementById('reg-name').value.trim();
+            const age     = document.getElementById('reg-age').value;
+            const email   = document.getElementById('reg-email').value.trim();
+            const gender  = document.getElementById('reg-gender').value;
+            const country = document.getElementById('reg-country').value;
+
+            if (!name)    { showToast('Please enter the patient\'s full name.', 'error'); return; }
+            if (!age)     { showToast('Please enter the patient\'s age.', 'error'); return; }
+            if (!gender)  { showToast('Please select a gender.', 'error'); return; }
+            if (!email)   { showToast('Please enter an email address.', 'error'); return; }
+            if (typeof isValidEmail === 'function' && !isValidEmail(email)) { showToast('Please enter a valid email address.', 'error'); return; }
+            if (!country) { showToast('Please select a country.', 'error'); return; }
+
+            const a = parseInt(age);
+            if (a < 4 || a > 80) { showToast('Age must be between 4 and 80 years.', 'error'); return; }
+
+            regData = {
+                name, age: a, email, gender, country,
+                notes: document.getElementById('reg-notes').value.trim()
+            };
+
+            // Auto-select module
+            const grp = getAgeGroup(a);
+            if (grp) {
+                selectedGroup = grp.group;
+            } else {
+                showToast(`No matching module for age ${a}.`, 'error');
+                return;
+            }
+            goToRegStep(2);
+
+        } else if (from === 2) {
+            if (!document.getElementById('consent-data').checked ||
+                !document.getElementById('consent-disclaimer').checked ||
+                !document.getElementById('consent-privacy').checked) {
+                showToast('Please accept all three consent agreements to continue.', 'error');
+                return;
+            }
+
+            // Populate Step 3 summary
+            const grp = getAgeGroup(regData.age);
+            document.getElementById('launch-summary').textContent =
+                `${regData.name} · Age ${regData.age} · ${grp ? grp.label : 'Unknown Module'}`;
+            document.getElementById('launch-module-info').innerHTML = `
+                <p style="font-size:.8rem;color:var(--text-sec);margin-bottom:.4rem;">Selected Assessment</p>
+                <strong style="font-size:1rem;">${grp ? grp.label : 'Unknown'}</strong>
+                <p style="font-size:.8rem;color:var(--text-sec);margin-top:.5rem;">${getModuleDescription(selectedGroup)}</p>
+                <p style="font-size:.8rem;color:var(--accent);margin-top:.5rem;">
+                    ℹ You are about to start the interactive assessment. Please complete all tasks to receive your results.
+                </p>`;
+            goToRegStep(3);
+        }
+    }
+
+    function reg_prevStep(from) { goToRegStep(from - 1); }
+
+    function goToRegStep(step) {
+        document.querySelectorAll('.form-step').forEach((el, i) =>
+            el.classList.toggle('active', i + 1 === step)
+        );
+        ['step-ind-1','step-ind-2','step-ind-3'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.classList.remove('active','done');
+            if      (i + 1 < step)  el.classList.add('done');
+            else if (i + 1 === step) el.classList.add('active');
+        });
+    }
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Module Selection & Preview
+    // ══════════════════════════════════════════════════════════════════════════
+
+    function selectModule(card, group) {
+        document.querySelectorAll('.age-module-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedGroup = group;
+        document.getElementById('module-next-btn').disabled = false;
+        showModulePreview(group);
+    }
+
+    function selectModuleByGroup(group) {
+        const card = document.querySelector(`.age-module-card[data-group="${group}"]`);
+        if (card) selectModule(card, group);
+    }
+
+    function showModulePreview(group) {
+        const preview = document.getElementById('module-preview');
+        const data    = getModuleData(group);
+        preview.innerHTML = `
+            <h3>${data.title}</h3>
+            <p>${data.desc}</p>
+            <div class="feature-tags">${data.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}</div>`;
+        preview.classList.add('show');
+    }
+
+    function getModuleData(group) {
+        const modules = {
+            '4-8': {
+                title: '🎮 Behavioral Adventure Platform',
+                desc: 'A colorful interactive world where children complete fun tasks. The AI silently analyzes behavioral patterns including emotion matching, memory, and object sorting.',
+                features: ['Emotion Matching','Pattern Completion','Object Sorting','Room Decoration','Memory Sequence','Follow Character']
+            },
+            '9-12': {
+                title: '📖 Social Simulation Platform',
+                desc: 'Story-based school and park scenarios with emotional decision-making. Measures empathy and Theory of Mind through interactive storytelling.',
+                features: ['Social Scenarios','Empathy Tasks','Theory of Mind','Decision Making','Classroom Settings']
+            },
+            '12-16': {
+                title: '🎤 Voice-Based Behavioral Platform',
+                desc: 'A futuristic AI assistant asks real-life social questions. Voice responses are analyzed for confidence, hesitation, and communication patterns.',
+                features: ['Voice Recording','Hesitation Analysis','Confidence Tracking','Social Questions','Prosody Analysis']
+            },
+            '17-22': {
+                title: '💬 Social Reasoning & Voice Confidence',
+                desc: 'Professional communication simulations assessing written and spoken social intelligence, verbal reasoning, and adaptability.',
+                features: ['Professional Scenarios','Verbal Reasoning','Confidence Metrics','Fluency Analysis','Adaptability Test']
+            },
+            '22+': {
+                title: '🧠 Cognitive Interaction Platform',
+                desc: 'Adaptive AI conversations with cognitive challenge simulations including Stroop task, Dual N-Back, and context-switching for comprehensive adult profiling.',
+                features: ['Stroop Task','Dual N-Back','Context Switching','Cognitive Flexibility','Stress Response']
+            }
+        };
+        return modules[group] || modules['22+'];
+    }
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Backend Integration
+    // POST /api/register  → patient_id, module_id, module_label
+    // POST /api/launch/id → pid (Pygame subprocess)
+    // GET  /api/status/id → { status, risk_tier, confidence_pct }
+    // ══════════════════════════════════════════════════════════════════════════
+
+    async function launchModule() {
+        const launchBtn = document.getElementById('launch-btn');
+        const backBtn   = document.getElementById('back-btn-3');
+        launchBtn.textContent = 'Registering…';
+        launchBtn.disabled    = true;
+        backBtn.disabled      = true;
+
+        let patientId;
+        const grp = getAgeGroup(regData.age);
+        try {
+            // Try to register on the backend
+            const resp = await fetch(`${API_BASE}/api/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: regData.name,
+                    age: regData.age,
+                    email: regData.email,
+                    gender: regData.gender || 'Prefer not to say',
+                    country: regData.country || 'Pakistan',
+                    notes: regData.notes || ''
+                })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                patientId = data.patient_id;
+            } else {
+                throw new Error('Backend registration failed');
+            }
+        } catch (err) {
+            console.warn('Backend registration failed, using local registration:', err);
+            const suffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+            patientId = `NS-${suffix}`;
+        }
+
+        try {
+            currentPatientId = patientId;
+
+            // Show patient ID on Step 4
+            document.getElementById('patient-id-box').style.display = 'block';
+            document.getElementById('display-patient-id').textContent = patientId;
+
+            // Persist to localStorage so results.html can read it
+            const sessionInfo = {
+                patient_id:  patientId,
+                name:        regData.name,
+                age:         regData.age,
+                age_group:   grp ? grp.group : 'Unknown',
+                module_id:   grp ? grp.moduleId : 1,
+                module:      grp ? grp.label : 'Unknown',
+                email:       regData.email,
+                date:        new Date().toLocaleDateString(),
+                status:      'in-progress',
+            };
+            localStorage.setItem('ns_current_screening', JSON.stringify(sessionInfo));
+
+            // Record ownership: map patient_id → registering user's email
+            const currentUser = JSON.parse(localStorage.getItem('ns_user') || '{}');
+            const ownerEmail  = (currentUser.email || '').trim().toLowerCase();
+            if (ownerEmail) {
+                const owned = JSON.parse(localStorage.getItem('ns_owned_patients') || '{}');
+                owned[patientId] = ownerEmail;
+                localStorage.setItem('ns_owned_patients', JSON.stringify(owned));
+            }
+
+            showToast(`Registered! Patient ID: ${patientId}`, 'success');
+
+            // ── 2. Launch Game in Browser ──────────────────────────────────────────
+            launchBtn.textContent = 'Launching Game…';
+            showToast('Game window launching!', 'success');
+
+            setTimeout(() => {window.location.href = `game${sessionInfo.module_id}.html?id=${patientId}&module=${sessionInfo.module_id}&group=${sessionInfo.age_group}&name=${encodeURIComponent(sessionInfo.name)}`;
+            }, 1000);
+
+        } catch (err) {
+            showToast(`Registration failed: ${err.message}`, 'error');
+            launchBtn.textContent = 'Start Assessment ✦';
+            launchBtn.disabled    = false;
+            backBtn.disabled      = false;
+            return;
+        }
+    }
+
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Polling — GET /api/status/{patientId} every POLL_INTERVAL ms
+    // Stops automatically when status === 'complete'
+    // ══════════════════════════════════════════════════════════════════════════
+
+    function startPolling(patientId) {
+        pollCount = 0;
+        const statusEl = document.getElementById('poll-status-text');
+
+        pollTimer = setInterval(async () => {
+            pollCount++;
+            try {
+                const resp = await fetch(`${API_BASE}/api/status/${patientId}`);
+                if (!resp.ok) {
+                    statusEl.textContent = `⚠ Status check failed (attempt ${pollCount})`;
+                    return;
+                }
+
+                const data = await resp.json();
+                // data.status: 'registered' | 'in-progress' | 'complete'
+                statusEl.textContent = `⏳ Status: ${data.status} — check #${pollCount}`;
+
+                if (data.status === 'complete') {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                    statusEl.textContent = '✅ Session complete! Loading your results…';
+
+                    // Update localStorage with final results
+                    const sessionInfo = JSON.parse(localStorage.getItem('ns_current_screening') || '{}');
+                    sessionInfo.status     = 'complete';
+                    sessionInfo.risk       = data.risk_tier;
+                    sessionInfo.confidence = data.confidence_pct;
+                    localStorage.setItem('ns_current_screening', JSON.stringify(sessionInfo));
+
+                    // Append to history list
+                    const history = JSON.parse(localStorage.getItem('ns_history') || '[]');
+                    history.unshift(sessionInfo);  // newest first
+                    localStorage.setItem('ns_history', JSON.stringify(history));
+
+                    showToast('Screening complete! Generating report…', 'success');
+                    setTimeout(() => {
+                        window.location.href = `results.html?id=${patientId}`;
+                    }, 1200);
+                }
+
+            } catch (err) {
+                statusEl.textContent = `⚠ Connection error (attempt ${pollCount}) — retrying…`;
+            }
+        }, POLL_INTERVAL);
+    }
+
+    function cancelPolling() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        document.getElementById('polling-overlay').classList.remove('active');
+        document.getElementById('launch-btn').textContent = 'Start Assessment ✦';
+        document.getElementById('launch-btn').disabled    = false;
+        document.getElementById('back-btn-3').disabled    = false;
+        showToast('Polling cancelled. Complete the game window then re-launch.', 'warning');
+    }
+
+    </script>
+</body>
+</html>

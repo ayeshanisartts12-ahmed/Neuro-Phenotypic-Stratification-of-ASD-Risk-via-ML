@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroStrat AI — Login</title>
+    <meta name="description" content="AI-powered neuro-phenotypic ASD risk stratification platform. Login to access clinical screening tools.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background -->
+    <canvas id="particles-canvas"></canvas>
+    <div class="bg-orbs">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- Auth Page -->
+    <div class="auth-page">
+        <!-- Left Visual Panel -->
+        <div class="auth-visual">
+            <canvas id="neural-canvas" class="neural-network"></canvas>
+            <div class="auth-visual-content" >
+                <h1 class="text-gradient">Neuro-Phenotypic<br>Stratification</h1>
+                <p>AI-driven multi-modal ASD risk classification for early clinical triage and intelligent intervention.</p>
+                <div class="hero-stats">
+                    <div class="stat-card glass" style="padding:1rem 1.5rem;border-radius:12px">
+                        <div class="stat-value" style="font-size:1.4rem">98.2%</div>
+                        <div class="stat-label">AI Accuracy</div>
+                    </div>
+                    <div class="stat-card glass" style="padding:1rem 1.5rem;border-radius:12px">
+                        <div class="stat-value" style="font-size:1.4rem">5K+</div>
+                        <div class="stat-label">Screenings</div>
+                    </div>
+                    <div class="stat-card glass" style="padding:1rem 1.5rem;border-radius:12px">
+                        <div class="stat-value" style="font-size:1.4rem">3-Tier</div>
+                        <div class="stat-label">Risk Model</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="auth-form-side">
+            <div class="auth-card glass" id="auth-card">
+                <div class="brand">
+                    <div class="brand-icon"></div>
+                    <span class="brand-text">NeuroStrat AI</span>
+                </div>
+
+                <h2 id="auth-title">Welcome</h2>
+                <p class="subtitle" id="auth-subtitle">Sign in to access the clinical dashboard</p>
+
+                <form id="auth-form" onsubmit="handleAuth(event)">
+                    <!-- Signup-only fields -->
+                    <div class="signup-fields" id="signup-fields">
+                        <div class="form-group">
+                            <label for="fullname">Full Name</label>
+                            <input type="text" id="fullname" class="form-input" placeholder="Dr. Jane Smith">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-input" placeholder="you@institution.edu" autocomplete="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                            <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password" minlength="8" required>
+                    </div>
+
+                    <div class="signup-fields" id="signup-fields-2">
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" autocomplete="new-password" minlength="8">
+                        </div>
+                    </div>
+
+                    <div class="form-row" id="login-extras">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="remember"> Remember me
+                        </label>
+                        <a href="#" onclick="alert('Password reset link sent to your email.')">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mt-2" id="auth-btn">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="divider">or</div>
+
+                <div class="auth-toggle" id="auth-toggle">
+                    Don't have an account? <a onclick="toggleAuthMode()">Sign Up</a>
+                </div>
+
+                <p style="margin-top:1.5rem;font-size:.7rem;color:var(--text-muted);text-align:center;line-height:1.4">
+                    This platform provides AI-assisted behavioral risk stratification and is not a substitute for professional clinical diagnosis.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

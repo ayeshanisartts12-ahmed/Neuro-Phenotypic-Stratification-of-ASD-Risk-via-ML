@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-hero { padding:2.5rem; border-radius:var(--radius); background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,182,212,.08)); border:1px solid rgba(124,58,237,.2); display:flex; align-items:center; gap:2rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .profile-avatar-large { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--accent)); display:flex; align-items:center; justify-content:center; font-size:2.5rem; font-weight:700; border:3px solid rgba(124,58,237,.4); flex-shrink:0; }
+        .history-row { display:grid; grid-template-columns:auto 1fr auto auto; gap:1rem; align-items:center; padding:.85rem; border-bottom:1px solid rgba(255,255,255,.04); font-size:.88rem; }
+        .history-row:last-child { border-bottom:none; }
+    </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-text">NeuroStrat AI</span></div>
+    <nav><ul class="nav-menu">
+        <li><a href="dashboard.html"><span class="nav-icon">⬡</span> Dashboard</a></li>
+        <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+        <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+        <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+        <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+        <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+        <li><a href="profile.html" class="active"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul></nav>
+    <div class="sidebar-footer"><button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button></div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>User Profile</h2>
+        </div>
+        <div class="topbar-right"><div class="user-avatar" data-user-avatar>U</div></div>
+    </header>
+
+    <div class="page-content">
+
+        <!-- Profile Hero -->
+        <div class="profile-hero reveal">
+            <div class="profile-avatar-large" id="big-avatar">U</div>
+            <div style="flex:1;">
+                <h2 style="font-size:1.6rem;margin-bottom:.25rem;" id="profile-name">Loading...</h2>
+                <p style="color:var(--text-sec);font-size:.9rem;" id="profile-email">—</p>
+                <div style="display:flex;gap:.75rem;margin-top:.75rem;flex-wrap:wrap;">
+                    <span style="font-size:.8rem;padding:.3rem .8rem;border-radius:var(--radius-full);background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:var(--primary);" id="profile-role">User</span>
+                    <span style="font-size:.8rem;color:var(--text-muted);">Member since <span id="profile-joined">—</span></span>
+                </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="showToast('Edit profile coming in full build.','info')">✎ Edit Profile</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;" class="reveal">
+            <!-- Account Info -->
+            <div class="card">
+                <h3 style="font-size:1rem;margin-bottom:1.25rem;">Account Information</h3>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label>Full Name</label>
+                    <input type="text" class="form-input" id="edit-name" placeholder="Your name">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label>Email Address</label>
+                    <input type="email" class="form-input" id="edit-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group" style="margin-bottom:1.25rem;">
+                    <label>Institution / Organization</label>
+                    <input type="text" class="form-input" id="edit-org" placeholder="Hospital / University">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Changes</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="card">
+                <h3 style="font-size:1rem;margin-bottom:1.25rem;">My Screening Stats</h3>
+                <div class="stats-grid" style="grid-template-columns:1fr 1fr;gap:.75rem;">
+                    <div class="card stat-card" style="padding:1rem;">
+                        <div class="stat-value" style="font-size:1.5rem;" id="my-total">0</div>
+                        <div class="stat-label">Total Screenings</div>
+                    </div>
+                    <div class="card stat-card" style="padding:1rem;">
+                        <div class="stat-value" style="font-size:1.5rem;" id="my-high">0</div>
+                        <div class="stat-label">High Risk</div>
+                    </div>
+                    <div class="card stat-card" style="padding:1rem;">
+                        <div class="stat-value" style="font-size:1.5rem;" id="my-mod">0</div>
+                        <div class="stat-label">Moderate Risk</div>
+                    </div>
+                    <div class="card stat-card" style="padding:1rem;">
+                        <div class="stat-value" style="font-size:1.5rem;" id="my-low">0</div>
+                        <div class="stat-label">Low Risk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screening History -->
+        <div class="card reveal">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+                <h3 style="font-size:1rem;">Screening History</h3>
+                <button class="btn btn-sm btn-glass" onclick="clearHistory()">Clear History</button>
+            </div>
+            <div id="history-list">
+                <p style="color:var(--text-muted);font-size:.9rem;text-align:center;padding:2rem;">No screening history found. <a href="register.html">Start a screening →</a></p>
+            </div>
+        </div>
+
+        <!-- Privacy Controls -->
+        <div class="card reveal mt-3">
+            <h3 style="font-size:1rem;margin-bottom:1rem;">Privacy & Data Controls</h3>
+            <div style="display:flex;flex-direction:column;gap:.75rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.02);">
+                    <div><strong style="font-size:.9rem;">Download My Data</strong><p style="font-size:.8rem;color:var(--text-sec);">Export all your screening data as JSON</p></div>
+                    <button class="btn btn-sm btn-outline" onclick="exportData()">Download</button>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.02);">
+                    <div><strong style="font-size:.9rem;">Delete Account</strong><p style="font-size:.8rem;color:var(--text-sec);">Permanently remove all your data</p></div>
+                    <button class="btn btn-sm btn-danger" onclick="if(confirm('Are you sure? This cannot be undone.'))logout()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+// Flexible risk key matching — same logic as screenings.html
+function riskKey(risk) {
+    if (!risk) return 'pending';
+    const r = risk.toLowerCase();
+    if (r.includes('high'))     return 'high';
+    if (r.includes('moderate')) return 'moderate';
+    if (r.includes('low'))      return 'low';
+    return 'pending';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const user = requireAuth();
+    if (!user) return;
+
+    document.getElementById('big-avatar').textContent = (user.name||'U')[0].toUpperCase();
+    document.getElementById('profile-name').textContent = user.name || 'User';
+    document.getElementById('profile-email').textContent = user.email || '—';
+    document.getElementById('profile-role').textContent = user.role === 'admin' ? 'Admin' : 'Clinician';
+    document.getElementById('profile-joined').textContent = user.joined || new Date().toLocaleDateString();
+    document.getElementById('edit-name').value = user.name || '';
+    document.getElementById('edit-email').value = user.email || '';
+
+    const history = (typeof getUserHistory === 'function')
+        ? getUserHistory()
+        : JSON.parse(localStorage.getItem(
+            'ns_history_' + ((JSON.parse(localStorage.getItem('ns_user')||'{}').email)||'guest').trim().toLowerCase()
+          ) || '[]');
+
+    document.getElementById('my-total').textContent = history.length;
+    document.getElementById('my-high').textContent  = history.filter(s => riskKey(s.risk) === 'high').length;
+    document.getElementById('my-mod').textContent   = history.filter(s => riskKey(s.risk) === 'moderate').length;
+    document.getElementById('my-low').textContent   = history.filter(s => riskKey(s.risk) === 'low').length;
+
+    const list = document.getElementById('history-list');
+    if (history.length > 0) {
+        list.innerHTML = history.map(s => `
+            <div class="history-row">
+                <span style="color:var(--text-muted);font-size:.8rem;">${s.patient_id || ('#' + (s.id || '?'))}</span>
+                <div>
+                    <strong style="font-size:.88rem;">${s.name || 'Patient'}</strong>
+                    <span style="color:var(--text-muted);font-size:.78rem;margin-left:.5rem;">Age ${s.age || '—'} · ${s.module || s.group || '—'}</span>
+                </div>
+                <span class="risk-badge risk-${riskKey(s.risk)}" style="font-size:.72rem;">${s.risk || 'Pending'}</span>
+                <span style="color:var(--text-muted);font-size:.78rem;">${s.date || '—'}</span>
+            </div>`).join('');
+    } else {
+        list.innerHTML = `<p style="color:var(--text-muted);font-size:.9rem;text-align:center;padding:2rem;">No screening history found. <a href="register.html">Start a screening →</a></p>`;
+    }
+});
+
+function saveProfile() {
+    const name = document.getElementById('edit-name').value.trim();
+    const email = normalizeEmail(document.getElementById('edit-email').value);
+    if (name.length < 2) { showToast('Please enter your full name.', 'error'); return; }
+    if (!isValidEmail(email)) { showToast('Please enter a valid email address.', 'error'); return; }
+    const user = JSON.parse(localStorage.getItem('ns_user')||'{}');
+    user.name = name; user.email = email;
+    localStorage.setItem('ns_user', JSON.stringify(user));
+    showToast('Profile saved successfully!', 'success');
+    document.getElementById('profile-name').textContent = name;
+    document.getElementById('big-avatar').textContent = (name||'U')[0].toUpperCase();
+}
+
+function clearHistory() {
+    if (confirm('Clear all screening history?')) {
+        if (typeof clearUserHistory === 'function') clearUserHistory();
+        else localStorage.removeItem('ns_history_' + (JSON.parse(localStorage.getItem('ns_user')||'{}').email||'guest').toLowerCase());
+        location.reload();
+    }
+}
+
+function exportData() {
+    const hKey = (typeof getUserHistoryKey === 'function') ? getUserHistoryKey() : 'ns_history_guest';
+    const data = { user: localStorage.getItem('ns_user'), history: localStorage.getItem(hKey) };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'neurostrat_data.json'; a.click();
+    showToast('Data exported successfully!', 'success');
+}
+</script>
+</body>
+</html>
+</body>
+</html>

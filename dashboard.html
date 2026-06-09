@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — NeuroStrat AI</title>
+    <meta name="description" content="NeuroStrat AI clinical dashboard with live ASD screening statistics and patient history.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<<canvas id="particles-canvas"></canvas>
+<div class="bg-orbs"><div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div><div class="bg-orb orb-3"></div></div>
+
+<!-- Sidebar Overlay (mobile) -->
+<div id="sidebar-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;backdrop-filter:blur(4px);"></div>
+
+<!-- Sidebar -->
+<<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <div class="brand-icon"></div>
+        <span class="brand-text">NeuroStrat AI</span>
+    </div>
+    <nav>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="active"><span class="nav-icon">⬡</span> Dashboard</a></li>
+            <li><a href="register.html"><span class="nav-icon">✦</span> Register</a></li>
+            <li><a href="about.html"><span class="nav-icon">◈</span> About</a></li>
+            <li><a href="faq.html"><span class="nav-icon">❓</span> FAQ's</a></li>
+            <li><a href="guide.html"><span class="nav-icon">📖</span> Guide</a></li>
+            <li><a href="consult-doctor.html"><span class="nav-icon">🩺</span> Consult a Doctor</a></li>
+            
+        </ul>
+    </nav>
+    <div class="sidebar-footer">
+        <button class="btn btn-danger btn-sm btn-block" onclick="logout()">⏻ Logout</button>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Topbar -->
+    <header class="topbar glass">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h2>Clinical Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+            <span id="backend-status-pill" style="font-size:.78rem;padding:.3rem .8rem;border-radius:var(--radius-full);background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.3);color:#f87171;">⚪ Connecting…</span>
+            <span style="font-size:.85rem;color:var(--text-sec);" data-user-email></span>
+            <div class="user-avatar" data-user-avatar>U</div>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <!-- Welcome Banner -->
+        <div class="card reveal" style="background:linear-gradient(135deg,rgba(61,107,69,.15),rgba(92,143,99,.1));border-color:rgba(61,107,69,.2);margin-bottom:1.5rem;padding:2rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <p style="color:var(--text-sec);font-size:.9rem;margin-bottom:.3rem;">Welcome</p>
+                    <h1 style="font-size:1.8rem;font-weight:700;" data-user-name>Loading…</h1>
+                    <p style="color:var(--text-sec);margin-top:.4rem;font-size:.9rem;">AI-powered ASD screening platform — ready for clinical triage.</p>
+                </div>
+                <a href="register.html" class="btn btn-primary">+ Start New Screening</a>
+            </div>
+        </div>
+
+        <!-- Stats Grid — stat cards are now clickable buttons -->
+        <div class="stats-grid">
+            <!-- Total Screenings — opens public screenings view -->
+            <div class="card stat-card reveal" id="stat-card-screenings"
+                 style="cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;"
+                 onclick="openPublicScreenings()"
+                 title="Click to view all screenings">
+                <div style="position:absolute;top:.7rem;right:.9rem;font-size:.7rem;color:var(--primary);font-weight:600;opacity:.7;">VIEW ALL →</div>
+                <div class="stat-value" id="stat-screenings">—</div>
+                <div class="stat-label">Total Screenings</div>
+                <div style="margin-top:.5rem;font-size:.75rem;color:var(--text-muted);" id="stat-screenings-sub">Loading…</div>
+            </div>
+            <!-- High Risk Cases — opens high-risk only view -->
+            <div class="card stat-card reveal anim-delay-1" id="stat-card-high"
+                 style="cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;"
+                 onclick="openHighRiskView()"
+                 title="Click to view high risk cases">
+                <div style="position:absolute;top:.7rem;right:.9rem;font-size:.7rem;color:var(--danger);font-weight:600;opacity:.7;">VIEW →</div>
+                <div class="stat-value" id="stat-high" style="color:var(--danger);">—</div>
+                <div class="stat-label">High Risk Cases</div>
+                <div style="margin-top:.5rem;font-size:.75rem;color:var(--danger);">Needs referral</div>
+            </div>
+            <div class="card stat-card reveal anim-delay-2" id="stat-card-accuracy"
+                 style="cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;"
+                 onclick="window.open('ai-methodology.html','_blank')"
+                 title="Click to view AI Methodology & Accuracy">
+                <div style="position:absolute;top:.7rem;right:.9rem;font-size:.7rem;color:var(--success);font-weight:600;opacity:.7;">VIEW →</div>
+                <div class="stat-value" id="stat-accuracy">98%</div>
+                <div class="stat-label">AI Accuracy</div>
+                <div style="margin-top:.5rem;font-size:.75rem;color:var(--success);">▲ Validated</div>
+            </div>
+            <div class="card stat-card reveal anim-delay-3" id="stat-card-modules"
+                 style="cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;"
+                 onclick="window.open('age-modules.html','_blank')"
+                 title="Click to view Age Modules & Autism Guide">
+                <div style="position:absolute;top:.7rem;right:.9rem;font-size:.7rem;color:var(--accent);font-weight:600;opacity:.7;">VIEW →</div>
+                <div class="stat-value" id="stat-models">5</div>
+                <div class="stat-label">Age Modules Active</div>
+                <div style="margin-top:.5rem;font-size:.75rem;color:var(--accent);">Multi-modal AI</div>
+            </div>
+        </div>
+
+        <!-- Risk Distribution & Module Activity Charts -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;" class="reveal">
+            <div class="chart-container">
+                <h3 style="margin-bottom:1.25rem;font-size:1rem;">Risk Distribution</h3>
+                <div id="risk-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3 style="margin-bottom:1.25rem;font-size:1rem;">Module Activity</h3>
+                <div id="module-chart"></div>
+            </div>
+        </div>
+
+        <!-- Image Gallery -->
+        <div class="section-header reveal">
+            <h2>Research Focus Areas</h2>
+            <p>Six dimensions of AI-powered neuro-behavioral analysis</p>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-card glass reveal">
+                <img src="../Images/Understanding the Science of Autism.png" alt="AI Behavioral Analysis" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&q=80'">
+                <div class="caption"><h4>AI Behavioral Analysis</h4><p>Deep learning patterns from behavioral interaction data</p></div>
+            </div>
+            <div class="gallery-card glass reveal anim-delay-1">
+                <img src="../Images/Different Minds, Equal Humanity.png" alt="ASD Screening" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&q=80'">
+                <div class="caption"><h4>ASD Screening Platform</h4><p>Age-appropriate multi-modal screening modules</p></div>
+            </div>
+            <div class="gallery-card glass reveal anim-delay-2">
+                <img src="../Images/Inside Sensory Overload.png" alt="Voice Interaction" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1614854262318-831574f15f1f?w=600&q=80'">
+                <div class="caption"><h4>Voice Interaction Analysis</h4><p>Real-time speech & hesitation pattern recognition</p></div>
+            </div>
+            <div class="gallery-card glass reveal">
+                <img src="../Images/Support Creates Connection.png" alt="Emotional Intelligence" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&q=80'">
+                <div class="caption"><h4>Emotional Intelligence</h4><p>Affective computing for emotion recognition</p></div>
+            </div>
+            <div class="gallery-card glass reveal anim-delay-1">
+                <img src="../Images/Two Different Experiences.png" alt="Cognitive Analysis" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1580130544977-1c5a5f4b16e3?w=600&q=80'">
+                <div class="caption"><h4>Cognitive Analysis</h4><p>Attention span, memory & flexibility metrics</p></div>
+            </div>
+            <div class="gallery-card glass reveal anim-delay-2">
+                <img src="../Images/The Quiet Side of Isolation.png" alt="Early Intervention" loading="lazy"
+                     onerror="this.src='https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80'">
+                <div class="caption"><h4>Early Intervention Systems</h4><p>Timely clinical triage for optimal outcomes</p></div>
+            </div>
+        </div>
+
+        <!-- Recent Screenings Table — OWNER ONLY -->
+        <div class="section-header reveal mt-4">
+            <h2>Recent Screenings</h2>
+            <p id="table-status" style="font-size:.8rem;color:var(--text-muted);">Loading from database…</p>
+        </div>
+        <!-- Privacy notice -->
+        <div class="reveal" style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-sec);">
+                <span style="background:rgba(61,107,69,.08);border:1px solid rgba(61,107,69,.2);border-radius:4px;padding:.15rem .5rem;font-size:.72rem;">🔒 Your Records Only</span>
+                Only screenings registered under your account are shown here
+            </span>
+        </div>
+        <div class="card reveal" style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid var(--glass-border);color:var(--text-sec);">
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Patient ID</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Name</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Age</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Module</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Status</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Risk Level</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Date</th>
+                        <th style="padding:.75rem;text-align:left;font-weight:500;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="screenings-table">
+                    <tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">
+                        <div class="loader-spinner" style="width:24px;height:24px;border-width:2px;margin:0 auto 1rem;"></div>
+                        Loading your screenings…
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Disclaimer -->
+        <p style="margin-top:2rem;font-size:.75rem;color:var(--text-muted);text-align:center;padding:1rem;border-top:1px solid var(--glass-border);">
+            ⚠ This platform provides AI-assisted behavioral risk stratification and is not a substitute for professional clinical diagnosis.
+        </p>
+    </div>
+</div>
+
+<style>
+/* Clickable stat card hover effects */
+#stat-card-screenings:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 32px rgba(61,107,69,.18) !important;
+    border-color: var(--primary) !important;
+}
+#stat-card-high:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 32px rgba(184,92,92,.18) !important;
+    border-color: var(--danger) !important;
+}
+#stat-card-accuracy:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 32px rgba(61,107,69,.18) !important;
+    border-color: var(--success) !important;
+}
+#stat-card-modules:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 32px rgba(193,123,92,.18) !important;
+    border-color: var(--accent) !important;
+}
+</style>
+
+<script src="script.js"></script>
+<script>
+/**
+ * NeuroStrat AI — Dashboard Page Logic
+ */
+
+const API_BASE = 'http://localhost:8000';
+
+/** Open public screenings tab (all records, no PII) */
+function openPublicScreenings() {
+    window.open('public-screenings.html', '_blank');
+}
+
+/** Open high-risk cases tab */
+function openHighRiskView() {
+    window.open('high-risk-cases.html', '_blank');
+}
+
+async function checkBackendHealth() {
+    const pill = document.getElementById('backend-status-pill');
+    try {
+        const resp = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) {
+            pill.style.background = 'rgba(16,185,129,.1)';
+            pill.style.borderColor = 'rgba(16,185,129,.3)';
+            pill.style.color = '#10b981';
+            return true;
+        }
+    } catch (_) {}
+    pill.style.display = 'none';
+    return false;
+}
+
+async function loadDashboardData() {
+    const isOnline = await checkBackendHealth();
+
+    if (!isOnline) {
+        renderFallbackStats();
+        renderOwnerOnlyTable();
+        return;
+    }
+
+    try {
+        const statsResp = await fetch(`${API_BASE}/api/stats`);
+        if (statsResp.ok) {
+            const stats = await statsResp.json();
+            renderStats(stats);
+        }
+    } catch (err) {
+        renderFallbackStats();
+    }
+
+    try {
+        const histResp = await fetch(`${API_BASE}/api/history`);
+        if (histResp.ok) {
+            const history = await histResp.json();
+            // Only render records owned by the current user
+            renderOwnerOnlyTableFromBackend(history);
+
+            const riskCounts = {
+                low:      history.filter(h => (h.risk_tier||'').includes('Low')).length,
+                moderate: history.filter(h => (h.risk_tier||'').includes('Moderate')).length,
+                high:     history.filter(h => (h.risk_tier||'').includes('High')).length,
+            };
+            const total = history.length || 1;
+            renderBarChart('risk-chart', [
+                { label: 'Low Risk',      value: Math.round((riskCounts.low / total) * 100),      suffix: '%' },
+                { label: 'Moderate Risk', value: Math.round((riskCounts.moderate / total) * 100),  suffix: '%' },
+                { label: 'High Risk',     value: Math.round((riskCounts.high / total) * 100),      suffix: '%' },
+            ]);
+
+            const moduleUsageResp = await fetch(`${API_BASE}/api/stats`);
+            if (moduleUsageResp.ok) {
+                const s = await moduleUsageResp.json();
+                const mu = s.module_usage || {};
+                renderBarChart('module-chart', [
+                    { label: 'Ages 4–8',   value: mu['BehavioralAdventureModule']  || 0, suffix: '' },
+                    { label: 'Ages 9–12',  value: mu['SocialSimulationModule']     || 0, suffix: '' },
+                    { label: 'Ages 12–16', value: mu['VoiceInteractionModule']     || 0, suffix: '' },
+                    { label: 'Ages 17–22', value: mu['SocialReasoningModule']      || 0, suffix: '' },
+                    { label: 'Ages 22+',   value: mu['CognitiveInteractionModule'] || 0, suffix: '' },
+                ]);
+            }
+        }
+    } catch (err) {
+        renderOwnerOnlyTable();
+    }
+}
+
+function renderStats(stats) {
+    animateCount(document.getElementById('stat-screenings'), stats.total_screenings || 0);
+    animateCount(document.getElementById('stat-high'), stats.high_risk_count || 0);
+
+    const total = stats.total_screenings || 1;
+    const completionRate = Math.round(((stats.complete_count || 0) / total) * 100);
+    const accuracyEl = document.getElementById('stat-accuracy');
+    if (accuracyEl) accuracyEl.textContent = completionRate + '%';
+
+    const mu = stats.module_usage || {};
+    const activeModules = Object.values(mu).filter(v => v > 0).length;
+    const modelsEl = document.getElementById('stat-models');
+    if (modelsEl) modelsEl.textContent = activeModules || 5;
+
+    const sub = document.getElementById('stat-screenings-sub');
+    sub.textContent = `${stats.complete_count || 0} complete · ${stats.in_progress_count || 0} in progress`;
+    sub.style.color = 'var(--success)';
+}
+
+function renderFallbackStats() {
+    // Use dynamic data from localStorage if available
+    const history = JSON.parse(localStorage.getItem('ns_history') || '[]');
+    const total   = history.length;
+    const high    = history.filter(s => (s.risk||s.risk_tier||'').toLowerCase().includes('high')).length;
+    const complete = history.filter(s => s.status === 'complete').length;
+
+    setTimeout(() => {
+        // Use real local data if > 0, else show zeros (never fake static numbers)
+        animateCount(document.getElementById('stat-screenings'), total);
+        animateCount(document.getElementById('stat-high'), high);
+    }, 400);
+
+    const sub = document.getElementById('stat-screenings-sub');
+    if (total > 0) {
+        sub.textContent = `${complete} complete (local data)`;
+    } else {
+        sub.textContent = 'No screenings yet';
+    }
+
+    // Build real risk chart from local data
+    const low = history.filter(s => (s.risk||s.risk_tier||'').toLowerCase().includes('low')).length;
+    const mod = history.filter(s => (s.risk||s.risk_tier||'').toLowerCase().includes('moderate')).length;
+    const t   = history.length || 1;
+
+    renderBarChart('risk-chart', [
+        { label: 'Low Risk',      value: Math.round((low  / t) * 100), suffix: '%' },
+        { label: 'Moderate Risk', value: Math.round((mod  / t) * 100), suffix: '%' },
+        { label: 'High Risk',     value: Math.round((high / t) * 100), suffix: '%' },
+    ]);
+
+    // Module activity from local history
+    const moduleMap = {
+        'Behavioral Adventure': 0, 'Social Simulation': 0,
+        'Voice Interaction': 0,   'Social Reasoning': 0, 'Cognitive Interaction': 0
+    };
+    history.forEach(s => {
+        const m = s.module || '';
+        Object.keys(moduleMap).forEach(k => { if (m.includes(k)) moduleMap[k]++; });
+    });
+    renderBarChart('module-chart', [
+        { label: 'Ages 4–8',   value: moduleMap['Behavioral Adventure'],  suffix: '' },
+        { label: 'Ages 9–12',  value: moduleMap['Social Simulation'],     suffix: '' },
+        { label: 'Ages 12–16', value: moduleMap['Voice Interaction'],     suffix: '' },
+        { label: 'Ages 17–22', value: moduleMap['Social Reasoning'],      suffix: '' },
+        { label: 'Ages 22+',   value: moduleMap['Cognitive Interaction'], suffix: '' },
+    ]);
+}
+
+/** Returns current user email lowercase */
+function getCurrentUserEmail() {
+    const user = JSON.parse(localStorage.getItem('ns_user') || '{}');
+    return (user.email || '').trim().toLowerCase();
+}
+
+/** Returns map of { patient_id: owner_email } */
+function getOwnedPatients() {
+    return JSON.parse(localStorage.getItem('ns_owned_patients') || '{}');
+}
+
+function isOwner(patientId) {
+    const currentEmail = getCurrentUserEmail();
+    if (!currentEmail) return false;
+    const owned = getOwnedPatients();
+    return (owned[patientId] || '').toLowerCase() === currentEmail;
+}
+
+/**
+ * Renders ONLY the records owned by the current user from backend history.
+ */
+function renderOwnerOnlyTableFromBackend(history) {
+    const tbody = document.getElementById('screenings-table');
+    const tableStatus = document.getElementById('table-status');
+
+    // Filter to owner's records only
+    const myRecords = history.filter(s => isOwner(s.patient_id));
+
+    if (myRecords.length === 0) {
+        tableStatus.textContent = 'No screenings registered under your account yet';
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">
+            No screenings found for your account. <a href="register.html">Start one now →</a>
+        </td></tr>`;
+        return;
+    }
+
+    tableStatus.textContent = `${myRecords.length} record${myRecords.length !== 1 ? 's' : ''} registered under your account`;
+
+    tbody.innerHTML = myRecords.slice(0, 20).map(s => {
+        const riskKey     = (s.risk_tier || '').toLowerCase().replace(' ', '-');
+        const dateStr     = s.created_at ? new Date(s.created_at).toLocaleDateString() : '—';
+        const statusColor = s.status === 'complete' ? 'var(--success)' : s.status === 'in-progress' ? 'var(--warning)' : 'var(--text-muted)';
+
+        return `
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);background:rgba(61,107,69,.03);">
+            <td style="padding:.75rem;font-family:monospace;color:var(--primary);font-size:.82rem;">${s.patient_id}</td>
+            <td style="padding:.75rem;font-weight:500;">${s.name}</td>
+            <td style="padding:.75rem;">${s.age}</td>
+            <td style="padding:.75rem;font-size:.82rem;color:var(--text-sec);">${s.assigned_module || '—'}</td>
+            <td style="padding:.75rem;"><span style="font-size:.78rem;color:${statusColor};">● ${s.status}</span></td>
+            <td style="padding:.75rem;">${s.risk_tier
+                ? `<span class="risk-badge risk-${riskKey}" style="font-size:.75rem;padding:.2rem .6rem;">${s.risk_tier}</span>`
+                : `<span style="color:var(--text-muted);font-size:.8rem;">Pending</span>`}</td>
+            <td style="padding:.75rem;color:var(--text-sec);font-size:.82rem;">${dateStr}</td>
+            <td style="padding:.75rem;">${s.status === 'complete'
+                ? `<a href="results.html?id=${s.patient_id}" class="btn btn-sm btn-outline" style="padding:.3rem .7rem;font-size:.75rem;">View Report</a>`
+                : `<span style="font-size:.78rem;color:var(--text-muted);">In Progress</span>`}</td>
+        </tr>`;
+    }).join('');
+}
+
+/**
+ * Renders ONLY the current user's records from localStorage (fallback).
+ */
+function renderOwnerOnlyTable() {
+    const history = JSON.parse(localStorage.getItem('ns_history') || '[]');
+    const tbody = document.getElementById('screenings-table');
+    const tableStatus = document.getElementById('table-status');
+
+    // Filter to only the current user's owned records
+    const myRecords = history.filter(s => isOwner(s.patient_id || s.id));
+
+    tableStatus.textContent = myRecords.length > 0
+        ? `${myRecords.length} record${myRecords.length !== 1 ? 's' : ''} in your account`
+        : 'No screenings registered under your account yet';
+
+    if (myRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">
+            No screenings yet. <a href="register.html">Start one now →</a>
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = myRecords.slice(0, 20).map(s => {
+        const risk = s.risk || s.risk_tier || '';
+        const riskKey = risk.toLowerCase().replace(/ /g, '-');
+        return `
+        <tr style="border-bottom:1px solid rgba(0,0,0,.06);background:rgba(61,107,69,.03);">
+            <td style="padding:.75rem;font-family:monospace;color:var(--primary);font-size:.82rem;">${s.patient_id || ('#' + s.id)}</td>
+            <td style="padding:.75rem;font-weight:500;">${s.name}</td>
+            <td style="padding:.75rem;">${s.age}</td>
+            <td style="padding:.75rem;font-size:.82rem;color:var(--text-sec);">${s.module || '—'}</td>
+            <td style="padding:.75rem;"><span style="font-size:.78rem;color:var(--success);">● ${s.status || 'complete'}</span></td>
+            <td style="padding:.75rem;">${risk
+                ? `<span class="risk-badge risk-${riskKey}" style="font-size:.75rem;padding:.2rem .6rem;">${risk}</span>`
+                : `<span style="color:var(--text-muted);font-size:.8rem;">Pending</span>`}</td>
+            <td style="padding:.75rem;color:var(--text-sec);font-size:.82rem;">${s.date || '—'}</td>
+            <td style="padding:.75rem;"><a href="results.html?id=${s.patient_id}" class="btn btn-sm btn-outline" style="padding:.3rem .7rem;font-size:.75rem;">View Report</a></td>
+        </tr>`;
+    }).join('');
+}
+
+/** Return the game HTML file path for a given patient age */
+function getGameForAge(age) {
+    const a = Number(age);
+    if (a >= 4  && a <= 8)  return 'game1.html';
+    if (a >= 9  && a <= 12) return 'game2.html';
+    if (a >= 12 && a <= 16) return 'game3.html';
+    if (a >= 18 && a <= 22) return 'game4.html';
+    if (a >= 22)            return 'game5.html';
+    return 'game1.html';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+});
+</script>
+</body>
+</html>

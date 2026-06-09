@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEUROMAP — Cognitive Profile Observatory</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --bg: #b1b1f16b;
+    --surface: rgba(245, 239, 230, 0.08);
+    --glass: rgba(30, 30, 45, 0.88);
+    --border: rgba(245, 239, 230, 0.06);
+    --border-strong: rgba(245, 239, 230, 0.12);
+    --text: #ffffff;
+    --text-secondary: #c8c2d8;
+    --text-muted: #a8a2b8;
+    --accent-gold: #c9a96e;
+    --accent-rose: #d4a5a5;
+    --accent-sage: #8faa9b;
+    --accent-terra: #b87c6e;
+    --glow-gold: rgba(201, 169, 110, 0.15);
+    --glow-rose: rgba(212, 165, 165, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mesh-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(201, 169, 110, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(212, 165, 165, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(139, 170, 155, 0.04) 0%, transparent 45%);
+    animation: meshMove 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes meshMove {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-2%, 2%) scale(1.05); }
+  }
+
+  .noise-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .screen { position: relative; z-index: 1; display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── INTRO ── */
+  #intro { align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+
+  .intro-orb {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--accent-gold), var(--accent-rose), var(--accent-sage), var(--accent-gold));
+    opacity: 0.12; filter: blur(24px); margin-bottom: 32px;
+    animation: orbPulse 4s ease-in-out infinite;
+  }
+  @keyframes orbPulse { 0%,100%{transform:scale(1);opacity:0.12} 50%{transform:scale(1.2);opacity:0.22} }
+
+  .intro-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; padding: 6px 14px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 11px;
+    color: var(--accent-gold); letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 24px; backdrop-filter: blur(10px);
+  }
+  .intro-badge::before {
+    content: ''; width: 5px; height: 5px; background: var(--accent-gold);
+    border-radius: 50%; box-shadow: 0 0 8px var(--accent-gold);
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .intro-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(48px, 9vw, 88px); font-weight: 700;
+    line-height: 0.95; letter-spacing: -3px; margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent-gold) 40%, var(--accent-rose) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+
+  .intro-sub {
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+    color: var(--text-secondary); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 40px;
+  }
+
+  .intro-cta { display: flex; flex-direction: column; gap: 16px; align-items: center; max-width: 400px; width: 100%; }
+
+  .btn-start {
+    width: 100%; background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+    color: #12121a; border: none; border-radius: 16px;
+    padding: 18px 36px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+    cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px var(--glow-gold); position: relative; overflow: hidden;
+  }
+  .btn-start:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 16px 48px var(--glow-gold); }
+
+  .disclaimer-micro {
+    font-size: 11px; color: var(--text-muted); line-height: 1.6; max-width: 320px;
+  }
+
+  /* ── GAME ── */
+  #game { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; width: 100%; }
+
+  .game-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 40px; padding: 12px 16px;
+    background: rgba(30, 30, 45, 0.85); border: 1px solid var(--border-strong);
+    border-radius: 16px;
+  }
+
+  .gt-brand {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+
+  .gt-progress { flex: 1; max-width: 200px; margin: 0 16px; }
+  .gt-progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .gt-progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-rose));
+    border-radius: 2px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 10px var(--glow-gold);
+  }
+  .gt-count { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  .q-card {
+    background: linear-gradient(135deg, rgba(35, 35, 55, 0.92), rgba(25, 25, 40, 0.92));
+    border: 1px solid var(--border-strong);
+    border-radius: 24px; padding: 36px; position: relative; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .q-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-rose), var(--accent-sage));
+    opacity: 0.6;
+  }
+  .q-card.exiting { animation: slideOut 0.3s ease both; }
+
+  .q-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 100px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+    margin-bottom: 20px; background: rgba(201, 169, 110, 0.08);
+    color: var(--accent-gold); border: 1px solid rgba(201, 169, 110, 0.2);
+  }
+
+  .q-text { font-size: 18px; line-height: 1.7; color: var(--text); font-weight: 400; margin-bottom: 8px; }
+  .q-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; font-style: italic; }
+
+  .response-field {
+    width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.7;
+    resize: none; min-height: 140px; transition: all 0.3s ease; outline: none;
+  }
+  .response-field:focus {
+    border-color: rgba(201, 169, 110, 0.4);
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.08), 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .response-field::placeholder { color: var(--text-muted); }
+
+  .input-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .char-display { font-family: 'Space Grotesk', sans-serif; font-size: 11px; color: var(--text-muted); }
+
+  .btn-send {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+    color: #12121a; border: none; border-radius: 12px;
+    padding: 12px 28px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 20px var(--glow-gold);
+  }
+  .btn-send:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 32px var(--glow-gold); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(18,18,26,0.3); border-top-color: #5c5c75; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .transition-overlay {
+    position: fixed; inset: 0; background: var(--bg); z-index: 100;
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+  }
+  .transition-overlay.active { display: flex; }
+  .transition-bar { width: 120px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .transition-fill { height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-rose)); border-radius: 2px; width: 0%; transition: width 0.4s ease; }
+  .transition-text { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── FINAL / REPORT ── */
+  #final { align-items: center; padding: 48px 24px; max-width: 720px; margin: 0 auto; width: 100%; }
+
+  .report-card {
+    background: linear-gradient(135deg, rgba(35, 35, 55, 0.95), rgba(25, 25, 40, 0.95));
+    border: 1px solid var(--border-strong);
+    border-radius: 28px; padding: 48px; width: 100%;
+    position: relative; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .report-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-rose), var(--accent-sage));
+  }
+
+  .report-header { text-align: center; margin-bottom: 32px; }
+  .report-logo { width: 48px; height: 48px; border-radius: 10px; margin-bottom: 12px; object-fit: contain; }
+  .report-brand { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
+  .report-sub { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: var(--accent-gold); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .report-meta { font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--text-muted); margin-top: 8px; letter-spacing: 1px; }
+
+  .report-archetype {
+    display: inline-block; margin-bottom: 28px;
+    background: rgba(201, 169, 110, 0.08); border: 1px solid rgba(201, 169, 110, 0.2);
+    border-radius: 10px; padding: 8px 18px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 12px;
+    color: var(--accent-gold); letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+  }
+
+  .report-metrics {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px;
+  }
+  .rm-cell {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; text-align: left; transition: all 0.3s ease;
+  }
+  .rm-cell:hover { border-color: var(--border-strong); background: rgba(255,255,255,0.04); transform: translateY(-2px); }
+  .rm-name { font-family: 'Space Grotesk', sans-serif; font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .rm-value { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; }
+
+  .report-narrative {
+    font-size: 15px; line-height: 1.8; color: var(--text-secondary);
+    font-weight: 300; margin-bottom: 24px;
+  }
+
+  .report-disclaimer {
+    font-size: 11px; line-height: 1.6; color: var(--text-muted);
+    border-top: 1px solid var(--border); padding-top: 20px;
+  }
+
+  .report-actions {
+    display: flex; gap: 12px; margin-top: 32px; width: 100%;
+    animation: slideUp 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .btn-download {
+    flex: 1; background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+    color: #63638a; border: none; border-radius: 16px;
+    padding: 18px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px var(--glow-gold); letter-spacing: 0.5px;
+    text-decoration: none; text-align: center;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 16px 48px var(--glow-gold); }
+  .btn-dashboard {
+    flex: 1; background: linear-gradient(135deg, var(--accent-sage), #5a8a7a);
+    color: #f5efe6; border: none; border-radius: 16px;
+    padding: 18px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(143, 170, 155, 0.25); letter-spacing: 0.5px;
+    text-decoration: none; text-align: center;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-dashboard:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(143, 170, 155, 0.4); }
+  .btn-doctor {
+    flex: 1; background: linear-gradient(135deg, var(--accent-terra), #8a5a4e);
+    color: #f5efe6; border: none; border-radius: 16px;
+    padding: 18px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(184, 124, 110, 0.25); letter-spacing: 0.5px;
+    text-decoration: none; text-align: center;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-doctor:hover { transform: translateY(-2px); box-shadow: 0 16px 48px rgba(184, 124, 110, 0.4); }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); filter: blur(6px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+  @keyframes slideOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    .report-metrics { grid-template-columns: repeat(2, 1fr); }
+    .report-card { padding: 28px; }
+    .q-card { padding: 24px; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="mesh-bg"></div>
+<div class="noise-overlay"></div>
+
+<div class="transition-overlay" id="transitionOverlay">
+  <div class="transition-text">Analyzing pattern</div>
+  <div class="transition-bar"><div class="transition-fill" id="transitionFill"></div></div>
+</div>
+
+<!-- INTRO -->
+<div id="intro" class="screen active">
+  <div class="intro-orb"></div>
+  <div class="intro-badge">Neurocognitive Profiling System</div>
+  <h1 class="intro-title">NEUROMAP</h1>
+  <p class="intro-sub">Adult Behavioral Pattern Observatory</p>
+  <div class="intro-cta">
+    <button class="btn-start" onclick="startSession()">Begin Profiling →</button>
+    <p class="disclaimer-micro">Not a clinical diagnostic tool. A self-reflection engine for adults 22+.</p>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen">
+  <div class="game-top">
+    <div class="gt-brand">NEUROMAP</div>
+    <div class="gt-progress">
+      <div class="gt-progress-bar"><div class="gt-progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="gt-count" id="progressCount">1 / 15</div>
+  </div>
+
+  <div class="q-card" id="qCard">
+    <div class="q-tag" id="qTag">Social</div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint" id="qHint">Type freely. There are no wrong answers.</div>
+    <div class="input-area">
+      <textarea class="response-field" id="responseField" placeholder="Write your thoughts here..." oninput="updateCharCount()"></textarea>
+      <div class="input-meta">
+        <div class="char-display" id="charDisplay">0 chars</div>
+        <button class="btn-send" id="btnSend" onclick="submitResponse()"><span id="btnText">Submit</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="final" class="screen">
+  <div class="report-card" id="reportCard">
+    <div class="report-header">
+      <img src="https://media.glassdoor.com/sqll/977930/neurostat-analytical-solutions-squarelogo-1469182129316.png" 
+           class="report-logo" id="reportLogo" crossorigin="anonymous" 
+           onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='block'">
+      <div id="logoFallback" style="display:none; font-family:'Space Grotesk'; font-size:28px; font-weight:700; color:var(--accent-gold); margin-bottom:8px;">◈</div>
+      <div class="report-brand">NEUROMAP</div>
+      <div class="report-sub">Cognitive Profile Report</div>
+      <div class="report-meta" id="reportMeta">Session ID: ————</div>
+    </div>
+
+    <div style="text-align:center;">
+      <div class="report-archetype" id="reportArchetype">Processing...</div>
+    </div>
+
+    <div class="report-metrics" id="reportMetrics"></div>
+
+    <div class="report-narrative" id="reportNarrative"></div>
+
+    <div class="report-disclaimer">
+      <strong style="color:var(--accent-terra);">Not a Clinical Diagnosis.</strong>
+      This profile is generated from linguistic pattern analysis, not clinical observation. 
+      If you recognize persistent challenges in social communication, sensory regulation, or cognitive flexibility 
+      that impact your daily life, consider speaking with a licensed clinical psychologist or psychiatrist 
+      experienced in adult neurodevelopmental differences.
+    </div>
+  </div>
+
+  <div class="report-actions">
+    <button class="btn-download" onclick="downloadReport()">📥 Download Report</button>
+    <a href="dashboard.html" class="btn-dashboard">🏠 Go to Dashboard</a>
+    <a href="consult-doctor.html" class="btn-doctor">🩺 Consult a Doctor</a>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { id:1, domain:'routine', tag:'Routine & Comfort', text:'Describe your ideal Saturday from the moment you wake up until you sleep. What makes it feel "right" to you?', hint:'Think about order, environment, activities, and sensory details.', keywords:{ systemizing:['plan','schedule','routine','order','sequence','first','then','next','exactly','specific','always','same','structure','organize','list','time','clock','hour','minute'], sensory:['quiet','noise','sound','light','dark','soft','texture','smooth','warm','cold','comfort','blanket','couch','alone','peace','calm','silent','music','headphones'], social:['friends','party','hangout','people','group','together','chat','talk','laugh','crowd','social','meet','gathering','event','club','bar','dinner'] } },
+  { id:2, domain:'social', tag:'Social Decoding', text:'A friend texts you: "We need to talk." Nothing else. Walk through what happens in your mind in the next 10 minutes.', hint:'Describe your internal process, not just what you do.', keywords:{ literal:['text','said','exactly','words','literally','mean','definition','phrase','sentence','wrote','message','nothing else'], inferential:['upset','angry','mad','disappointed','worried','probably','maybe','think','feel','intention','meant','imply','subtext','reading','between','sign','signal','vibe','energy','tone'], anxiety:['panic','anxious','stress','dread','stomach','heart','sweat','nervous','terrified','worried','scared','overthink','spiral','catastrophize'] } },
+  { id:3, domain:'sensory', tag:'Sensory Environment', text:'You enter a room with fluorescent lights, five conversations happening at once, and a strong air freshener. Someone says, "Make yourself at home." What is your actual experience?', hint:'Be honest about what your senses register, not what you think you should feel.', keywords:{ sensory:['light','buzz','hum','noise','loud','bright','glare','smell','scent','odor','sound','texture','temperature','itch','tight','scratchy','overwhelming','dizzy','headache','pain','uncomfortable','sensory','input','overload'], suppress:['fine','okay','pretend','act','normal','expected','polite','ignore','tolerate','deal','push through','mask','hide','appear','seem','look like'], escape:['leave','exit','outside','air','break','bathroom','escape','away','quiet','corner','alone','step out','fresh air'] } },
+  { id:4, domain:'interest', tag:'Deep Interests', text:'What is something you know more about than most people? Explain it to someone who has never heard of it, but do it in a way that excites you.', hint:'Show your passion. Use as much detail as you want.', keywords:{ depth:['history','origin','evolution','detail','specific','fact','data','research','study','learned','discovered','mechanism','process','system','structure','pattern','category','type','variant','model','theory','framework'], enthusiasm:['love','obsessed','passion','favorite','amazing','incredible','fascinating','beautiful','perfect','masterpiece','genius','brilliant','obsession','hyperfocus','special interest','rabbit hole','deep dive'], socialBridge:['you might','imagine','picture','think of it like','similar to','compare','analogy','metaphor','story','example from life','relatable','everyday'] } },
+  { id:5, domain:'family', tag:'Family Dynamics', text:'At a family dinner, everyone is talking over each other. Your aunt asks you a question while two other conversations are loud. How do you respond?', hint:'Describe what you actually do, not what you think a "good" person would do.', keywords:{ literal:['what','repeat','didn\'t hear','pardon','sorry','say again','question','asked','what did you say','couldn\'t catch','missed','didn\'t understand'], shutdown:['freeze','shut down','blank','stare','nod','smile','pretend','agree','uh huh','yeah','okay','fine','whatever','escape','look away','withdraw','quiet','silent','stop talking'], overwhelm:['too much','overload','loud','noise','chaos','can\'t focus','distracted','overwhelmed','sensory','exhausting','draining','tired','leave table','step away'] } },
+  { id:6, domain:'masking', tag:'Social Masking', text:'You are at a gathering. Everyone is laughing at a joke you do not understand. The host looks at you. Describe what happens inside you and what you do next.', hint:'Separate your internal state from your external action.', keywords:{ internal:['confused','don\'t get it','lost','what','why','missed','reference','context','analyzing','trying','figure out','understand','logic','doesn\'t make sense','not funny','cruel','mean','awkward','uncomfortable','fake','pretend','performance','mask','act','play','role','script'], external:['laugh','smile','nod','agree','fit in','blend','seem','appear','look like','socially','appropriate','expected','norm','mirror','copy','mimic','follow','join','participate','survive','get through','endure'] } },
+  { id:7, domain:'flexibility', tag:'Routine Disruption', text:'You planned your entire Sunday: coffee, walk, reading, meal prep. Your roommate announces 10 people are coming over in 30 minutes. What happens next?', hint:'Focus on your emotional and cognitive process, not just the logistics.', keywords:{ rigid:['ruined','destroyed','wasted','plan','ruined my day','not fair','upset','frustrated','angry','hate','dread','anxiety','panic','can\'t','impossible','need notice','advance','warning','schedule','disrupted','violated','breach','invasion','territory','my space','control'], flexible:['adapt','adjust','pivot','okay','fine','change plans','roll with','spontaneous','surprise','fun','exciting','different','new','flexible','go with flow','whatever','easygoing','chill','relaxed','not bothered','reschedule','later','tomorrow'] } },
+  { id:8, domain:'theory', tag:'Theory of Mind', text:'Your partner says "I\'m fine" but slams the cabinet shut harder than usual. They are facing away from you. What is your read?', hint:'How do you know what they feel? What evidence do you use?', keywords:{ pattern:['slam','hard','loud','noise','usually','normally','different','change','pattern','deviation','baseline','behavior','action','body language','signal','sign','data','evidence','history','before','past','previously','track record'], literal:['said','fine','words','explicit','stated','told me','believe','trust','take','face value','literally','exactly','text','sentence','means','definition'], inference:['upset','angry','sad','hurt','disappointed','frustrated','feel','feeling','emotion','mood','attitude','vibe','energy','sense','intuition','know','just know','can tell','reading','between','lines','subtext'] } },
+  { id:9, domain:'social', tag:'Group Navigation', text:'You are in a group chat. Everyone is using an inside joke you do not know. It has been 20 messages. How do you handle it?', hint:'What do you actually do, and what does it feel like?', keywords:{ literal:['ask','what','explain','meaning','joke','don\'t understand','missed','reference','context','clueless','out of loop','confused','what does that mean','who','when','where','unclear','ambiguous'], withdraw:['ignore','stop reading','mute','leave','exit','quiet','lurk','observe','silent','not respond','ghost','disappear','check out','tune out','scroll past','skip','don\'t care','irrelevant'], mask:['laugh','lol','haha','emoji','pretend','fake','blend','fit in','seem like','act like','know','go along','play along','mirror','copy','follow','react','appropriate'] } },
+  { id:10, domain:'sensory', tag:'Sensory Preference', text:'Describe a texture, sound, or visual pattern that you find inexplicably satisfying. Why is it different from "normal" things?', hint:'Get specific. This is about your unique sensory world.', keywords:{ specificity:['specific','exact','precise','particular','certain','only','exactly','just right','perfect','satisfying','smooth','rough','rhythm','beat','pattern','repeat','symmetry','order','arrangement','alignment','grid','line','circle','texture','fabric','material','sound','tone','frequency','pitch','visual','color','shade','gradient','contrast'], intensity:['intense','deep','overwhelming','powerful','strong','immense','profound','indescribable','can\'t explain','words fail','feel it','physical','body','shiver','tingle','rush','calm','peace','trance','zone','flow','hyperfocus','stim','stimming'] } },
+  { id:11, domain:'system', tag:'Rule Extraction', text:'You notice that every time you wear a certain color, people are nicer to you. You hate the color. What do you do with this information?', hint:'Walk through your reasoning process.', keywords:{ systemizing:['pattern','correlation','data','evidence','sample size','coincidence','causation','cause','effect','variable','test','experiment','hypothesis','prove','disprove','analyze','study','track','record','log','frequency','statistical','likely','probability','trend','rule','law','principle','mechanism'], social:['manipulate','use','wear','anyway','fake','pretend','social','advantage','benefit','game','play','strategy','tactic','socially','smart','clever','read room','adapt','mask','camouflage','blend','survive','thrive','succeed','win','gain','leverage','exploit'], identity:['authentic','myself','real','genuine','identity','principle','integrity','value','believe','refuse','won\'t','not me','uncomfortable','wrong','fake','compromise','sacrifice','self','soul','truth','honest'] } },
+  { id:12, domain:'flexibility', tag:'Cognitive Flexibility', text:'You have been using the same route to work for 3 years. Today, the road is closed. No warning. How do you feel and what do you do?', hint:'Be honest about the emotional response, not just the practical solution.', keywords:{ rigid:['panic','stress','anxiety','lost','confused','can\'t','impossible','ruined','late','frustrated','angry','hate','dread','fear','unfamiliar','unknown','new route','different','wrong','not my way','usual','normal','always','every day','habit','comfort','safe','known','predictable','control','map','gps','navigate','direction','orient'], flexible:['adapt','adjust','find way','explore','adventure','discover','new','different','okay','fine','no big deal','alternative','route','option','backup','plan b','spontaneous','figure out','solve','easy','simple','quick','gps','google maps','navigate','directions'] } },
+  { id:13, domain:'masking', tag:'Authenticity vs Survival', text:'Someone asks, "How are you?" You are not okay. You are exhausted from masking all week. But you are at a professional event. What do you say, and what is the cost?', hint:'Separate the output from the internal math.', keywords:{ mask:['fine','good','great','okay','well','busy','tired but','hanging in','surviving','professional','appropriate','expected','polite','social','norm','script','auto-pilot','default','reflex','habit','mask','armor','shield','performance','character','role','play','act','pretend','fake','lie','hide','conceal','protect','defense','wall'], authentic:['honest','real','truth','exhausted','burnt out','struggling','not okay','depressed','anxious','overwhelmed','can\'t','done','quit','leave','need break','need space','alone','recharge','recover','crash','shutdown','meltdown','raw','vulnerable','open','real','genuine','authentic','myself'] } },
+  { id:14, domain:'theory', tag:'Social Prediction', text:'You tell a story you think is hilarious. You finish. The room is silent for 3 seconds, then someone says "Wow." What just happened?', hint:'Interpret the social data. What do you think occurred, and why?', keywords:{ literal:['funny','hilarious','joke','story','humor','comedy','laugh','objective','fact','is funny','was funny','they don\'t get it','missed','timing','delivery','content','punchline','setup','structure','joke mechanics','comedic','formula','rule','principle','theory','analysis','breakdown','dissect'], social:['awkward','cringe','uncomfortable','tension','vibe','energy','shift','changed','weird','embarrassed','shame','judgment','pity','polite','nice','patronizing','condescending','superior','inferior','hierarchy','status','dominance','power','awkward silence','fill silence','rescue','save','damage control','recover','read room','misread','miscalculated','tone deaf','socially','inappropriate','crossed line','boundary','offended','upset','hurt feelings'], inference:['probably','maybe','likely','seems','appears','looks like','feels like','sense','vibe','energy','reading','between','lines','subtext','implication','meant','intended','unspoken','undercurrent','dynamic','atmosphere','mood','tension'] } },
+  { id:15, domain:'social', tag:'Relationship Maintenance', text:'A close friend has been subtly distant for two months. Shorter replies. Cancelled plans. No explanation. You care about them. What do you do?', hint:'Walk through your actual decision process, not the ideal one.', keywords:{ literal:['ask','confront','direct','what\'s wrong','why','explain','distance','distant','shorter','cancelled','evidence','data','pattern','behavior','change','different','previously','before','track','record','fact','proof','concrete','specific','example','instance','time','date','message','text','call'], avoidant:['ignore','wait','give space','time','maybe','probably','busy','life','stuff','not about me','not personal','assume','guess','probably fine','overthinking','paranoid','clingy','needy','don\'t want','bother','annoy','push away','lose','risk','scared','fear','rejection','abandonment','vulnerable','exposed','protect','wall','guard','shield','defense','mechanism'], systematic:['pattern','track','log','frequency','duration','trend','correlation','cause','reason','trigger','event','before','after','since','when','timeline','history','baseline','deviation','anomaly','investigate','analyze','diagnose','solve','fix','repair','solution','approach','strategy','method','process','step'] } }
+];
+
+let currentQ = 0;
+const responses = [];
+let metrics = { systemizing:[], social:[], flexibility:[], sensory:[], theory:[], masking:[], interest:[] };
+let sessionId = '';
+
+function startSession() {
+  currentQ = 0; responses.length = 0;
+  metrics = { systemizing:[], social:[], flexibility:[], sensory:[], theory:[], masking:[], interest:[] };
+  sessionId = 'NM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  
+  document.getElementById('intro').classList.remove('active');
+  document.getElementById('game').classList.add('active');
+  document.getElementById('final').classList.remove('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const card = document.getElementById('qCard');
+  card.classList.remove('exiting');
+  
+  document.getElementById('qTag').textContent = q.tag;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('qHint').textContent = q.hint;
+  document.getElementById('responseField').value = '';
+  document.getElementById('charDisplay').textContent = '0 chars';
+  document.getElementById('btnSend').disabled = false;
+  document.getElementById('btnText').textContent = 'Submit';
+  
+  const pct = ((currentQ) / QUESTIONS.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `${currentQ + 1} / ${QUESTIONS.length}`;
+  
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both';
+}
+
+function updateCharCount() {
+  const len = document.getElementById('responseField').value.length;
+  document.getElementById('charDisplay').textContent = len + ' chars';
+}
+
+function submitResponse() {
+  const val = document.getElementById('responseField').value.trim();
+  if (val.length < 10) { alert('Please write a bit more to capture your pattern.'); return; }
+  
+  const q = QUESTIONS[currentQ];
+  responses.push({ question: q, text: val });
+  analyzeResponse(q, val);
+  
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('btnText').innerHTML = '<span class="spinner"></span>';
+  
+  setTimeout(() => {
+    document.getElementById('transitionOverlay').classList.add('active');
+    document.getElementById('transitionFill').style.width = '0%';
+    setTimeout(() => { document.getElementById('transitionFill').style.width = '100%'; }, 50);
+  }, 400);
+  
+  setTimeout(() => {
+    document.getElementById('transitionOverlay').classList.remove('active');
+    currentQ++;
+    if (currentQ >= QUESTIONS.length) { showFinalReport(); }
+    else { renderQuestion(); }
+  }, 900);
+}
+
+function analyzeResponse(q, text) {
+  const txt = text.toLowerCase();
+  const kw = q.keywords || {};
+  
+  let systemizing = 30, social = 30, flexibility = 30, sensory = 30, theory = 30, masking = 30, interest = 30;
+  
+  (kw.systemizing || []).forEach(w => { systemizing += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 5; });
+  if (/\b(because|therefore|if|then|pattern|rule|system|structure|logic|reason|cause|effect|correlation|data|evidence|analysis|process|step|first|second|sequence|order|category|type|variant|model|framework|hypothesis|test|prove|disprove)\b/.test(txt)) systemizing += 12;
+  if (/\d/.test(txt)) systemizing += 8;
+  systemizing = Math.min(98, Math.max(10, systemizing));
+  
+  (kw.social || []).forEach(w => { social += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 5; });
+  ['feel','feeling','emotion','vibe','energy','people','friend','group','social','connect','bond','relationship','awkward','comfortable','uncomfortable','fit in','belong','lonely','accepted','rejected','judgment','impression','reputation','status','hierarchy','drama','gossip','popular','cool','weird','normal'].forEach(w => { if (txt.includes(w)) social += 3; });
+  social = Math.min(98, Math.max(10, social));
+  
+  (kw.flexible || []).forEach(w => { flexibility += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 6; });
+  (kw.rigid || []).forEach(w => { if (txt.includes(w)) flexibility -= 5; });
+  if (txt.includes('but') && (txt.includes('wasted') || txt.includes('ruined') || txt.includes('unfair') || txt.includes('hate') || txt.includes('not fair'))) flexibility -= 10;
+  if (txt.includes('adapt') || txt.includes('adjust') || txt.includes('pivot') || txt.includes('go with') || txt.includes('flow') || txt.includes('spontaneous')) flexibility += 10;
+  flexibility = Math.min(98, Math.max(10, flexibility));
+  
+  (kw.sensory || []).forEach(w => { sensory += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 6; });
+  if (q.domain === 'sensory') { const sCount = (kw.sensory || []).filter(w => txt.includes(w)).length; if (sCount > 0) sensory += 15; else sensory += 5; }
+  sensory = Math.min(98, Math.max(10, sensory));
+  
+  (kw.pattern || kw.inferential || []).forEach(w => { theory += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 5; });
+  (kw.literal || []).forEach(w => { if (txt.includes(w)) theory -= 2; });
+  ['they think','they feel','perspective','point of view','interpret','intention','meant','imply','subtext','reading between','probably','maybe','likely','seems','appears','vibe','energy','sense','just know','can tell'].forEach(w => { if (txt.includes(w)) theory += 6; });
+  theory = Math.min(98, Math.max(10, theory));
+  
+  (kw.mask || kw.external || []).forEach(w => { if (txt.includes(w)) masking += 4; });
+  (kw.authentic || kw.internal || []).forEach(w => { if (txt.includes(w)) masking -= 2; });
+  if (q.domain === 'masking') { const maskCount = (kw.mask || []).filter(w => txt.includes(w)).length; const autCount = (kw.authentic || []).filter(w => txt.includes(w)).length; if (maskCount > autCount) masking += 20; else if (autCount > maskCount) masking -= 10; else masking += 5; }
+  ['pretend','act','fake','mask','performance','role','play','seem','appear','look like','fit in','blend','camouflage','survive','get through','endure','socially appropriate','expected','norm','auto-pilot','script','reflex'].forEach(w => { if (txt.includes(w)) masking += 3; });
+  masking = Math.min(98, Math.max(10, masking));
+  
+  (kw.depth || kw.enthusiasm || []).forEach(w => { interest += (txt.match(new RegExp(`\\b${w}\\b`,'g')) || []).length * 5; });
+  if (q.domain === 'interest') interest += 15;
+  if (txt.includes('obsessed') || txt.includes('hyperfocus') || txt.includes('deep dive') || txt.includes('rabbit hole') || txt.includes('special interest')) interest += 12;
+  interest = Math.min(98, Math.max(10, interest));
+  
+  metrics.systemizing.push(systemizing); metrics.social.push(social); metrics.flexibility.push(flexibility);
+  metrics.sensory.push(sensory); metrics.theory.push(theory); metrics.masking.push(masking); metrics.interest.push(interest);
+}
+
+function showFinalReport() {
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('final').classList.add('active');
+  
+  const avg = (arr) => arr.length ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : 50;
+  const sys = avg(metrics.systemizing), soc = avg(metrics.social), flex = avg(metrics.flexibility);
+  const sen = avg(metrics.sensory), tom = avg(metrics.theory), mask = avg(metrics.masking), intr = avg(metrics.interest);
+  
+  const archetypeData = getArchetype(sys, soc, flex, sen, tom, mask, intr);
+  
+  document.getElementById('reportMeta').textContent = `Session: ${sessionId}  ·  ${new Date().toLocaleDateString()}`;
+  document.getElementById('reportArchetype').textContent = archetypeData.name;
+  
+  const defs = [
+    { label:'Systemizing', val:sys, color:'#c9a96e' },
+    { label:'Social Decoding', val:soc, color:'#d4a5a5' },
+    { label:'Flexibility', val:flex, color:'#8faa9b' },
+    { label:'Sensory Load', val:sen, color:'#b87c6e' },
+    { label:'Theory of Mind', val:tom, color:'#c9a96e' },
+    { label:'Masking Depth', val:mask, color:'#d4a5a5' }
+  ];
+  
+  document.getElementById('reportMetrics').innerHTML = defs.map(d => `
+    <div class="rm-cell">
+      <div class="rm-name">${d.label}</div>
+      <div class="rm-value" style="color:${d.color}">${d.val}</div>
+    </div>
+  `).join('');
+  
+  document.getElementById('reportNarrative').textContent = archetypeData.text;
+}
+
+function getArchetype(sys, soc, flex, sen, tom, mask, intr) {
+  if (sys >= 75 && soc <= 40 && mask >= 65) return {
+    name: 'Systemizing Masker',
+    text: 'Your responses reveal strong systemizing with significant masking depth. You extract rules and patterns procedurally, then translate them into social outputs. This analytical-social gap often requires sustained cognitive effort.'
+  };
+  if (sys >= 70 && flex <= 35 && sen >= 60) return {
+    name: 'Pattern-Anchored Observer',
+    text: 'High systemizing with low flexibility and elevated sensory awareness. You build reliable mental models and register environmental details with high fidelity. Sudden disruptions to predictable patterns may create disproportionate stress.'
+  };
+  if (mask >= 75 && soc >= 60 && sys <= 50) return {
+    name: 'Social Adapter',
+    text: 'High masking with strong social vocabulary but lower systemizing. You read social expectations well, but the gap between natural processing and output is substantial. The cost is often invisible fatigue or delayed burnout.'
+  };
+  if (tom <= 35 && sys >= 65 && soc <= 45) return {
+    name: 'Literal-Systemic Thinker',
+    text: 'You process through explicit, literal channels and verifiable rules. Social subtext feels uncertain compared to direct statements. This is a processing priority difference, not a deficit.'
+  };
+  if (sen >= 70 && sys >= 60 && soc <= 50) return {
+    name: 'Sensory-Systemic Profile',
+    text: 'You register sensory details with high fidelity and organize them systematically. Environmental inputs are active data points, not background noise. Social environments may be processed as additional sensory variables.'
+  };
+  if (intr >= 80 && sys >= 65) return {
+    name: 'Intense Focus Architect',
+    text: 'Exceptional depth in interest areas with strong systemizing. You experience sustained focus states where context dissolves. Context-switching from these depths may be disruptive.'
+  };
+  if (flex >= 75 && sys <= 55 && soc >= 65) return {
+    name: 'Fluid Social Navigator',
+    text: 'High flexibility and social decoding with lower systemizing. You adapt readily to changing contexts and navigate ambiguity intuitively. Your ease may be congruent or represent high social calibration.'
+  };
+  return {
+    name: 'Integrated Profile',
+    text: 'Moderate scores across domains without extreme polarization. Your specific combination of strengths and relative neutrals is unique to your cognitive architecture. No single dominant pattern detected.'
+  };
+}
+
+async function downloadReport() {
+  const btn = document.querySelector('.btn-download');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  
+  try {
+    const element = document.getElementById('reportCard');
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      backgroundColor: '#12121a',
+      useCORS: true,
+      logging: false,
+      onclone: (clonedDoc) => {
+        const logo = clonedDoc.getElementById('reportLogo');
+        if (logo && logo.complete && logo.naturalHeight !== 0) {
+          logo.style.display = 'block';
+        }
+      }
+    });
+    
+    const link = document.createElement('a');
+    link.download = `neuromap-report-${sessionId}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+  } catch (e) {
+    console.error(e);
+    alert('Could not generate report. Please try again.');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

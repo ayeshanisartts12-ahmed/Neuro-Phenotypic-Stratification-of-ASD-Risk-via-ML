@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenings — NeuroStrat AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: var(--bg); }
+
+        .page-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .page-header-left { display: flex; align-items: center; gap: 1rem; }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .5rem 1rem; border-radius: var(--radius-full);
+            border: 1.5px solid var(--border-med); background: var(--card);
+            color: var(--text-sec); font-size: .84rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: all .2s;
+        }
+        .back-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-pale); }
+
+        .page-title { font-size: 1.7rem; font-weight: 400; font-family: var(--font-h); }
+        .page-subtitle { font-size: .85rem; color: var(--text-muted); margin-top: .2rem; }
+
+        /* ── Privacy notice ── */
+        .privacy-notice {
+            display: flex; align-items: center; gap: .6rem;
+            padding: .75rem 1.1rem;
+            border-radius: var(--radius-sm);
+            background: rgba(61,107,69,.07);
+            border: 1px solid rgba(61,107,69,.18);
+            font-size: .82rem; color: var(--text-sec);
+            margin-bottom: 1.5rem;
+        }
+        .privacy-notice .lock-icon { font-size: 1rem; flex-shrink: 0; }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            display: flex; gap: .5rem; align-items: center;
+            margin-bottom: 1.25rem; flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: .38rem 1rem; border-radius: var(--radius-full);
+            border: 1.5px solid var(--border-med); background: var(--card);
+            font-size: .82rem; font-weight: 600; cursor: pointer;
+            color: var(--text-sec); transition: all .2s; font-family: var(--font-ui);
+        }
+        .filter-btn.active        { border-color: var(--primary); color: var(--primary); background: var(--primary-pale); }
+        .filter-btn.active-danger { border-color: var(--danger);  color: var(--danger);  background: rgba(184,92,92,.08); }
+        .filter-count { font-size: .75rem; background: var(--surface); border-radius: var(--radius-full); padding: .1rem .5rem; margin-left: .3rem; }
+
+        /* ── Table ── */
+        .table-card {
+            background: var(--card);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .table-card table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        .table-card thead tr {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border-med);
+        }
+        .table-card th {
+            padding: .85rem 1.1rem; text-align: left;
+            font-size: .78rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .06em;
+            font-family: var(--font-ui);
+        }
+        .table-card td {
+            padding: .9rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+        .table-card tbody tr:last-child td { border-bottom: none; }
+        .table-card tbody tr:hover td { background: var(--primary-pale); }
+
+        .patient-id { font-family: monospace; font-size: .82rem; color: var(--primary); font-weight: 600; }
+        .date-cell   { font-size: .84rem; color: var(--text-sec); }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center; padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .empty-state p { font-size: .9rem; margin-top: .4rem; }
+
+        /* ── Summary bar ── */
+        .summary-bar {
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+        .summary-chip {
+            padding: .38rem 1rem; border-radius: var(--radius-full);
+            font-size: .8rem; font-weight: 600;
+            font-family: var(--font-ui);
+        }
+        .summary-chip.total    { background: var(--primary-pale); color: var(--primary); border: 1px solid rgba(61,107,69,.2); }
+        .summary-chip.high     { background: rgba(184,92,92,.10); color: var(--danger);  border: 1px solid rgba(184,92,92,.25); }
+        .summary-chip.moderate { background: rgba(193,123,92,.10); color: var(--warning); border: 1px solid rgba(193,123,92,.25); }
+        .summary-chip.low      { background: rgba(61,107,69,.10); color: var(--success); border: 1px solid rgba(61,107,69,.22); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .table-card { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <a href="dashboard.html" class="back-btn">← Dashboard</a>
+            <div>
+                <div class="page-title" id="page-title">All Screenings</div>
+                <div class="page-subtitle" id="page-subtitle">Loading records…</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <span style="font-size:.78rem;color:var(--text-muted);">NeuroStrat AI</span>
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;" id="avatar-chip">N</div>
+        </div>
+    </div>
+
+    <!-- Privacy notice -->
+    <div class="privacy-notice">
+        <span class="lock-icon">🔒</span>
+        <span>This view displays <strong>Patient ID, Age, Date and Risk Level only</strong>. Names, emails, modules and other personal details are kept private in compliance with data protection guidelines.</span>
+    </div>
+
+    <!-- Summary chips -->
+    <div class="summary-bar" id="summary-bar"></div>
+
+    <!-- Filter buttons -->
+    <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" id="btn-all"      onclick="applyFilter('all')">All</button>
+        <button class="filter-btn"        id="btn-high"     onclick="applyFilter('high')">🔴 High Risk</button>
+        <button class="filter-btn"        id="btn-moderate" onclick="applyFilter('moderate')">🟠 Moderate</button>
+        <button class="filter-btn"        id="btn-low"      onclick="applyFilter('low')">🟢 Low Risk</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Age</th>
+                    <th>Risk Level</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="screenings-body">
+                <tr><td colspan="5" style="padding:2rem;text-align:center;color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- /.page-wrapper -->
+
+<script>
+// ── Read URL param ─────────────────────────────────────────────────────────
+const urlParams    = new URLSearchParams(location.search);
+const initialFilter = urlParams.get('filter') || 'all'; // 'all' | 'high'
+
+// ── Load data ──────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:8000';
+let allRecords = [];   // full dataset
+let currentFilter = initialFilter;
+
+async function loadData() {
+    // 1. Try backend first
+    try {
+        const resp = await fetch(`${API_BASE}/api/history`, { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) {
+            const history = await resp.json();
+            allRecords = history.map(h => ({
+                patient_id: h.patient_id,
+                age:        h.age,
+                risk:       h.risk_tier || null,
+                date:       h.created_at ? new Date(h.created_at).toLocaleDateString() : '—',
+                status:     h.status,
+            }));
+            renderAll();
+            return;
+        }
+    } catch (_) {}
+
+    // 2. Fall back to per-user localStorage
+    const hKey = (typeof getUserHistoryKey === 'function') ? getUserHistoryKey()
+        : 'ns_history_' + ((JSON.parse(localStorage.getItem('ns_user')||'{}').email)||'guest').trim().toLowerCase();
+    const raw = JSON.parse(localStorage.getItem(hKey) || '[]');
+    allRecords = raw.map(s => ({
+        patient_id: s.patient_id || ('#' + (s.id || '?')),
+        age:        s.age || '—',
+        risk:       s.risk || null,
+        date:       s.date || '—',
+        status:     s.status || 'complete',
+    }));
+    renderAll();
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderAll() {
+    updatePageHeader();
+    renderSummaryChips();
+    applyFilter(currentFilter, false);   // false = don't update URL again
+}
+
+function updatePageHeader() {
+    const isHighOnly = (currentFilter === 'high');
+    document.getElementById('page-title').textContent =
+        isHighOnly ? 'High Risk Screenings' : 'All Screenings';
+    document.getElementById('page-subtitle').textContent =
+        `${allRecords.length} total record${allRecords.length !== 1 ? 's' : ''} · private view`;
+    document.title = isHighOnly
+        ? 'High Risk Cases — NeuroStrat AI'
+        : 'All Screenings — NeuroStrat AI';
+
+    // Avatar initial from localStorage
+    const user = JSON.parse(localStorage.getItem('ns_user') || '{}');
+    const chip = document.getElementById('avatar-chip');
+    if (chip && user.name) chip.textContent = user.name[0].toUpperCase();
+}
+
+function renderSummaryChips() {
+    const high = allRecords.filter(r => riskKey(r.risk) === 'high').length;
+    const mod  = allRecords.filter(r => riskKey(r.risk) === 'moderate').length;
+    const low  = allRecords.filter(r => riskKey(r.risk) === 'low').length;
+    document.getElementById('summary-bar').innerHTML = `
+        <span class="summary-chip total">Total: ${allRecords.length}</span>
+        <span class="summary-chip high">High Risk: ${high}</span>
+        <span class="summary-chip moderate">Moderate: ${mod}</span>
+        <span class="summary-chip low">Low Risk: ${low}</span>`;
+}
+
+function riskKey(risk) {
+    if (!risk) return 'pending';
+    const r = risk.toLowerCase();
+    if (r.includes('high'))     return 'high';
+    if (r.includes('moderate')) return 'moderate';
+    if (r.includes('low'))      return 'low';
+    return 'pending';
+}
+
+function applyFilter(filter, updateURL = true) {
+    currentFilter = filter;
+
+    // Update active button styles
+    ['all','high','moderate','low'].forEach(f => {
+        const btn = document.getElementById('btn-' + f);
+        if (!btn) return;
+        btn.classList.remove('active', 'active-danger');
+        if (f === filter) {
+            btn.classList.add(f === 'high' ? 'active-danger' : 'active');
+        }
+    });
+
+    // Filter records
+    const filtered = filter === 'all'
+        ? allRecords
+        : allRecords.filter(r => riskKey(r.risk) === filter);
+
+    renderTable(filtered);
+
+    if (updateURL) {
+        const newUrl = filter === 'all'
+            ? location.pathname
+            : `${location.pathname}?filter=${filter}`;
+        history.replaceState(null, '', newUrl);
+    }
+}
+
+function renderTable(records) {
+    const tbody = document.getElementById('screenings-body');
+
+    if (records.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <strong>No records found</strong>
+                    <p>${currentFilter !== 'all' ? 'No ' + currentFilter + ' risk cases in your history.' : 'No screenings yet. <a href="register.html">Start one →</a>'}</p>
+                </div>
+            </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = records.map(r => {
+        const rk = riskKey(r.risk);
+        const riskBadge = r.risk
+            ? `<span class="risk-badge risk-${rk}" style="font-size:.74rem;padding:.22rem .7rem;">${r.risk}</span>`
+            : `<span style="color:var(--text-muted);font-size:.8rem;">Pending</span>`;
+
+        const statusColor = r.status === 'complete'
+            ? 'var(--success)'
+            : r.status === 'in-progress'
+                ? 'var(--warning)'
+                : 'var(--text-muted)';
+
+        return `
+        <tr>
+            <td><span class="patient-id">${r.patient_id}</span></td>
+            <td>${r.age}</td>
+            <td>${riskBadge}</td>
+            <td class="date-cell">${r.date}</td>
+            <td><span style="font-size:.78rem;color:${statusColor};">● ${r.status || '—'}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
